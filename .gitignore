@@ -1,6 +1,9 @@
 # Old broken prototype — has its own nested .git, not part of this repo's history
 _app_broken/
 
+# Local Claude Code settings (machine-specific)
+.claude/settings.local.json
+
 # Dependency directories
 node_modules/
 jspm_packages/

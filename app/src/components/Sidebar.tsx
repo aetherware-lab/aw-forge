@@ -18,25 +18,14 @@ interface NavSection {
 /**
  * Primary navigation grouped by intent.
  *
- * Pipeline = "things flowing in to consider" (discovery).
- * Workspace = "things you've decided to act on" (management).
- *
  * Adding a new destination: push a row into the right section. NavLink
  * handles active-state styling automatically.
  */
 const NAV_SECTIONS: NavSection[] = [
   {
-    label: 'Pipeline',
-    items: [
-      { to: '/opportunities', label: 'Opportunities', icon: '🎯' },
-      { to: '/leads',         label: 'Leads',         icon: '🔭' },
-    ],
-  },
-  {
     label: 'Workspace',
     items: [
       { to: '/solicitations', label: 'Solicitations', icon: '📋' },
-      { to: '/clients',       label: 'Clients',       icon: '👥' },
     ],
   },
 ];

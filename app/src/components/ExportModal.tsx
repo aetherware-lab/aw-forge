@@ -1,12 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import Modal from './Modal';
 import { useSolicitations } from '@/store/solicitations';
-import { SAMPLE_QUESTIONS, SAMPLE_REQUIREMENTS } from '@/fixtures/qmat-sample';
+import { SAMPLE_REQUIREMENTS } from '@/fixtures/qmat-sample';
 
 type Format = 'xlsx' | 'csv' | 'docx';
 
 interface IncludeFlags {
-  answers: boolean;
   citations: boolean;
   confidence: boolean;
   colors: boolean;
@@ -24,8 +23,6 @@ interface Props {
  */
 const ExportModal: React.FC<Props> = ({ qmatId, onClose }) => {
   const documents = useSolicitations((s) => s.documents);
-  const allAnswers = useSolicitations((s) => s.answers);
-  const allFollowups = useSolicitations((s) => s.followups);
 
   const qmatDoc = useMemo(
     () => documents.find((d) => d.id === qmatId),
@@ -39,7 +36,6 @@ const ExportModal: React.FC<Props> = ({ qmatId, onClose }) => {
 
   const [format, setFormat] = useState<Format>('xlsx');
   const [include, setInclude] = useState<IncludeFlags>({
-    answers: true,
     citations: true,
     confidence: true,
     colors: false,
@@ -61,18 +57,6 @@ const ExportModal: React.FC<Props> = ({ qmatId, onClose }) => {
         flag: include.confidence ? r.flag : undefined,
         citations: include.citations ? r.citations : undefined,
       })),
-      answers: include.answers
-        ? SAMPLE_QUESTIONS.map((qn) => ({
-            requirementId: qn.requirementId,
-            questionId: qn.id,
-            prompt: qn.prompt,
-            selected: allAnswers[qmatId]?.[qn.id] ?? null,
-            selectedLabel:
-              qn.options.find((o) => o.id === allAnswers[qmatId]?.[qn.id])
-                ?.label ?? null,
-            followup: allFollowups[qmatId]?.[qn.id] ?? '',
-          }))
-        : undefined,
     };
     // eslint-disable-next-line no-console
     console.log('[Export]', payload);
@@ -130,16 +114,6 @@ const ExportModal: React.FC<Props> = ({ qmatId, onClose }) => {
       </div>
 
       <div className="label">Include</div>
-      <label className="checkbox-row">
-        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-          <input
-            type="checkbox"
-            checked={include.answers}
-            onChange={() => toggleInclude('answers')}
-          />
-          Prospect answers &amp; follow-ups
-        </span>
-      </label>
       <label className="checkbox-row">
         <span style={{ display: 'inline-flex', alignItems: 'center' }}>
           <input

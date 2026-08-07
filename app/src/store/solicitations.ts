@@ -5,20 +5,10 @@ import { SOLICITATIONS } from '@/fixtures/solicitations';
 import { DOCUMENTS } from '@/fixtures/documents';
 import { NEWS } from '@/fixtures/news';
 
-/** qmatId -> { questionId -> selected option id } */
-type AnswerMap = Record<string, Record<string, string>>;
-/** qmatId -> { questionId -> follow-up free text } */
-type FollowupMap = Record<string, Record<string, string>>;
-
 interface SolicitationsState {
   solicitations: Solicitation[];
   documents: SolicitationDocument[];
   news: NewsItem[];
-
-  /** Prospect answers, keyed by qmatId then questionId */
-  answers: AnswerMap;
-  /** Free-text follow-ups, same shape */
-  followups: FollowupMap;
 
   /** Mutations */
   add: (sol: Solicitation, initialDocs?: SolicitationDocument[]) => void;
@@ -26,8 +16,6 @@ interface SolicitationsState {
   remove: (id: string) => void;
   addDocument: (doc: SolicitationDocument) => void;
   togglePin: (docId: string) => void;
-  setAnswer: (qmatId: string, questionId: string, optionId: string) => void;
-  setFollowup: (qmatId: string, questionId: string, text: string) => void;
 }
 
 /**
@@ -44,8 +32,6 @@ export const useSolicitations = create<SolicitationsState>()(
       solicitations: SOLICITATIONS,
       documents: DOCUMENTS,
       news: NEWS,
-      answers: {},
-      followups: {},
 
       add: (sol, initialDocs = []) =>
         set((s) => ({
@@ -76,34 +62,16 @@ export const useSolicitations = create<SolicitationsState>()(
             d.id === docId ? { ...d, pinned: !d.pinned } : d,
           ),
         })),
-
-      setAnswer: (qmatId, questionId, optionId) =>
-        set((s) => ({
-          answers: {
-            ...s.answers,
-            [qmatId]: { ...(s.answers[qmatId] ?? {}), [questionId]: optionId },
-          },
-        })),
-
-      setFollowup: (qmatId, questionId, text) =>
-        set((s) => ({
-          followups: {
-            ...s.followups,
-            [qmatId]: { ...(s.followups[qmatId] ?? {}), [questionId]: text },
-          },
-        })),
     }),
     {
       name: 'cmat-solicitations',
       // Bump when the persisted shape changes so dev sessions don't get
       // stuck on stale data.
-      version: 3,
+      version: 4,
       partialize: (s) => ({
         solicitations: s.solicitations,
         documents: s.documents,
         news: s.news,
-        answers: s.answers,
-        followups: s.followups,
       }),
     },
   ),

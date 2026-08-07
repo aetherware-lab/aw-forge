@@ -210,16 +210,6 @@ const CitationsTable: React.FC = () => {
         </table>
       </div>
 
-      <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => navigate(`/qmat/${qmatId}/questions`)}
-        >
-          Next →
-        </button>
-      </div>
-
       {drawer && (
         <CitationDrawer
           requirement={drawer.req}

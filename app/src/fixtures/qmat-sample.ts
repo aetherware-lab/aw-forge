@@ -1,4 +1,4 @@
-import type { Question, Requirement } from '@/types';
+import type { Requirement } from '@/types';
 
 /**
  * Sample QMat content — mirrors the five requirements drawn on Screen 5
@@ -67,69 +67,6 @@ export const SAMPLE_REQUIREMENTS: Requirement[] = [
       severity: 'critical',
       note: 'Contradicts §C.6.4 (Top Secret required for Site Lead) — graphrag validation conflict',
     },
-  },
-];
-
-export const SAMPLE_QUESTIONS: Question[] = [
-  {
-    id: 'Q-001',
-    requirementId: 'R-001',
-    prompt: 'Does your organization currently hold an active CMMC Level 2 certification?',
-    options: [
-      { id: 'a', label: 'Yes — active certification in place' },
-      { id: 'b', label: 'In progress — assessment scheduled or underway' },
-      { id: 'c', label: 'Not yet — planning to pursue' },
-      { id: 'd', label: 'No — need guidance on getting started' },
-    ],
-    detailHint: 'Follow-up: please share certifying body, certificate #, and expiration date…',
-  },
-  {
-    id: 'Q-002',
-    requirementId: 'R-002',
-    prompt: 'How many completed contracts of comparable scope have you delivered in the last 5 years?',
-    options: [
-      { id: 'a', label: '3 or more — ready to share references' },
-      { id: 'b', label: '1–2 — we have some but not three' },
-      { id: 'c', label: 'None yet in this scope' },
-      { id: 'd', label: "Unsure — let's discuss" },
-    ],
-    detailHint: 'Follow-up: customer name, contract #, POP, and CPARS or POC reference for each…',
-  },
-  {
-    id: 'Q-003',
-    requirementId: 'R-003',
-    prompt: 'Do you have existing win themes, discriminators, or materials we should build from?',
-    options: [
-      { id: 'a', label: "Yes — I'll share templates & narratives" },
-      { id: 'b', label: 'Partial — some ideas, help us refine' },
-      { id: 'c', label: 'No — please draft from scratch' },
-      { id: 'd', label: 'Not applicable / unsure' },
-    ],
-    detailHint: 'Follow-up: attach prior materials, pricing assumptions, or target price point…',
-  },
-  {
-    id: 'Q-004',
-    requirementId: 'R-004',
-    prompt: 'Do you currently produce CDRL A001-compliant monthly progress reports?',
-    options: [
-      { id: 'a', label: 'Yes — I can share a sample' },
-      { id: 'b', label: 'Informal only — not CDRL-compliant' },
-      { id: 'c', label: 'No — please draft a reporting approach' },
-      { id: 'd', label: 'Unsure — need to check with PM' },
-    ],
-    detailHint: 'Follow-up: attach a recent sample or describe your current reporting cadence…',
-  },
-  {
-    id: 'Q-005',
-    requirementId: 'R-005',
-    prompt: 'How many of your proposed personnel currently hold Secret (or higher) clearance?',
-    options: [
-      { id: 'a', label: 'All proposed personnel are cleared' },
-      { id: 'b', label: 'Most — a few need sponsorship' },
-      { id: 'c', label: 'About half are cleared' },
-      { id: 'd', label: 'Few/none — need a clearance plan' },
-    ],
-    detailHint: 'Follow-up: share clearance roster and sponsorship plan + timeline for uncleared candidates…',
   },
 ];
 
