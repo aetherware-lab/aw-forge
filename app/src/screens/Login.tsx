@@ -19,7 +19,7 @@ const Login: React.FC = () => {
   return (
     <>
       <div className="chrome-bar">
-        <span>qmat.wsgc.local</span>
+        <span>forge.wsgc.local</span>
         <span aria-hidden="true">·</span>
       </div>
       <main className="screen-body">
@@ -35,7 +35,7 @@ const Login: React.FC = () => {
               marginBottom: 8,
             }}
           >
-            CMat Generator
+            FORGE
           </div>
 
           <label className="label" htmlFor="email">Email</label>

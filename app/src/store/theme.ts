@@ -15,7 +15,7 @@ export const useTheme = create<ThemeState>()(
       setTheme: (id) => set({ themeId: id }),
     }),
     {
-      name: 'cmat-theme',
+      name: 'forge-theme',
       version: 1,
       partialize: (s) => ({ themeId: s.themeId }),
     },

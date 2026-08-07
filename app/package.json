@@ -1,8 +1,8 @@
 {
-  "name": "cmat-gen",
-  "productName": "CMat Generator",
+  "name": "forge",
+  "productName": "FORGE",
   "version": "0.1.0",
-  "description": "Compliance Matrix Generator desktop frontend (no backend yet)",
+  "description": "FORGE (Federal Opportunity Requirement GEnerator) desktop frontend (no backend yet)",
   "main": ".vite/build/main.js",
   "private": true,
   "scripts": {

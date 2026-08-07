@@ -1,6 +1,6 @@
-# CMat Generator — Desktop Frontend
+# FORGE — Desktop Frontend
 
-Compliance Matrix Generator UI, built on Electron Forge + Vite + React + TypeScript. No backend yet — screens read from `src/fixtures/` and persist nothing beyond `localStorage`.
+**FORGE** (Federal Opportunity Requirement GEnerator) — GraphRAG requirement-extraction review UI, built on Electron Forge + Vite + React + TypeScript. No backend yet — screens read from `src/fixtures/` and persist nothing beyond `localStorage`. See `../260807 forge-design-document.md` for the target architecture and product scope.
 
 ## Run it
 
@@ -12,11 +12,18 @@ npm start
 
 The first install pulls Electron (~100 MB). Subsequent starts are fast.
 
-## What's built (vertical slice 1)
+## What's built
 
 - **Login** (`/login`) — stub auth; any email signs in. Session persists via `localStorage`.
-- **Dashboard** (`/dashboard`) — five seeded solicitations from the wireframe. Working search, agency filter, tag filter, and sort (response date / progress / title).
-- **Other screens** — routed but stubbed with a `Placeholder` component. Click a solicitation card or "+ New Solicitation" to confirm routing works.
+- **Solicitations** (`/solicitations`) — tracked solicitations as cards, with search, agency/tag filters, and sort.
+- **New / Edit Solicitation** — form with SAM.gov URL field, tags, drag-drop document upload (UI only).
+- **Solicitation Page** — document library (source docs + extraction runs) and a SAM.gov news panel; **New Extraction Run** overlay.
+- **Citations Table** — one row per extracted requirement: type pill, confidence bar, tiered review flags, citation links. This is FORGE's terminal screen — see the design document, §2 and §6.7, for why there's no further generation step downstream of it.
+- **Citation Drawer** — source snippet + Open-in-PDF stub, opened from a citation link.
+- **Export Modal** — format + field selection; downloads a JSON preview of the payload for now.
+- **Settings** — theme switcher.
+
+No backend: all of the above reads from `src/fixtures/` and writes only to `localStorage` (via Zustand `persist`).
 
 ## Layout
 
@@ -29,35 +36,34 @@ src/
   components/
     AppShell.tsx      Chrome bar + outlet for authed routes
     RequireAuth.tsx   Route guard
+    Sidebar.tsx
     SolicitationCard.tsx
+    NewQMatModal.tsx  "New Extraction Run" overlay — filename predates the Aug 2026 scope change, see note below
+    CitationDrawer.tsx
+    ExportModal.tsx
   screens/
     Login.tsx
-    Dashboard.tsx
-    Placeholder.tsx   Stub for unbuilt screens
+    Dashboard.tsx         Solicitations index
+    NewSolicitation.tsx / EditSolicitation.tsx / SolicitationForm.tsx
+    SolicitationPage.tsx
+    CitationsTable.tsx
+    Settings.tsx
   store/
-    auth.ts           Zustand + persist
+    auth.ts / ui.ts / theme.ts / solicitations.ts   Zustand + persist
   fixtures/
-    solicitations.ts  Seed data from the wireframe
+    solicitations.ts / documents.ts / news.ts / qmat-sample.ts
   types/
-    index.ts          Solicitation / Requirement / Citation / QMat / Question
+    index.ts          Solicitation / Requirement / Citation / QMat
   styles/
     tokens.css        CSS variables ported from qmat-wireframes-v6-final.html
     global.css        Base + primitives (.btn, .pill, .tag-pill, .sol-card, etc.)
 ```
 
-## What's next (vertical slice 2 → full mockup)
+> **Naming note:** the design document (Aug 2026 scope change) retired "QMat"/"CMat" as FORGE concepts — FORGE now extracts requirements only; matrix generation belongs to a separate downstream project. Several identifiers here (`NewQMatModal`, the `QMat`/`CMat` `DocumentType` values, the `/qmat/:qmatId/citations` route) still use the old vocabulary and haven't been renamed to match. See the design document for the current scope before building on top of these.
 
-In rough order:
+## What's next
 
-1. **New Solicitation** form (Screen 3) — controlled form, drag-drop file inputs (UI only).
-2. **Solicitation Page** (Screen 4) — two-pane layout with library + news panels.
-3. **New QMat overlay** (Overlay A) — modal mounted over Screen 4.
-4. **Citations Table** (Screen 5) — the requirements table with type pills, confidence bars, tiered flags.
-5. **Citation Drawer** (Overlay B) — side panel with requirement detail + citations.
-6. **Questions Form** (Screen 6) — MCQ cards keyed off flagged requirements.
-7. **Export Modal** (Overlay C) — compact centered modal.
-
-Then: replace fixtures with a real backend (Python sidecar talking GraphRAG over IPC), wire export to produce the prospect-facing form (probably web-hosted, not Electron).
+The biggest gap is that none of this talks to a real backend. Per the design document, that means a Python cloud server (docling-serve + LangGraph + Neo4j) that the Electron app calls over HTTP — no local Python, no local database. See the design document's Open Questions (§12) for the decisions that need to be made before that server can be built.
 
 ## Note on the `renderer.ts` stub
 

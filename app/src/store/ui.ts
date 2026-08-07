@@ -20,7 +20,7 @@ export const useUi = create<UiState>()(
       setSidebarCollapsed: (v) => set({ sidebarCollapsed: v }),
     }),
     {
-      name: 'cmat-ui',
+      name: 'forge-ui',
       version: 1,
       partialize: (s) => ({ sidebarCollapsed: s.sidebarCollapsed }),
     },

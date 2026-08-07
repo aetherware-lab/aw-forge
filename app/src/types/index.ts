@@ -1,4 +1,4 @@
-// Domain types for CMat Generator. Loose where the wireframe is loose;
+// Domain types for FORGE. Loose where the wireframe is loose;
 // will tighten as the GraphRAG backend lands.
 
 export type SolicitationStatusTag =

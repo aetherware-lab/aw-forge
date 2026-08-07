@@ -18,6 +18,6 @@ export const useAuth = create<AuthState>()(
       login: (email) => set({ user: { email } }),
       logout: () => set({ user: null }),
     }),
-    { name: 'cmat-auth' },
+    { name: 'forge-auth' },
   ),
 );

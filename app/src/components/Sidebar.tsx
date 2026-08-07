@@ -52,7 +52,7 @@ const Sidebar: React.FC = () => {
     >
       <div className="sidebar-brand">
         <div className="sidebar-brand-mark" aria-hidden="true">C</div>
-        <div className="sidebar-brand-name">CMat Generator</div>
+        <div className="sidebar-brand-name">FORGE</div>
         <button
           type="button"
           className="sidebar-collapse-btn"

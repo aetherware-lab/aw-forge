@@ -64,7 +64,7 @@ export const useSolicitations = create<SolicitationsState>()(
         })),
     }),
     {
-      name: 'cmat-solicitations',
+      name: 'forge-solicitations',
       // Bump when the persisted shape changes so dev sessions don't get
       // stuck on stale data.
       version: 4,
