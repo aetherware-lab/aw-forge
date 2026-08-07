@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import Modal from './Modal';
 import { useSolicitations } from '@/store/solicitations';
-import { SAMPLE_REQUIREMENTS } from '@/fixtures/requirements-sample';
+import type { Requirement } from '@/types';
 
 type Format = 'xlsx' | 'csv' | 'docx';
 
@@ -13,6 +13,7 @@ interface IncludeFlags {
 
 interface Props {
   runId: string;
+  requirements: Requirement[];
   onClose: () => void;
 }
 
@@ -21,7 +22,7 @@ interface Props {
  * Today: builds the payload and console.logs it. Real file write goes in
  * the main process when the export pipeline lands.
  */
-const ExportModal: React.FC<Props> = ({ runId, onClose }) => {
+const ExportModal: React.FC<Props> = ({ runId, requirements, onClose }) => {
   const documents = useSolicitations((s) => s.documents);
 
   const runDoc = useMemo(
@@ -48,7 +49,7 @@ const ExportModal: React.FC<Props> = ({ runId, onClose }) => {
       solicitation: sol ? { number: sol.number, title: sol.title } : null,
       format,
       include,
-      requirements: SAMPLE_REQUIREMENTS.map((r) => ({
+      requirements: requirements.map((r) => ({
         id: r.id,
         section: r.section,
         text: r.text,
@@ -84,7 +85,7 @@ const ExportModal: React.FC<Props> = ({ runId, onClose }) => {
       title="Export Requirements"
       subtitle={
         sol && runDoc
-          ? `${SAMPLE_REQUIREMENTS.length} requirements · ${sol.number}`
+          ? `${requirements.length} requirements · ${sol.number}`
           : undefined
       }
       maxWidth={460}

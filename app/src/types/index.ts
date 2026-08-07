@@ -98,6 +98,8 @@ export interface Citation {
   docId?: string;
   /** Optional page number for PDFs */
   page?: number;
+  /** Exact source text, when the backend has it (real extraction runs only). */
+  verbatimText?: string;
 }
 
 export interface Requirement {

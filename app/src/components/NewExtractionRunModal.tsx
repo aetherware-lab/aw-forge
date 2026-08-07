@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from './Modal';
 import FileDropZone, { DroppedFile } from './FileDropZone';
-import { newId, useSolicitations } from '@/store/solicitations';
+import { createExtractionRun } from '@/lib/api';
+import { useSolicitations } from '@/store/solicitations';
 import type { SolicitationDocument } from '@/types';
 
 interface Props {
@@ -12,7 +13,12 @@ interface Props {
 
 /**
  * Overlay A — New Extraction Run.
- * Sits over the Solicitation Page; pre-checks RFP/PWS/Attachment source docs.
+ * Sits over the Solicitation Page.
+ *
+ * MVP note: previously-tracked library documents (RFP/PWS/etc.) are fixture
+ * metadata only — there's no stored file content behind them yet. Real
+ * extraction can only run against files dropped in this modal, which is why
+ * they're shown read-only below rather than as selectable checkboxes.
  */
 const NewExtractionRunModal: React.FC<Props> = ({ solicitationId, onClose }) => {
   const navigate = useNavigate();
@@ -40,40 +46,47 @@ const NewExtractionRunModal: React.FC<Props> = ({ solicitationId, onClose }) => 
   const [name, setName] = useState(
     sol ? `${sol.title} — Extraction Run 1` : 'New Extraction Run',
   );
-  const [selected, setSelected] = useState<Set<string>>(
-    () => new Set(sourceDocs.map((d) => d.id)),
-  );
-  const [extraFiles, setExtraFiles] = useState<DroppedFile[]>([]);
+  const [files, setFiles] = useState<DroppedFile[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const toggleDoc = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const onGenerate = async () => {
+    if (!name.trim() || files.length === 0 || !sol) return;
 
-  const onGenerate = () => {
-    if (!name.trim()) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const { id: runId } = await createExtractionRun({
+        solicitation: { number: sol.number, title: sol.title, agency: sol.agency },
+        name: name.trim(),
+        docs: files.map((f) => ({ docId: f.id, filename: f.name })),
+        files: files.map((f) => f.file),
+      });
 
-    const runId = newId('doc');
-    const today = new Date().toLocaleDateString('en-US', {
-      month: 'short', day: '2-digit', year: 'numeric',
-    });
-    const newDoc: SolicitationDocument = {
-      id: runId,
-      solicitationId,
-      name: name.trim(),
-      type: 'Extraction Run',
-      sub: `${today} · extracting… · Khoo`,
-      dateAdded: new Date().toISOString().slice(0, 10),
-      pinned: false,
-    };
-    addDocument(newDoc);
+      const today = new Date().toLocaleDateString('en-US', {
+        month: 'short', day: '2-digit', year: 'numeric',
+      });
+      const newDoc: SolicitationDocument = {
+        id: runId,
+        solicitationId,
+        name: name.trim(),
+        type: 'Extraction Run',
+        sub: `${today} · extracting… · Khoo`,
+        dateAdded: new Date().toISOString().slice(0, 10),
+        pinned: false,
+      };
+      addDocument(newDoc);
 
-    onClose();
-    navigate(`/extraction/${runId}/citations`);
+      onClose();
+      navigate(`/extraction/${runId}/citations`);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Could not reach the FORGE server. Is it running?',
+      );
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -85,16 +98,16 @@ const NewExtractionRunModal: React.FC<Props> = ({ solicitationId, onClose }) => 
       maxWidth={520}
       footer={
         <>
-          <button type="button" className="btn ghost" onClick={onClose}>
+          <button type="button" className="btn ghost" onClick={onClose} disabled={submitting}>
             Cancel
           </button>
           <button
             type="button"
             className="btn"
             onClick={onGenerate}
-            disabled={!name.trim() || (selected.size === 0 && extraFiles.length === 0)}
+            disabled={!name.trim() || files.length === 0 || submitting}
           >
-            Run Extraction
+            {submitting ? 'Starting…' : 'Run Extraction'}
           </button>
         </>
       }
@@ -111,42 +124,36 @@ const NewExtractionRunModal: React.FC<Props> = ({ solicitationId, onClose }) => 
         autoFocus
       />
 
-      <label className="label">
-        Source Documents{' '}
-        <span className="muted" style={{ textTransform: 'none', letterSpacing: 0 }}>
-          (from solicitation library)
-        </span>
-      </label>
-
-      {sourceDocs.length === 0 ? (
-        <div className="empty" style={{ padding: 16, fontSize: 12 }}>
-          No source documents on file. Drop the RFP / PWS below to get started.
-        </div>
-      ) : (
-        sourceDocs.map((d) => (
-          <label key={d.id} className="checkbox-row">
-            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-              <input
-                type="checkbox"
-                checked={selected.has(d.id)}
-                onChange={() => toggleDoc(d.id)}
-              />
-              📄 {d.name}
-            </span>
-            <span className="muted" style={{ fontSize: 11 }}>
-              {d.size ?? d.type}
+      {sourceDocs.length > 0 && (
+        <>
+          <label className="label">
+            Library Documents{' '}
+            <span className="muted" style={{ textTransform: 'none', letterSpacing: 0 }}>
+              (metadata only — drop the actual files below to extract from them)
             </span>
           </label>
-        ))
+          {sourceDocs.map((d) => (
+            <div key={d.id} className="checkbox-row" style={{ opacity: 0.6 }}>
+              <span>📄 {d.name}</span>
+              <span className="muted" style={{ fontSize: 11 }}>{d.size ?? d.type}</span>
+            </div>
+          ))}
+        </>
       )}
 
-      <label className="label">Additional Files (optional)</label>
+      <label className="label">
+        Files to Extract <span style={{ color: 'var(--note)' }}>*</span>
+      </label>
       <FileDropZone
-        files={extraFiles}
-        onChange={setExtraFiles}
+        files={files}
+        onChange={setFiles}
         variant="compact"
-        hint="PDF, DOCX · or click to browse"
+        hint="PDF · or click to browse"
       />
+
+      {error && (
+        <p style={{ color: 'var(--crit)', fontSize: 12, marginTop: 10 }}>{error}</p>
+      )}
     </Modal>
   );
 };

@@ -1,0 +1,45 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# FORGE — Neo4j
+# Run: docker compose up -d
+# Browser: http://localhost:7475  (user: neo4j, pass: see .env)
+# Bolt:    bolt://localhost:7688
+#
+# Ports are offset from Neo4j's defaults (7474/7687) so this can run
+# alongside the older qmat-neo4j container from the graphrag-neo4j prototype
+# without colliding with it.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  neo4j:
+    image: neo4j:5.26.0
+    container_name: forge-neo4j
+    restart: unless-stopped
+
+    ports:
+      - "7475:7474"   # HTTP Browser UI
+      - "7688:7687"   # Bolt driver (Python connections)
+
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-forge-dev-password}
+
+      # Memory — this is a single-user desktop MVP, defaults are plenty
+      NEO4J_server_memory_heap_initial__size: "512m"
+      NEO4J_server_memory_heap_max__size: "1G"
+      NEO4J_server_memory_pagecache_size: "512m"
+
+    volumes:
+      - forge_neo4j_data:/data
+      - forge_neo4j_logs:/logs
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:7474"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  forge_neo4j_data:
+    name: forge-neo4j-data
+  forge_neo4j_logs:
+    name: forge-neo4j-logs

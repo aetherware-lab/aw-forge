@@ -1,0 +1,61 @@
+import type { Requirement } from '@/types';
+
+const BASE_URL = 'http://localhost:8000';
+
+export interface RunDoc {
+  docId: string;
+  filename: string;
+}
+
+export interface CreateExtractionRunPayload {
+  solicitation: { number: string; title: string; agency: string };
+  name: string;
+  docs: RunDoc[];
+  files: File[];
+}
+
+export type RunStatus = 'pending' | 'running' | 'complete' | 'error';
+
+export interface ExtractionRunStatus {
+  id: string;
+  status: RunStatus;
+  error: string | null;
+}
+
+class ApiError extends Error {}
+
+async function parseErrorDetail(res: Response): Promise<string> {
+  try {
+    const body = await res.json();
+    return body.detail ?? res.statusText;
+  } catch {
+    return res.statusText;
+  }
+}
+
+export async function createExtractionRun(
+  payload: CreateExtractionRunPayload,
+): Promise<{ id: string; status: RunStatus }> {
+  const form = new FormData();
+  form.append(
+    'metadata',
+    JSON.stringify({ solicitation: payload.solicitation, name: payload.name, docs: payload.docs }),
+  );
+  payload.files.forEach((file) => form.append('files', file, file.name));
+
+  const res = await fetch(`${BASE_URL}/extraction-runs`, { method: 'POST', body: form });
+  if (!res.ok) throw new ApiError(await parseErrorDetail(res));
+  return res.json();
+}
+
+export async function getExtractionRunStatus(runId: string): Promise<ExtractionRunStatus> {
+  const res = await fetch(`${BASE_URL}/extraction-runs/${runId}`);
+  if (!res.ok) throw new ApiError(await parseErrorDetail(res));
+  return res.json();
+}
+
+export async function getExtractionRunRequirements(runId: string): Promise<Requirement[]> {
+  const res = await fetch(`${BASE_URL}/extraction-runs/${runId}/requirements`);
+  if (!res.ok) throw new ApiError(await parseErrorDetail(res));
+  return res.json();
+}

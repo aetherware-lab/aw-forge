@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { Citation, Requirement } from '@/types';
-import { SAMPLE_SOURCE_SNIPPETS } from '@/fixtures/requirements-sample';
 
 interface Props {
   requirement: Requirement;
@@ -23,7 +22,6 @@ const CitationDrawer: React.FC<Props> = ({ requirement, citation, onClose }) => 
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const snippet = SAMPLE_SOURCE_SNIPPETS[requirement.id];
   const otherCitations = requirement.citations.filter(
     (c) => c.label !== citation.label,
   );
@@ -64,18 +62,18 @@ const CitationDrawer: React.FC<Props> = ({ requirement, citation, onClose }) => 
           )}
 
           <div className="label">Source Snippet</div>
-          <div
-            className="drawer-block solid"
-            style={{ minHeight: 100 }}
-            dangerouslySetInnerHTML={{
-              __html: snippet?.html ?? '<em>No source snippet available.</em>',
-            }}
-          />
+          <div className="drawer-block solid" style={{ minHeight: 100 }}>
+            {citation.verbatimText ? (
+              <>&ldquo;{citation.verbatimText}&rdquo;</>
+            ) : (
+              <em>No source snippet available.</em>
+            )}
+          </div>
 
           <div className="label">Source</div>
           <div className="drawer-block" style={{ marginBottom: 12 }}>
-            {snippet?.source ?? citation.label}
-            {citation.page && !snippet ? ` · p. ${citation.page}` : ''}
+            {citation.label}
+            {citation.page ? ` · p. ${citation.page}` : ''}
           </div>
 
           {otherCitations.length > 0 && (
@@ -98,7 +96,7 @@ const CitationDrawer: React.FC<Props> = ({ requirement, citation, onClose }) => 
             onClick={() => {
               // Stub — will jump into a bundled PDF viewer once docs are real.
               // eslint-disable-next-line no-console
-              console.log('Open in PDF:', citation, snippet?.source);
+              console.log('Open in PDF:', citation);
             }}
           >
             📄 Open in PDF

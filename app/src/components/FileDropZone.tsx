@@ -6,6 +6,8 @@ export interface DroppedFile {
   name: string;
   /** Display string e.g. "4.2 MB" */
   size: string;
+  /** The actual file, retained so callers can upload it (e.g. for extraction runs). */
+  file: File;
 }
 
 interface FileDropZoneProps {
@@ -43,7 +45,7 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
     const next: DroppedFile[] = [];
     for (let i = 0; i < incoming.length; i++) {
       const f = incoming[i];
-      next.push({ id: newId(), name: f.name, size: formatSize(f.size) });
+      next.push({ id: newId(), name: f.name, size: formatSize(f.size), file: f });
     }
     onChange([...files, ...next]);
   };
