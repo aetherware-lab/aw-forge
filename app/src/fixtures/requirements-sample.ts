@@ -1,10 +1,10 @@
 import type { Requirement } from '@/types';
 
 /**
- * Sample QMat content — mirrors the five requirements drawn on Screen 5
- * of the wireframe. Until the GraphRAG sidecar is wired up, every QMat
- * the user opens shows this same set so the screens have real content
- * to render.
+ * Sample extraction-run content — mirrors the five requirements drawn on
+ * Screen 5 of the wireframe. Until the GraphRAG backend is wired up, every
+ * extraction run the user opens shows this same set so the screens have
+ * real content to render.
  */
 export const SAMPLE_REQUIREMENTS: Requirement[] = [
   {

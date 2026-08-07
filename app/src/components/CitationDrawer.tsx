@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { Citation, Requirement } from '@/types';
-import { SAMPLE_SOURCE_SNIPPETS } from '@/fixtures/qmat-sample';
+import { SAMPLE_SOURCE_SNIPPETS } from '@/fixtures/requirements-sample';
 
 interface Props {
   requirement: Requirement;

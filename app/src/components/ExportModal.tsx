@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import Modal from './Modal';
 import { useSolicitations } from '@/store/solicitations';
-import { SAMPLE_REQUIREMENTS } from '@/fixtures/qmat-sample';
+import { SAMPLE_REQUIREMENTS } from '@/fixtures/requirements-sample';
 
 type Format = 'xlsx' | 'csv' | 'docx';
 
@@ -12,26 +12,26 @@ interface IncludeFlags {
 }
 
 interface Props {
-  qmatId: string;
+  runId: string;
   onClose: () => void;
 }
 
 /**
- * Overlay C — Export Qualification Matrix.
+ * Overlay C — Export Requirements.
  * Today: builds the payload and console.logs it. Real file write goes in
  * the main process when the export pipeline lands.
  */
-const ExportModal: React.FC<Props> = ({ qmatId, onClose }) => {
+const ExportModal: React.FC<Props> = ({ runId, onClose }) => {
   const documents = useSolicitations((s) => s.documents);
 
-  const qmatDoc = useMemo(
-    () => documents.find((d) => d.id === qmatId),
-    [documents, qmatId],
+  const runDoc = useMemo(
+    () => documents.find((d) => d.id === runId),
+    [documents, runId],
   );
   const solicitations = useSolicitations((s) => s.solicitations);
   const sol = useMemo(
-    () => solicitations.find((s) => s.id === qmatDoc?.solicitationId),
-    [solicitations, qmatDoc],
+    () => solicitations.find((s) => s.id === runDoc?.solicitationId),
+    [solicitations, runDoc],
   );
 
   const [format, setFormat] = useState<Format>('xlsx');
@@ -43,8 +43,8 @@ const ExportModal: React.FC<Props> = ({ qmatId, onClose }) => {
 
   const onDownload = () => {
     const payload = {
-      qmatId,
-      qmat: qmatDoc?.name,
+      runId,
+      run: runDoc?.name,
       solicitation: sol ? { number: sol.number, title: sol.title } : null,
       format,
       include,
@@ -68,7 +68,7 @@ const ExportModal: React.FC<Props> = ({ qmatId, onClose }) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${qmatDoc?.name ?? 'qmat'}.${format}.preview.json`;
+    a.download = `${runDoc?.name ?? 'extraction-run'}.${format}.preview.json`;
     a.click();
     URL.revokeObjectURL(url);
     onClose();
@@ -81,9 +81,9 @@ const ExportModal: React.FC<Props> = ({ qmatId, onClose }) => {
     <Modal
       open
       onClose={onClose}
-      title="Export Qualification Matrix"
+      title="Export Requirements"
       subtitle={
-        sol && qmatDoc
+        sol && runDoc
           ? `${SAMPLE_REQUIREMENTS.length} requirements · ${sol.number}`
           : undefined
       }

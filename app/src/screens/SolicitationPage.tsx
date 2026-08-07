@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useSolicitations } from '@/store/solicitations';
-import NewQMatModal from '@/components/NewQMatModal';
+import NewExtractionRunModal from '@/components/NewExtractionRunModal';
 import type { DocumentType, SolicitationDocument } from '@/types';
 
 const TAG_LABELS: Record<string, string> = {
@@ -34,8 +34,7 @@ const formatNewsDate = (iso: string): string => {
 const DOC_SECTIONS: { label: string; types: DocumentType[] }[] = [
   { label: 'Source Documents', types: ['RFP', 'PWS', 'Attachment', 'Amendment'] },
   { label: 'Opportunity Performance Reports (OPR)', types: ['OPR'] },
-  { label: 'Qualification Matrices (QMat)', types: ['QMat'] },
-  { label: 'Compliance Matrices (CMat)', types: ['CMat'] },
+  { label: 'Extraction Runs', types: ['Extraction Run'] },
   { label: 'Proposals', types: ['Proposal'] },
 ];
 
@@ -70,7 +69,7 @@ const SolicitationPage: React.FC = () => {
 
   const [docQuery, setDocQuery] = useState('');
   const [docType, setDocType] = useState<DocumentType | 'All'>('All');
-  const [showQMatModal, setShowQMatModal] = useState(false);
+  const [showNewRunModal, setShowNewRunModal] = useState(false);
 
   const filteredDocs = useMemo(() => {
     const q = docQuery.trim().toLowerCase();
@@ -151,7 +150,7 @@ const SolicitationPage: React.FC = () => {
               type="button"
               className="btn small"
               style={{ padding: '5px 10px', fontSize: 11 }}
-              onClick={() => setShowQMatModal(true)}
+              onClick={() => setShowNewRunModal(true)}
             >
               + New ▼
             </button>
@@ -171,7 +170,7 @@ const SolicitationPage: React.FC = () => {
                 style={{ fontSize: 12, padding: '7px 10px' }}
               >
                 <option value="All">Type: All</option>
-                {(['RFP','PWS','Attachment','Amendment','OPR','QMat','CMat','Proposal'] as DocumentType[]).map((t) => (
+                {(['RFP','PWS','Attachment','Amendment','OPR','Extraction Run','Proposal'] as DocumentType[]).map((t) => (
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
@@ -246,10 +245,10 @@ const SolicitationPage: React.FC = () => {
         </section>
       </div>
 
-      {showQMatModal && (
-        <NewQMatModal
+      {showNewRunModal && (
+        <NewExtractionRunModal
           solicitationId={sol.id}
-          onClose={() => setShowQMatModal(false)}
+          onClose={() => setShowNewRunModal(false)}
         />
       )}
     </>
@@ -263,7 +262,7 @@ interface DocumentRowProps {
 
 const DocumentRow: React.FC<DocumentRowProps> = ({ doc, onTogglePin }) => {
   const navigate = useNavigate();
-  const isQMat = doc.type === 'QMat';
+  const isExtractionRun = doc.type === 'Extraction Run';
   return (
     <div className="doc-row">
       <button
@@ -283,7 +282,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({ doc, onTogglePin }) => {
         type="button"
         className="open-link"
         onClick={() => {
-          if (isQMat) navigate(`/qmat/${doc.id}/citations`);
+          if (isExtractionRun) navigate(`/extraction/${doc.id}/citations`);
         }}
       >
         Open

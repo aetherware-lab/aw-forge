@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useSolicitations } from '@/store/solicitations';
-import { SAMPLE_REQUIREMENTS } from '@/fixtures/qmat-sample';
+import { SAMPLE_REQUIREMENTS } from '@/fixtures/requirements-sample';
 import CitationDrawer from '@/components/CitationDrawer';
 import ExportModal from '@/components/ExportModal';
 import type {
@@ -33,13 +33,13 @@ const formatGenerated = (iso: string): string => {
 };
 
 const CitationsTable: React.FC = () => {
-  const { qmatId } = useParams<{ qmatId: string }>();
+  const { runId } = useParams<{ runId: string }>();
   const navigate = useNavigate();
 
   const documents = useSolicitations((s) => s.documents);
-  const qmatDoc = useMemo(
-    () => documents.find((d) => d.id === qmatId),
-    [documents, qmatId],
+  const runDoc = useMemo(
+    () => documents.find((d) => d.id === runId),
+    [documents, runId],
   );
 
   const [query, setQuery] = useState('');
@@ -72,23 +72,23 @@ const CitationsTable: React.FC = () => {
     });
   }, [query, typeFilter, sectionFilter, reviewFilter]);
 
-  if (!qmatDoc) return <Navigate to="/dashboard" replace />;
+  if (!runDoc) return <Navigate to="/dashboard" replace />;
 
   return (
     <>
       <button
         type="button"
         className="back-link"
-        onClick={() => navigate(`/solicitations/${qmatDoc.solicitationId}`)}
+        onClick={() => navigate(`/solicitations/${runDoc.solicitationId}`)}
       >
         ← Back to Solicitation
       </button>
 
       <header className="page-header" style={{ marginTop: 8 }}>
         <div>
-          <div className="qmat-title">{qmatDoc.name}</div>
-          <div className="qmat-sub">
-            Generated {formatGenerated(qmatDoc.dateAdded)} · {SAMPLE_REQUIREMENTS.length} requirements
+          <div className="run-title">{runDoc.name}</div>
+          <div className="run-sub">
+            Generated {formatGenerated(runDoc.dateAdded)} · {SAMPLE_REQUIREMENTS.length} requirements
             {' · '}graphrag-validated
           </div>
         </div>
@@ -218,9 +218,9 @@ const CitationsTable: React.FC = () => {
         />
       )}
 
-      {showExport && qmatId && (
+      {showExport && runId && (
         <ExportModal
-          qmatId={qmatId}
+          runId={runId}
           onClose={() => setShowExport(false)}
         />
       )}

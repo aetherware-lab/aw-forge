@@ -659,9 +659,9 @@ textarea:focus,
 }
 
 /* ----- Citations Table ---------------------------------------------- */
-.qmat-header { margin-bottom: 12px; }
-.qmat-title { font-size: 15px; font-weight: 600; }
-.qmat-sub { font-size: 12px; color: var(--muted); }
+.run-header { margin-bottom: 12px; }
+.run-title { font-size: 15px; font-weight: 600; }
+.run-sub { font-size: 12px; color: var(--muted); }
 
 .table-wrap {
   border: 1.5px solid var(--box-line);

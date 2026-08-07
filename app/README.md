@@ -38,7 +38,7 @@ src/
     RequireAuth.tsx   Route guard
     Sidebar.tsx
     SolicitationCard.tsx
-    NewQMatModal.tsx  "New Extraction Run" overlay — filename predates the Aug 2026 scope change, see note below
+    NewExtractionRunModal.tsx
     CitationDrawer.tsx
     ExportModal.tsx
   screens/
@@ -51,15 +51,15 @@ src/
   store/
     auth.ts / ui.ts / theme.ts / solicitations.ts   Zustand + persist
   fixtures/
-    solicitations.ts / documents.ts / news.ts / qmat-sample.ts
+    solicitations.ts / documents.ts / news.ts / requirements-sample.ts
   types/
-    index.ts          Solicitation / Requirement / Citation / QMat
+    index.ts          Solicitation / Requirement / Citation / ExtractionRun
   styles/
     tokens.css        CSS variables ported from qmat-wireframes-v6-final.html
     global.css        Base + primitives (.btn, .pill, .tag-pill, .sol-card, etc.)
 ```
 
-> **Naming note:** the design document (Aug 2026 scope change) retired "QMat"/"CMat" as FORGE concepts — FORGE now extracts requirements only; matrix generation belongs to a separate downstream project. Several identifiers here (`NewQMatModal`, the `QMat`/`CMat` `DocumentType` values, the `/qmat/:qmatId/citations` route) still use the old vocabulary and haven't been renamed to match. See the design document for the current scope before building on top of these.
+> **Naming note:** the design document's Aug 2026 scope change retired "QMat"/"CMat" as FORGE concepts — FORGE now extracts requirements only; matrix generation belongs to a separate downstream project. The frontend vocabulary has been realigned to match: the modal is `NewExtractionRunModal`, the `DocumentType` value is `'Extraction Run'` (no more `'CMat'`), and the route is `/extraction/:runId/citations`. `qmat-wireframes-v6-final.html` (the original static mockup this UI was built from) still predates the rename and is left as-is for reference.
 
 ## What's next
 

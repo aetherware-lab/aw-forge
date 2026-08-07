@@ -11,10 +11,10 @@ interface Props {
 }
 
 /**
- * Overlay A — New Qualification Matrix.
+ * Overlay A — New Extraction Run.
  * Sits over the Solicitation Page; pre-checks RFP/PWS/Attachment source docs.
  */
-const NewQMatModal: React.FC<Props> = ({ solicitationId, onClose }) => {
+const NewExtractionRunModal: React.FC<Props> = ({ solicitationId, onClose }) => {
   const navigate = useNavigate();
 
   const solicitations = useSolicitations((s) => s.solicitations);
@@ -38,7 +38,7 @@ const NewQMatModal: React.FC<Props> = ({ solicitationId, onClose }) => {
   );
 
   const [name, setName] = useState(
-    sol ? `${sol.title} — Prospect Round 1` : 'New QMat',
+    sol ? `${sol.title} — Extraction Run 1` : 'New Extraction Run',
   );
   const [selected, setSelected] = useState<Set<string>>(
     () => new Set(sourceDocs.map((d) => d.id)),
@@ -57,30 +57,30 @@ const NewQMatModal: React.FC<Props> = ({ solicitationId, onClose }) => {
   const onGenerate = () => {
     if (!name.trim()) return;
 
-    const qmatId = newId('doc');
+    const runId = newId('doc');
     const today = new Date().toLocaleDateString('en-US', {
       month: 'short', day: '2-digit', year: 'numeric',
     });
     const newDoc: SolicitationDocument = {
-      id: qmatId,
+      id: runId,
       solicitationId,
       name: name.trim(),
-      type: 'QMat',
-      sub: `${today} · generating… · Khoo`,
+      type: 'Extraction Run',
+      sub: `${today} · extracting… · Khoo`,
       dateAdded: new Date().toISOString().slice(0, 10),
       pinned: false,
     };
     addDocument(newDoc);
 
     onClose();
-    navigate(`/qmat/${qmatId}/citations`);
+    navigate(`/extraction/${runId}/citations`);
   };
 
   return (
     <Modal
       open
       onClose={onClose}
-      title="New Qualification Matrix"
+      title="New Extraction Run"
       subtitle={sol ? `for ${sol.title} · ${sol.number}` : undefined}
       maxWidth={520}
       footer={
@@ -94,20 +94,20 @@ const NewQMatModal: React.FC<Props> = ({ solicitationId, onClose }) => {
             onClick={onGenerate}
             disabled={!name.trim() || (selected.size === 0 && extraFiles.length === 0)}
           >
-            Generate Matrix
+            Run Extraction
           </button>
         </>
       }
     >
-      <label className="label" htmlFor="qmat-name">
-        QMat Title <span style={{ color: 'var(--note)' }}>*</span>
+      <label className="label" htmlFor="run-name">
+        Run Title <span style={{ color: 'var(--note)' }}>*</span>
       </label>
       <input
-        id="qmat-name"
+        id="run-name"
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="USACE CMMC Compliance — Prospect Round 1"
+        placeholder="USACE CMMC Compliance — Extraction Run 1"
         autoFocus
       />
 
@@ -151,4 +151,4 @@ const NewQMatModal: React.FC<Props> = ({ solicitationId, onClose }) => {
   );
 };
 
-export default NewQMatModal;
+export default NewExtractionRunModal;

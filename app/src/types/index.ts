@@ -53,8 +53,7 @@ export type DocumentType =
   | 'Attachment'
   | 'Amendment'
   | 'OPR'
-  | 'QMat'
-  | 'CMat'
+  | 'Extraction Run'
   | 'Proposal';
 
 export interface SolicitationDocument {
@@ -111,7 +110,7 @@ export interface Requirement {
   flag?: Flag;
 }
 
-export interface QMat {
+export interface ExtractionRun {
   id: string;
   solicitationId: string;
   name: string;

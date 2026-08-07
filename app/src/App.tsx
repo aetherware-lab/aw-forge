@@ -29,7 +29,7 @@ const App: React.FC = () => {
         <Route path="/solicitations/new" element={<NewSolicitation />} />
         <Route path="/solicitations/:id" element={<SolicitationPage />} />
         <Route path="/solicitations/:id/edit" element={<EditSolicitation />} />
-        <Route path="/qmat/:qmatId/citations" element={<CitationsTable />} />
+        <Route path="/extraction/:runId/citations" element={<CitationsTable />} />
 
         <Route path="/settings" element={<Settings />} />
 
