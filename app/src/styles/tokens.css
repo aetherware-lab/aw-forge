@@ -1,0 +1,267 @@
+/* ====================================================================
+ * Design tokens — color is theme-aware (light / dark / future themes).
+ *
+ * Adding a new theme:
+ *   1. Append it to src/themes/index.ts (id + label).
+ *   2. Add a `[data-theme="<id>"] { ... }` block below with the same
+ *      variable names as `light`, overriding only what differs.
+ *   3. Done. ThemeSwitcher will pick it up automatically.
+ *
+ * Type and shape tokens live in :root since they don't change between
+ * themes.
+ * ==================================================================== */
+
+/* Geist Sans + Geist Mono — Vercel's design system fonts. */
+@font-face {
+  font-family: 'Geist';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Variable.woff2')
+    format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mono/GeistMono-Variable.woff2')
+    format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* -----------------------------------------------------------------
+ * Shape & type — theme-independent
+ * ----------------------------------------------------------------- */
+:root {
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --shadow-modal: 0 12px 40px rgba(0, 0, 0, 0.22);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* -----------------------------------------------------------------
+ * Light theme — also serves as the default before the store hydrates,
+ * which prevents a dark-flash on cold start.
+ * ----------------------------------------------------------------- */
+:root,
+[data-theme='light'] {
+  /* Surfaces */
+  --bg: #f5f5f7;
+  --surface: #ffffff;          /* cards, panels, table body */
+  --surface-2: #fafafb;        /* subtle alt rows / hover */
+  --surface-3: #ededef;        /* dropzone, doc-type pill */
+  --chrome: #dcdce0;           /* title bar */
+  --hover: rgba(0, 0, 0, 0.04);
+
+  /* Ink */
+  --ink: #1c1c1e;
+  --muted: #6c6c70;
+  --accent: #3c3c43;
+  --on-ink: #ffffff;           /* text on dark action buttons */
+
+  /* Lines */
+  --line: #1c1c1e;
+  --box-line: #9a9aa0;
+  --divider: #ececee;
+
+  /* Action */
+  --action: #1c1c1e;
+  --action-hover: #000000;
+  --action-ink: #ffffff;
+  --link: #1d4ed8;
+  --link-hover: #1e3a8a;
+
+  /* Notes / flag colors */
+  --note: #b45309;
+  --note-bg: #fef3c7;
+  --note-fg: #78350f;
+  --crit: #b91c1c;
+  --crit-bg: #fee2e2;
+  --crit-fg: #7f1d1d;
+  --imp: #b45309;
+  --imp-bg: #fef3c7;
+  --imp-fg: #78350f;
+  --minor: #4b5563;
+  --minor-bg: #e5e7eb;
+  --minor-fg: #1f2937;
+
+  /* Confidence ramp */
+  --conf-high: #059669;
+  --conf-good: #65a30d;
+  --conf-med:  #d97706;
+  --conf-low:  #ea580c;
+  --conf-vlow: #b91c1c;
+
+  /* Table head */
+  --th-bg: #e8e8ec;
+
+  /* Backdrops */
+  --backdrop: rgba(0, 0, 0, 0.32);
+
+  /* Focus ring */
+  --focus-ring: rgba(28, 28, 30, 0.12);
+}
+
+/* -----------------------------------------------------------------
+ * Dark theme
+ * ----------------------------------------------------------------- */
+[data-theme='dark'] {
+  --bg: #0a0a0b;
+  --surface: #131316;
+  --surface-2: #1a1a1d;
+  --surface-3: #202024;
+  --chrome: #18181b;
+  --hover: rgba(255, 255, 255, 0.05);
+
+  --ink: #ededed;
+  --muted: #8e8e93;
+  --accent: #c7c7cc;
+  --on-ink: #0a0a0b;
+
+  --line: #2e2e30;
+  --box-line: #3a3a3d;
+  --divider: #232327;
+
+  --action: #ededed;
+  --action-hover: #ffffff;
+  --action-ink: #0a0a0b;
+  --link: #60a5fa;
+  --link-hover: #93c5fd;
+
+  --note: #fbbf24;
+  --note-bg: #3b2a08;
+  --note-fg: #fde68a;
+  --crit: #f87171;
+  --crit-bg: #3b1010;
+  --crit-fg: #fecaca;
+  --imp: #fbbf24;
+  --imp-bg: #3b2a08;
+  --imp-fg: #fde68a;
+  --minor: #a1a1aa;
+  --minor-bg: #1f1f23;
+  --minor-fg: #e5e5e5;
+
+  --conf-high: #10b981;
+  --conf-good: #84cc16;
+  --conf-med:  #f59e0b;
+  --conf-low:  #fb923c;
+  --conf-vlow: #f87171;
+
+  --th-bg: #1a1a1d;
+
+  --backdrop: rgba(0, 0, 0, 0.55);
+
+  --focus-ring: rgba(237, 237, 237, 0.18);
+}
+
+/* -----------------------------------------------------------------
+ * GCA theme — Greenline Capture brand
+ *
+ * Palette extracted from the GCA Brand & Strategy Dashboard:
+ *   navy  #0B3162  (primary surface accent / line)
+ *   red   #D12936  (action / critical)
+ *   gold  #C5A44A  (note / important)
+ * Fonts: Source Sans 3 (body), Oswald (UI), Bebas Neue (display).
+ * Loaded via Google Fonts; safe to bundle later for offline builds.
+ * ----------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap');
+
+[data-theme='gca'] {
+  /* Type — Source Sans 3 for body, Bebas Neue for big titles */
+  --font-sans: 'Source Sans 3', 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Bebas Neue', 'Oswald', sans-serif;
+  --font-ui: 'Oswald', 'Source Sans 3', sans-serif;
+
+  /* Surfaces */
+  --bg: #faf9fb;
+  --surface: #ffffff;
+  --surface-2: #f6f4f8;
+  --surface-3: #ece9ee;
+  --chrome: #071e3d;         /* navy-dark chrome bar */
+  --hover: rgba(11, 49, 98, 0.05);
+
+  /* Ink — charcoal on light surface */
+  --ink: #2a2a2a;
+  --muted: #717179;
+  --accent: #0b3162;         /* navy */
+  --on-ink: #ffffff;
+
+  /* Lines */
+  --line: #0b3162;
+  --box-line: #d1d1d1;
+  --divider: #ece9ee;
+
+  /* Action — navy primary, red accent on hover/focus */
+  --action: #0b3162;
+  --action-hover: #071e3d;
+  --action-ink: #ffffff;
+  --link: #19649c;
+  --link-hover: #0b3162;
+
+  /* Notes — gold */
+  --note: #c5a44a;
+  --note-bg: #fbf5e0;
+  --note-fg: #8b7730;
+
+  /* Critical — GCA red */
+  --crit: #d12936;
+  --crit-bg: #fde4e6;
+  --crit-fg: #a81f2b;
+
+  /* Important — gold */
+  --imp: #c5a44a;
+  --imp-bg: #fbf5e0;
+  --imp-fg: #8b7730;
+
+  /* Minor — neutral */
+  --minor: #6c6c70;
+  --minor-bg: #ece9ee;
+  --minor-fg: #2a2a2a;
+
+  /* Confidence ramp — re-mapped onto GCA palette */
+  --conf-high: #2e7d32;
+  --conf-good: #65a30d;
+  --conf-med:  #c5a44a;
+  --conf-low:  #d12936;
+  --conf-vlow: #a81f2b;
+
+  /* Table head */
+  --th-bg: #ece9ee;
+
+  /* Backdrops */
+  --backdrop: rgba(7, 30, 61, 0.45);
+
+  /* Focus ring — navy */
+  --focus-ring: rgba(11, 49, 98, 0.22);
+
+  /* Calendar indicator in date picker — navy on light surfaces */
+  --cal-icon-invert: 0.25;
+}
+
+/* GCA-specific typographic polish — display font on page titles and the
+ * sidebar brand. Stays scoped to the theme so swapping back to Light/Dark
+ * doesn't drag GCA fonts along. */
+[data-theme='gca'] .page-title,
+[data-theme='gca'] .sol-header-title,
+[data-theme='gca'] .qmat-title,
+[data-theme='gca'] .sidebar-brand-name {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+}
+[data-theme='gca'] .page-title { font-size: 22px; }
+[data-theme='gca'] .sol-header-title { font-size: 26px; letter-spacing: 0.05em; }
+
+/* Sidebar links use the UI font in GCA */
+[data-theme='gca'] .sidebar-link,
+[data-theme='gca'] .sidebar-section-label {
+  font-family: var(--font-ui);
+}
+
+/* Chrome bar is dark in GCA; flip its text accordingly. */
+[data-theme='gca'] .chrome-bar {
+  color: rgba(255, 255, 255, 0.5);
+  border-bottom-color: #0b3162;
+}

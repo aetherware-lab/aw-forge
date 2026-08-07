@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>QMat Generator — MVP Wireframes v0.6</title>
+<style>
+  :root {
+    --bg: #F5F5F7;
+    --ink: #1C1C1E;
+    --muted: #6C6C70;
+    --line: #1C1C1E;
+    --box: #EDEDEF;
+    --box-line: #9A9AA0;
+    --chrome: #DCDCE0;
+    --accent: #3C3C43;
+    --note: #B45309;
+    --note-bg: #FEF3C7;
+    --crit: #B91C1C;
+    --crit-bg: #FEE2E2;
+    --imp: #B45309;
+    --imp-bg: #FEF3C7;
+    --minor: #4B5563;
+    --minor-bg: #E5E7EB;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    padding: 32px 24px 80px;
+    line-height: 1.45;
+  }
+  .doc-header {
+    max-width: 1080px;
+    margin: 0 auto 40px;
+    border-bottom: 1px solid var(--box-line);
+    padding-bottom: 16px;
+  }
+  .doc-header h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+  }
+  .doc-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .screen-card {
+    max-width: 1080px;
+    margin: 0 auto 56px;
+  }
+  .screen-card.wide {
+    max-width: 1400px;
+  }
+  .screen-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .screen-title {
+    font-size: 17px;
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+  .frame {
+    background: white;
+    border: 2px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .chrome-bar {
+    background: var(--chrome);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--box-line);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .screen-body {
+    padding: 24px;
+    min-height: 400px;
+  }
+  .box {
+    border: 1.5px dashed var(--box-line);
+    background: var(--box);
+    padding: 10px 14px;
+    margin: 8px 0;
+    font-size: 13px;
+    color: var(--accent);
+    border-radius: 3px;
+  }
+  .box.solid {
+    border-style: solid;
+    background: #DADADE;
+  }
+  .box.tall { min-height: 120px; }
+  .box.xtall { min-height: 200px; }
+  .box.btn {
+    display: inline-block;
+    padding: 8px 18px;
+    margin-right: 8px;
+    font-weight: 500;
+    background: #1C1C1E;
+    color: white;
+    border: 1.5px solid #1C1C1E;
+  }
+  .box.btn.ghost {
+    background: transparent;
+    color: #1C1C1E;
+    border-style: dashed;
+  }
+  .row { display: flex; gap: 12px; align-items: stretch; }
+  .row > * { flex: 1; }
+  .row.tight > * { flex: 0 1 auto; }
+  .row.center { align-items: center; }
+  .centered-form {
+    max-width: 360px;
+    margin: 60px auto;
+  }
+  .label {
+    font-size: 11px;
+    color: var(--muted);
+    margin: 12px 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .input {
+    border: 1.5px solid var(--box-line);
+    background: white;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--muted);
+    border-radius: 3px;
+  }
+  .table-wrap {
+    border: 1.5px solid var(--box-line);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--box-line);
+    vertical-align: top;
+  }
+  th {
+    background: #E8E8EC;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #DADADE;
+    border-radius: 10px;
+    font-size: 11px;
+    color: var(--accent);
+  }
+  .cite-link {
+    color: #1D4ED8;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .progress-shell {
+    height: 10px;
+    background: #E8E8EC;
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 8px 0 4px;
+  }
+  .progress-fill {
+    width: 62%;
+    height: 100%;
+    background: #1C1C1E;
+  }
+  .note {
+    background: var(--note-bg);
+    border-left: 3px solid var(--note);
+    padding: 10px 14px;
+    font-size: 12.5px;
+    color: #78350F;
+    margin: 12px 0 0;
+    border-radius: 2px;
+  }
+  .note strong { color: var(--note); }
+
+  /* Confidence score visual */
+  .confidence {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--accent);
+  }
+  .conf-bar {
+    width: 50px;
+    height: 6px;
+    background: #E8E8EC;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .conf-fill {
+    height: 100%;
+    background: #059669; /* high: 95%+ green */
+  }
+  .conf-fill.good { background: #65A30D; } /* 80–94% lime */
+  .conf-fill.med  { background: #D97706; } /* 60–79% amber */
+  .conf-fill.low  { background: #EA580C; } /* 40–59% orange */
+  .conf-fill.vlow { background: #B91C1C; } /* <40% red */
+
+  /* Side-by-side comparison layout */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .compare-col-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  /* Overlay wireframe layout */
+  .overlay-wrap {
+    position: relative;
+    padding: 24px;
+    min-height: 560px;
+    background: white;
+  }
+  .overlay-panel {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    bottom: 24px;
+    width: 46%;
+    background: white;
+    border: 2px solid var(--line);
+    border-radius: 4px;
+    box-shadow: -8px 0 24px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    z-index: 3;
+  }
+  .overlay-panel-scroll {
+    padding: 16px 16px 0;
+    overflow-y: auto;
+    flex: 1 1 auto;
+  }
+  .overlay-panel-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--box-line);
+    background: white;
+    flex: 0 0 auto;
+  }
+  .modal-wrap {
+    position: relative;
+    padding: 24px 16px;
+    min-height: 480px;
+  }
+  .modal-wrap.compact {
+    min-height: 380px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-wrap.compact .modal {
+    position: static;
+    transform: none;
+    margin: 0;
+  }
+  .modal-wrap.compact .dim-underlay {
+    position: absolute;
+    inset: 0;
+    padding: 20px;
+    overflow: hidden;
+    pointer-events: none;
+    mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+  }
+  .modal-dimmer {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.18);
+    z-index: 1;
+  }
+  .modal {
+    position: relative;
+    background: white;
+    border: 2px solid var(--line);
+    border-radius: 4px;
+    padding: 20px;
+    width: 92%;
+    max-width: 460px;
+    margin: 40px auto;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    z-index: 2;
+  }
+  .close {
+    float: right;
+    font-size: 14px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  /* Tiered review flags (Citations Table) */
+  .flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 4px 10px;
+    border-left: 3px solid var(--note);
+    font-size: 11px;
+    border-radius: 2px;
+    background: var(--note-bg);
+    color: #78350F;
+  }
+  .flag.critical {
+    background: var(--crit-bg);
+    border-left-color: var(--crit);
+    color: #7F1D1D;
+  }
+  .flag.important {
+    background: var(--imp-bg);
+    border-left-color: var(--imp);
+    color: #78350F;
+  }
+  .flag.minor {
+    background: var(--minor-bg);
+    border-left-color: var(--minor);
+    color: #1F2937;
+  }
+  .flag-sev {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 10px;
+    margin-right: 2px;
+  }
+
+  /* Tag pills (custom solicitation tags) */
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    background: #ECECEE;
+    border: 1px solid #D5D5D9;
+    border-radius: 10px;
+    font-size: 11px;
+    color: var(--accent);
+    margin: 2px 4px 2px 0;
+  }
+  .tag-pill .x {
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+  }
+  .tag-pill.suggest {
+    background: transparent;
+    border-style: dashed;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  /* Semantic tag colors (status-style tags) */
+  .tag-pill.hot       { background: #FEE2E2; border-color: #FCA5A5; color: #991B1B; }
+  .tag-pill.warm      { background: #FFEDD5; border-color: #FDBA74; color: #9A3412; }
+  .tag-pill.tracking  { background: #DBEAFE; border-color: #93C5FD; color: #1E40AF; }
+  .tag-pill.cold      { background: #E0E7FF; border-color: #A5B4FC; color: #3730A3; }
+  .tag-pill.pinned    { background: #FEF3C7; border-color: #FCD34D; color: #92400E; }
+  .tag-pill.rebid     { background: #EDE9FE; border-color: #C4B5FD; color: #5B21B6; }
+  /* Topic tag colors (capability / vehicle) */
+  .tag-pill.topic-cmmc     { background: #CFFAFE; border-color: #67E8F9; color: #155E75; }
+  .tag-pill.topic-cyber    { background: #E0E7FF; border-color: #A5B4FC; color: #3730A3; }
+  .tag-pill.topic-cloud    { background: #DBEAFE; border-color: #93C5FD; color: #1E40AF; }
+  .tag-pill.topic-health   { background: #DCFCE7; border-color: #86EFAC; color: #166534; }
+  .tag-pill.topic-agency   { background: #F1F5F9; border-color: #CBD5E1; color: #334155; }
+  .tag-pill.topic-draft    { background: #F5F3FF; border-color: #DDD6FE; color: #6D28D9; }
+  .tag-pill.topic-renewal  { background: #FEF9C3; border-color: #FDE68A; color: #854D0E; }
+  .tag-pill.topic-sources  { background: #F3E8FF; border-color: #E9D5FF; color: #6B21A8; }
+
+  /* Questions form (prospect-facing MCQ cards) */
+  .q-card {
+    border: 1.5px solid var(--box-line);
+    border-radius: 4px;
+    background: white;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .q-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .q-card-head .q-id {
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.03em;
+  }
+  .q-req {
+    font-size: 11.5px;
+    color: var(--muted);
+    padding: 7px 12px;
+    background: #F5F5F7;
+    border-left: 2px solid var(--box-line);
+    margin-bottom: 10px;
+    font-style: italic;
+    border-radius: 2px;
+  }
+  .q-question {
+    font-size: 13.5px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+  .q-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .q-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1.5px solid var(--box-line);
+    border-radius: 3px;
+    background: white;
+    font-size: 12px;
+    color: var(--accent);
+    cursor: pointer;
+  }
+  .q-option.selected {
+    background: #EFF6FF;
+    border-color: #1D4ED8;
+    color: #1E3A8A;
+  }
+  .q-option .dot {
+    font-size: 13px;
+    line-height: 1;
+    margin-top: 1px;
+  }
+  .q-detail {
+    margin-top: 10px;
+    border: 1.5px dashed var(--box-line);
+    padding: 9px 12px;
+    background: #FAFAFB;
+    border-radius: 3px;
+    font-size: 12px;
+    color: var(--muted);
+    min-height: 42px;
+  }
+
+  /* Requirement type pills (shall / will / should / may / must) */
+  .pill.shall   { background: #FEE2E2; color: #991B1B; font-weight: 600; }
+  .pill.will    { background: #DBEAFE; color: #1E40AF; font-weight: 600; }
+  .pill.should  { background: #FEF3C7; color: #92400E; font-weight: 600; }
+  .pill.may     { background: #E5E7EB; color: #374151; font-weight: 600; }
+  .pill.must    { background: #FCA5A5; color: #7F1D1D; font-weight: 700; }
+  .tag-input {
+    border: 1.5px solid var(--box-line);
+    background: white;
+    border-radius: 3px;
+    padding: 8px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    min-height: 42px;
+  }
+  .tag-input .placeholder {
+    color: var(--muted);
+    font-size: 12px;
+    padding: 2px 4px;
+  }
+
+  /* Solicitation cards (Homepage) — uniform, no color-coding */
+  .sol-card {
+    border: 1.5px solid var(--box-line);
+    background: white;
+    border-radius: 3px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: start;
+  }
+  .sol-title {
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .sol-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .sol-tags {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .sol-progress {
+    margin-top: 10px;
+  }
+  .sol-progress-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .sol-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+  }
+
+  /* Solicitation page layout */
+  .sol-layout {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr;
+    gap: 20px;
+    margin-top: 18px;
+  }
+  .panel {
+    border: 1.5px solid var(--box-line);
+    border-radius: 3px;
+    background: white;
+  }
+  .panel-head {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--box-line);
+    background: #F5F5F7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .panel-body {
+    padding: 12px 14px;
+  }
+
+  .doc-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 10px;
+    border-bottom: 1px solid #ECECEE;
+    font-size: 13px;
+  }
+  .doc-row:last-child { border-bottom: none; }
+  .doc-row .pin {
+    font-size: 14px;
+    color: var(--muted);
+    cursor: pointer;
+    width: 18px;
+    text-align: center;
+  }
+  .doc-row .pin.active { color: #B45309; }
+  .doc-row .doc-name { font-weight: 500; }
+  .doc-row .doc-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .doc-row .doc-type {
+    padding: 2px 8px;
+    background: #DADADE;
+    border-radius: 10px;
+    font-size: 10px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .doc-row .open-link {
+    font-size: 11px;
+    color: #1D4ED8;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .doc-section-head {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    padding: 14px 10px 6px;
+    border-top: 1px dashed #ECECEE;
+  }
+  .doc-section-head:first-child { border-top: none; padding-top: 4px; }
+
+  .news-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #ECECEE;
+    font-size: 12.5px;
+  }
+  .news-item:last-child { border-bottom: none; }
+  .news-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-right: 6px;
+  }
+  .news-badge.amend  { background: #FEE2E2; color: #B91C1C; }
+  .news-badge.extend { background: #FEF3C7; color: #B45309; }
+  .news-badge.qa     { background: #E0E7FF; color: #1D4ED8; }
+  .news-badge.attach { background: #E5E7EB; color: #4B5563; }
+  .news-date {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  /* Header bar inside Solicitation page */
+  .sol-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .sol-header-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Back-to-Solicitation link/button */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 6px 12px;
+    border: 1.5px dashed var(--box-line);
+    border-radius: 3px;
+    background: white;
+    margin-bottom: 14px;
+  }
+  .back-link:hover { background: #F5F5F7; }
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <h1>QMat Generator — MVP Wireframes v0.6</h1>
+  <p>Low-fidelity · structure only · New QMat is now an overlay over the Solicitation Page · Questions become an MCQ form · Export modal compacted &amp; centred</p>
+</div>
+
+<!-- ========================= SCREEN 1: LOGIN ========================= -->
+<section class="screen-card">
+  <div class="screen-label">Screen 1 of 6</div>
+  <h2 class="screen-title">Login</h2>
+  <div class="frame">
+    <div class="chrome-bar"><span>qmat.wsgc.local</span><span>—</span></div>
+    <div class="screen-body">
+      <div class="centered-form">
+        <div class="box solid" style="text-align:center;padding:18px;">[ Logo / App Name ]</div>
+        <div class="label">Email</div>
+        <div class="input">you@wsgc.us</div>
+        <div class="label">Password</div>
+        <div class="input">••••••••••</div>
+        <div style="margin-top:20px;">
+          <div class="box btn" style="width:100%;text-align:center;">Log In</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><strong>On-screen:</strong> Email and password fields with a Log In button, centered on the page. On successful login, the user lands on the Solicitations dashboard.</div>
+</section>
+
+<!-- ========================= SCREEN 2: HOMEPAGE / DASHBOARD ========================= -->
+<section class="screen-card">
+  <div class="screen-label">Screen 2 of 6</div>
+  <h2 class="screen-title">Homepage / Dashboard — Solicitations</h2>
+  <div class="frame">
+    <div class="chrome-bar"><span>WSGC Workspace</span><span>Khoo · Log out</span></div>
+    <div class="screen-body">
+      <div class="row center" style="margin-bottom:16px;">
+        <div>
+          <div style="font-size:15px;font-weight:600;">Solicitations</div>
+          <div style="font-size:12px;color:var(--muted);">14 tracked · sorted by response date</div>
+        </div>
+        <div style="text-align:right;flex:0 0 auto;">
+          <div class="box btn">+ New Solicitation</div>
+        </div>
+      </div>
+
+      <div class="row tight" style="margin-bottom:16px;">
+        <div class="input" style="min-width:280px;">🔍 Search solicitations…</div>
+        <div class="input">Tags: All ▼</div>
+        <div class="input">Agency: All ▼</div>
+        <div class="input">Sort: Response date ▼</div>
+      </div>
+
+      <!-- Solicitation Card 1 -->
+      <div class="sol-card">
+        <div>
+          <div class="sol-title">USACE CMMC Compliance Services</div>
+          <div class="sol-meta">W912DY-26-R-0042 · USACE · Response due May 14, 2026</div>
+          <div class="sol-tags">
+            <span class="tag-pill hot">Hot</span>
+            <span class="tag-pill pinned">Pinned</span>
+            <span class="tag-pill topic-cmmc">CMMC</span>
+            <span class="tag-pill topic-agency">USACE</span>
+          </div>
+          <div class="sol-progress">
+            <div class="sol-progress-row">
+              <span>QMat complete · drafting CMat</span>
+              <span>62%</span>
+            </div>
+            <div class="progress-shell"><div class="progress-fill" style="width:62%;"></div></div>
+          </div>
+        </div>
+        <div class="sol-actions">
+          <div class="box btn ghost" style="font-size:12px;padding:6px 12px;margin:0;">Edit Solicitation</div>
+        </div>
+      </div>
+
+      <!-- Solicitation Card 2 -->
+      <div class="sol-card">
+        <div>
+          <div class="sol-title">DHS Cyber Threat Intel BPA — Phase 2 Re-bid</div>
+          <div class="sol-meta">70RTAC26R00000034 · DHS CISA · Response due May 02, 2026</div>
+          <div class="sol-tags">
+            <span class="tag-pill hot">Hot</span>
+            <span class="tag-pill rebid">Re-bid</span>
+            <span class="tag-pill topic-cyber">Cyber</span>
+          </div>
+          <div class="sol-progress">
+            <div class="sol-progress-row">
+              <span>Proposal in review</span>
+              <span>85%</span>
+            </div>
+            <div class="progress-shell"><div class="progress-fill" style="width:85%;"></div></div>
+          </div>
+        </div>
+        <div class="sol-actions">
+          <div class="box btn ghost" style="font-size:12px;padding:6px 12px;margin:0;">Edit Solicitation</div>
+        </div>
+      </div>
+
+      <!-- Solicitation Card 3 -->
+      <div class="sol-card">
+        <div>
+          <div class="sol-title">VA Medical Records Modernization — Draft RFP</div>
+          <div class="sol-meta">36C10X26R0019 · Dept. of Veterans Affairs · Response due Jun 03, 2026</div>
+          <div class="sol-tags">
+            <span class="tag-pill warm">Warm</span>
+            <span class="tag-pill topic-health">Healthcare</span>
+            <span class="tag-pill topic-draft">Draft RFP</span>
+          </div>
+          <div class="sol-progress">
+            <div class="sol-progress-row">
+              <span>OPR complete · QMat in progress</span>
+              <span>34%</span>
+            </div>
+            <div class="progress-shell"><div class="progress-fill" style="width:34%;"></div></div>
+          </div>
+        </div>
+        <div class="sol-actions">
+          <div class="box btn ghost" style="font-size:12px;padding:6px 12px;margin:0;">Edit Solicitation</div>
+        </div>
+      </div>
+
+      <!-- Solicitation Card 4 -->
+      <div class="sol-card">
+        <div>
+          <div class="sol-title">GSA Cloud Services SIN 518210C — Renewal</div>
+          <div class="sol-meta">47QTCA26D000F · GSA · Response due Jul 18, 2026</div>
+          <div class="sol-tags">
+            <span class="tag-pill tracking">Tracking</span>
+            <span class="tag-pill topic-renewal">Renewal</span>
+            <span class="tag-pill topic-cloud">Cloud</span>
+          </div>
+          <div class="sol-progress">
+            <div class="sol-progress-row">
+              <span>OPR drafted</span>
+              <span>15%</span>
+            </div>
+            <div class="progress-shell"><div class="progress-fill" style="width:15%;"></div></div>
+          </div>
+        </div>
+        <div class="sol-actions">
+          <div class="box btn ghost" style="font-size:12px;padding:6px 12px;margin:0;">Edit Solicitation</div>
+        </div>
+      </div>
+
+      <!-- Solicitation Card 5 -->
+      <div class="sol-card">
+        <div>
+          <div class="sol-title">USAF Logistics Support — Sources Sought</div>
+          <div class="sol-meta">FA8771-26-S-0007 · US Air Force · Response due TBD</div>
+          <div class="sol-tags">
+            <span class="tag-pill cold">Cold</span>
+            <span class="tag-pill topic-sources">Sources Sought</span>
+          </div>
+          <div class="sol-progress">
+            <div class="sol-progress-row">
+              <span>Solicitation imported · no docs yet</span>
+              <span>4%</span>
+            </div>
+            <div class="progress-shell"><div class="progress-fill" style="width:4%;"></div></div>
+          </div>
+        </div>
+        <div class="sol-actions">
+          <div class="box btn ghost" style="font-size:12px;padding:6px 12px;margin:0;">Edit Solicitation</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><strong>On-screen:</strong> The user's tracked solicitations, listed as uniform cards. Each card shows title, solicitation number, agency, response due date, user-defined tag set, and a pipeline progress bar with a short status line. Search, tag filter, agency filter, and sort controls sit above the list. + New Solicitation opens the New Solicitation form. Clicking a card title opens that solicitation's page; Edit Solicitation opens the same form pre-populated with its current values.</div>
+</section>
+
+<!-- ========================= SCREEN 3: NEW SOLICITATION ========================= -->
+<section class="screen-card">
+  <div class="screen-label">Screen 3 of 6</div>
+  <h2 class="screen-title">New Solicitation</h2>
+  <div class="frame">
+    <div class="chrome-bar"><span>WSGC Workspace</span><span>Khoo · Log out</span></div>
+    <div class="screen-body">
+      <div class="box solid" style="padding:16px;"><strong>+ New Solicitation</strong></div>
+
+      <div style="margin-top:16px;">
+        <div class="label">Solicitation Title <span style="color:var(--note);">*</span></div>
+        <div class="input">USACE CMMC Compliance Services</div>
+      </div>
+
+      <div>
+        <div class="label">SAM.gov Solicitation URL <span style="color:var(--muted);text-transform:none;letter-spacing:0;">(auto-extracts metadata below)</span></div>
+        <div class="input">https://sam.gov/opp/abc123.../view</div>
+      </div>
+
+      <div class="row">
+        <div>
+          <div class="label">Solicitation #</div>
+          <div class="input">W912DY-26-R-0042</div>
+        </div>
+        <div>
+          <div class="label">Agency</div>
+          <div class="input">USACE</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <div class="label">Notice Type</div>
+          <div class="input">Solicitation ▼</div>
+        </div>
+        <div>
+          <div class="label">Response Due Date</div>
+          <div class="input">May 14, 2026</div>
+        </div>
+      </div>
+
+      <div class="label">Tags <span style="color:var(--muted);text-transform:none;letter-spacing:0;">(custom — use any label that helps you sort and filter)</span></div>
+      <div class="tag-input">
+        <span class="tag-pill hot">Hot <span class="x">×</span></span>
+        <span class="tag-pill pinned">Pinned <span class="x">×</span></span>
+        <span class="tag-pill topic-cmmc">CMMC <span class="x">×</span></span>
+        <span class="tag-pill topic-agency">USACE <span class="x">×</span></span>
+        <span class="placeholder">Type a tag and press Enter…</span>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:var(--muted);">
+        Suggested:
+        <span class="tag-pill hot">+ Hot</span>
+        <span class="tag-pill warm">+ Warm</span>
+        <span class="tag-pill tracking">+ Tracking</span>
+        <span class="tag-pill cold">+ Cold</span>
+        <span class="tag-pill pinned">+ Pinned</span>
+      </div>
+
+      <div class="label">Solicitation Documents</div>
+      <div class="box tall" style="text-align:center;padding:32px;">
+        ⬆ Drag &amp; drop files here<br>
+        <span style="font-size:11px;color:var(--muted);">or click to browse · PDF, DOCX · RFP, PWS, attachments, amendments</span>
+      </div>
+
+      <div class="box" style="display:flex;justify-content:space-between;">
+        <span>📄 RFP-W912DY-26-R-0042.pdf · 4.2 MB</span><span style="color:var(--muted);">remove</span>
+      </div>
+      <div class="box" style="display:flex;justify-content:space-between;">
+        <span>📄 PWS-Attachment-A.pdf · 1.8 MB</span><span style="color:var(--muted);">remove</span>
+      </div>
+
+      <div style="margin-top:20px;">
+        <div class="box btn">Create Solicitation</div>
+        <div class="box btn ghost">Cancel</div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><strong>On-screen:</strong> Form for registering a new solicitation. Title, a SAM.gov URL that auto-extracts metadata, solicitation #, agency, notice type, and response due date. The Tags field accepts any custom label the user types; below it, one-click suggestions (Hot / Warm / Tracking / Cold / Pinned) are offered as quick-adds. The drag-and-drop area loads the RFP, PWS, attachments, and amendments into this solicitation's document library. Create Solicitation saves and opens the Solicitation Page; Cancel returns to the dashboard.</div>
+</section>
+
+<!-- ========================= SCREEN 4: SOLICITATION PAGE ========================= -->
+<section class="screen-card">
+  <div class="screen-label">Screen 4 of 6</div>
+  <h2 class="screen-title">Solicitation Page</h2>
+  <div class="frame">
+    <div class="chrome-bar"><span>WSGC Workspace · Solicitations / W912DY-26-R-0042</span><span>Khoo · Log out</span></div>
+    <div class="screen-body">
+
+      <!-- Header -->
+      <div class="sol-header">
+        <div>
+          <div style="font-size:11px;color:var(--muted);">← <span style="text-decoration:underline;cursor:pointer;">Back to Solicitations</span></div>
+          <div style="font-size:18px;font-weight:600;margin-top:6px;">USACE CMMC Compliance Services</div>
+          <div class="sol-header-meta">
+            <span>W912DY-26-R-0042</span>
+            <span>USACE</span>
+            <span>Response due May 14, 2026</span>
+            <span>Created Apr 09, 2026</span>
+          </div>
+          <div style="margin-top:8px;">
+            <span class="tag-pill hot">Hot</span>
+            <span class="tag-pill pinned">Pinned</span>
+            <span class="tag-pill topic-cmmc">CMMC</span>
+            <span class="tag-pill topic-agency">USACE</span>
+            <span class="tag-pill suggest">+ Add tag</span>
+          </div>
+        </div>
+        <div style="text-align:right;flex:0 0 auto;">
+          <div class="box btn ghost" style="font-size:12px;padding:6px 12px;">Edit Solicitation</div>
+        </div>
+      </div>
+
+      <!-- Pipeline progress -->
+      <div style="margin-top:14px;padding:10px 14px;border:1.5px solid var(--box-line);border-radius:3px;background:#F5F5F7;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px;">
+          <span>Pipeline · QMat complete · drafting CMat</span>
+          <span>62%</span>
+        </div>
+        <div class="progress-shell"><div class="progress-fill" style="width:62%;"></div></div>
+      </div>
+
+      <!-- Two-column layout -->
+      <div class="sol-layout">
+
+        <!-- LEFT: Documents -->
+        <div class="panel">
+          <div class="panel-head">
+            <span>Documents</span>
+            <div style="display:flex;gap:6px;">
+              <div class="box btn" style="font-size:11px;padding:5px 10px;margin:0;">+ New ▼</div>
+            </div>
+          </div>
+          <div class="panel-body">
+
+            <!-- Filters -->
+            <div class="row tight" style="margin-bottom:10px;">
+              <div class="input" style="min-width:180px;font-size:12px;padding:7px 10px;">🔍 Search documents…</div>
+              <div class="input" style="font-size:12px;padding:7px 10px;">Type: All ▼</div>
+              <div class="input" style="font-size:12px;padding:7px 10px;">Sort: Pinned, then newest ▼</div>
+            </div>
+
+            <!-- Pinned -->
+            <div class="doc-section-head">⚑ Pinned</div>
+            <div class="doc-row">
+              <div class="pin active">★</div>
+              <div>
+                <div class="doc-name">USACE CMMC — Citations Table v3 <span class="cite-link">↗</span></div>
+                <div class="doc-sub">Apr 22, 2026 · 47 requirements · Khoo</div>
+              </div>
+              <div class="doc-type">QMat</div>
+              <div class="open-link">Open</div>
+            </div>
+            <div class="doc-row">
+              <div class="pin active">★</div>
+              <div>
+                <div class="doc-name">Opportunity Performance Report — Final</div>
+                <div class="doc-sub">Apr 12, 2026 · v2 · Khoo</div>
+              </div>
+              <div class="doc-type">OPR</div>
+              <div class="open-link">Open</div>
+            </div>
+
+            <!-- OPR -->
+            <div class="doc-section-head">Opportunity Performance Reports (OPR)</div>
+            <div class="doc-row">
+              <div class="pin">☆</div>
+              <div>
+                <div class="doc-name">OPR — Initial assessment</div>
+                <div class="doc-sub">Apr 09, 2026 · v1 · Khoo</div>
+              </div>
+              <div class="doc-type">OPR</div>
+              <div class="open-link">Open</div>
+            </div>
+
+            <!-- QMats -->
+            <div class="doc-section-head">Qualification Matrices (QMat)</div>
+            <div class="doc-row">
+              <div class="pin">☆</div>
+              <div>
+                <div class="doc-name">QMat — Prospect Round 2 (with Amendment 0001)</div>
+                <div class="doc-sub">Apr 23, 2026 · 51 requirements · Khoo</div>
+              </div>
+              <div class="doc-type">QMat</div>
+              <div class="open-link">Open</div>
+            </div>
+            <div class="doc-row">
+              <div class="pin">☆</div>
+              <div>
+                <div class="doc-name">QMat — Prospect Round 1</div>
+                <div class="doc-sub">Apr 22, 2026 · 47 requirements · Khoo</div>
+              </div>
+              <div class="doc-type">QMat</div>
+              <div class="open-link">Open</div>
+            </div>
+
+            <!-- CMats -->
+            <div class="doc-section-head">Compliance Matrices (CMat)</div>
+            <div class="doc-row">
+              <div class="pin">☆</div>
+              <div>
+                <div class="doc-name">CMat — Section L/M crosswalk (in progress)</div>
+                <div class="doc-sub">Apr 23, 2026 · 38/47 mapped · Khoo</div>
+              </div>
+              <div class="doc-type">CMat</div>
+              <div class="open-link">Open</div>
+            </div>
+
+            <!-- Proposals -->
+            <div class="doc-section-head">Proposals</div>
+            <div class="doc-row">
+              <div class="pin">☆</div>
+              <div>
+                <div class="doc-name">Volume I — Technical Approach (draft)</div>
+                <div class="doc-sub">Apr 21, 2026 · 24 pp · Khoo</div>
+              </div>
+              <div class="doc-type">Proposal</div>
+              <div class="open-link">Open</div>
+            </div>
+            <div class="doc-row">
+              <div class="pin">☆</div>
+              <div>
+                <div class="doc-name">Volume II — Past Performance (outline)</div>
+                <div class="doc-sub">Apr 19, 2026 · 6 pp · Khoo</div>
+              </div>
+              <div class="doc-type">Proposal</div>
+              <div class="open-link">Open</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT: News -->
+        <div class="panel">
+          <div class="panel-head">
+            <span>News from SAM.gov</span>
+            <div class="open-link" style="text-transform:none;letter-spacing:0;font-weight:400;">Sync now</div>
+          </div>
+          <div class="panel-body">
+            <div class="news-item">
+              <div><span class="news-badge amend">Amendment</span><strong>Amendment 0001 issued</strong></div>
+              <div style="margin-top:4px;">Revised Section L language; new evaluation factor weighting added.</div>
+              <div class="news-date">Apr 23, 2026 · 8:14 AM</div>
+            </div>
+            <div class="news-item">
+              <div><span class="news-badge extend">Extension</span><strong>Response date extended</strong></div>
+              <div style="margin-top:4px;">Due date moved from May 07 → May 14, 2026.</div>
+              <div class="news-date">Apr 21, 2026 · 4:02 PM</div>
+            </div>
+            <div class="news-item">
+              <div><span class="news-badge qa">Q&amp;A</span><strong>Q&amp;A Round 1 posted</strong></div>
+              <div style="margin-top:4px;">12 questions answered; 3 affect Section C scope.</div>
+              <div class="news-date">Apr 18, 2026 · 11:30 AM</div>
+            </div>
+            <div class="news-item">
+              <div><span class="news-badge attach">Attachment</span><strong>New attachment posted</strong></div>
+              <div style="margin-top:4px;">CDRL A001 template added (Attachment-J.3).</div>
+              <div class="news-date">Apr 15, 2026 · 9:48 AM</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="note"><strong>On-screen:</strong> The workspace for a single solicitation. The header shows title, solicitation number, agency, due and created dates, the tag set (with a + Add tag affordance), and an Edit Solicitation button. A pipeline bar beneath the header shows where this opportunity stands end-to-end. The left panel lists every document associated with the solicitation, grouped by type (OPR, QMat, CMat, Proposals) with pinned items pulled to the top, searchable and filterable. The right panel streams SAM.gov news: amendments, response-date extensions, Q&amp;A rounds, and new attachments. + New ▼ launches the New QMat modal (Overlay A); clicking any QMat row opens its Citations Table.</div>
+</section>
+
+<!-- ========================= OVERLAY A: NEW QMAT (OVER SOLICITATION PAGE) ========================= -->
+<section class="screen-card">
+  <div class="screen-label">Overlay A · follows Solicitation Page</div>
+  <h2 class="screen-title">New Qualification Matrix (over Solicitation Page)</h2>
+  <div class="frame">
+    <div class="chrome-bar"><span>WSGC Workspace · Solicitations / W912DY-26-R-0042</span><span>Khoo · Log out</span></div>
+    <div class="modal-wrap" style="padding:0;">
+      <!-- Full Solicitation Page dimmed beneath (copied from Screen 4) -->
+      <div class="screen-body" style="opacity:0.45;">
+        <!-- Header -->
+        <div class="sol-header">
+          <div>
+            <div style="font-size:11px;color:var(--muted);">← <span style="text-decoration:underline;cursor:pointer;">Back to Solicitations</span></div>
+            <div style="font-size:18px;font-weight:600;margin-top:6px;">USACE CMMC Compliance Services</div>
+            <div class="sol-header-meta">
+              <span>W912DY-26-R-0042</span>
+              <span>USACE</span>
+              <span>Response due May 14, 2026</span>
+              <span>Created Apr 09, 2026</span>
+            </div>
+            <div style="margin-top:8px;">
+              <span class="tag-pill hot">Hot</span>
+              <span class="tag-pill pinned">Pinned</span>
+              <span class="tag-pill topic-cmmc">CMMC</span>
+              <span class="tag-pill topic-agency">USACE</span>
+              <span class="tag-pill suggest">+ Add tag</span>
+            </div>
+          </div>
+          <div style="text-align:right;flex:0 0 auto;">
+            <div class="box btn ghost" style="font-size:12px;padding:6px 12px;">Edit Solicitation</div>
+          </div>
+        </div>
+
+        <!-- Pipeline progress -->
+        <div style="margin-top:14px;padding:10px 14px;border:1.5px solid var(--box-line);border-radius:3px;background:#F5F5F7;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px;">
+            <span>Pipeline · QMat complete · drafting CMat</span>
+            <span>62%</span>
+          </div>
+          <div class="progress-shell"><div class="progress-fill" style="width:62%;"></div></div>
+        </div>
+
+        <!-- Two-column layout -->
+        <div class="sol-layout">
+          <!-- LEFT: Documents -->
+          <div class="panel">
+            <div class="panel-head">
+              <span>Documents</span>
+              <div style="display:flex;gap:6px;">
+                <div class="box btn" style="font-size:11px;padding:5px 10px;margin:0;">+ New ▼</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="row tight" style="margin-bottom:10px;">
+                <div class="input" style="min-width:180px;font-size:12px;padding:7px 10px;">🔍 Search documents…</div>
+                <div class="input" style="font-size:12px;padding:7px 10px;">Type: All ▼</div>
+                <div class="input" style="font-size:12px;padding:7px 10px;">Sort: Pinned, then newest ▼</div>
+              </div>
+              <div class="doc-section-head">⚑ Pinned</div>
+              <div class="doc-row">
+                <div class="pin active">★</div>
+                <div>
+                  <div class="doc-name">USACE CMMC — Citations Table v3 <span class="cite-link">↗</span></div>
+                  <div class="doc-sub">Apr 22, 2026 · 47 requirements · Khoo</div>
+                </div>
+                <div class="doc-type">QMat</div>
+                <div class="open-link">Open</div>
+              </div>
+              <div class="doc-row">
+                <div class="pin active">★</div>
+                <div>
+                  <div class="doc-name">Opportunity Performance Report — Final</div>
+                  <div class="doc-sub">Apr 12, 2026 · v2 · Khoo</div>
+                </div>
+                <div class="doc-type">OPR</div>
+                <div class="open-link">Open</div>
+              </div>
+              <div class="doc-section-head">Opportunity Performance Reports (OPR)</div>
+              <div class="doc-row">
+                <div class="pin">☆</div>
+                <div>
+                  <div class="doc-name">OPR — Initial assessment</div>
+                  <div class="doc-sub">Apr 09, 2026 · v1 · Khoo</div>
+                </div>
+                <div class="doc-type">OPR</div>
+                <div class="open-link">Open</div>
+              </div>
+              <div class="doc-section-head">Qualification Matrices (QMat)</div>
+              <div class="doc-row">
+                <div class="pin">☆</div>
+                <div>
+                  <div class="doc-name">QMat — Prospect Round 2 (with Amendment 0001)</div>
+                  <div class="doc-sub">Apr 23, 2026 · 51 requirements · Khoo</div>
+                </div>
+                <div class="doc-type">QMat</div>
+                <div class="open-link">Open</div>
+              </div>
+              <div class="doc-row">
+                <div class="pin">☆</div>
+                <div>
+                  <div class="doc-name">QMat — Prospect Round 1</div>
+                  <div class="doc-sub">Apr 22, 2026 · 47 requirements · Khoo</div>
+                </div>
+                <div class="doc-type">QMat</div>
+                <div class="open-link">Open</div>
+              </div>
+              <div class="doc-section-head">Compliance Matrices (CMat)</div>
+              <div class="doc-row">
+                <div class="pin">☆</div>
+                <div>
+                  <div class="doc-name">CMat — Section L/M crosswalk (in progress)</div>
+                  <div class="doc-sub">Apr 23, 2026 · 38/47 mapped · Khoo</div>
+                </div>
+                <div class="doc-type">CMat</div>
+                <div class="open-link">Open</div>
+              </div>
+              <div class="doc-section-head">Proposals</div>
+              <div class="doc-row">
+                <div class="pin">☆</div>
+                <div>
+                  <div class="doc-name">Volume I — Technical Approach (draft)</div>
+                  <div class="doc-sub">Apr 21, 2026 · 24 pp · Khoo</div>
+                </div>
+                <div class="doc-type">Proposal</div>
+                <div class="open-link">Open</div>
+              </div>
+              <div class="doc-row">
+                <div class="pin">☆</div>
+                <div>
+                  <div class="doc-name">Volume II — Past Performance (outline)</div>
+                  <div class="doc-sub">Apr 19, 2026 · 6 pp · Khoo</div>
+                </div>
+                <div class="doc-type">Proposal</div>
+                <div class="open-link">Open</div>
+              </div>
+            </div>
+          </div>
+          <!-- RIGHT: News -->
+          <div class="panel">
+            <div class="panel-head">
+              <span>News from SAM.gov</span>
+              <div class="open-link" style="text-transform:none;letter-spacing:0;font-weight:400;">Sync now</div>
+            </div>
+            <div class="panel-body">
+              <div class="news-item">
+                <div><span class="news-badge amend">Amendment</span><strong>Amendment 0001 issued</strong></div>
+                <div style="margin-top:4px;">Revised Section L language; new evaluation factor weighting added.</div>
+                <div class="news-date">Apr 23, 2026 · 8:14 AM</div>
+              </div>
+              <div class="news-item">
+                <div><span class="news-badge extend">Extension</span><strong>Response date extended</strong></div>
+                <div style="margin-top:4px;">Due date moved from May 07 → May 14, 2026.</div>
+                <div class="news-date">Apr 21, 2026 · 4:02 PM</div>
+              </div>
+              <div class="news-item">
+                <div><span class="news-badge qa">Q&amp;A</span><strong>Q&amp;A Round 1 posted</strong></div>
+                <div style="margin-top:4px;">12 questions answered; 3 affect Section C scope.</div>
+                <div class="news-date">Apr 18, 2026 · 11:30 AM</div>
+              </div>
+              <div class="news-item">
+                <div><span class="news-badge attach">Attachment</span><strong>New attachment posted</strong></div>
+                <div style="margin-top:4px;">CDRL A001 template added (Attachment-J.3).</div>
+                <div class="news-date">Apr 15, 2026 · 9:48 AM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-dimmer"></div>
+
+      <!-- Compact New QMat modal, positioned toward the top of the page -->
+      <div class="modal" style="max-width:520px;position:absolute;top:56px;left:50%;transform:translateX(-50%);margin:0;">
+        <div class="close">✕</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px;">New Qualification Matrix</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">for USACE CMMC Compliance Services · W912DY-26-R-0042</div>
+
+        <div class="label" style="margin-top:4px;">QMat Title <span style="color:var(--note);">*</span></div>
+        <div class="input">USACE CMMC Compliance — Prospect Round 1</div>
+
+        <div class="label">Source Documents <span style="color:var(--muted);text-transform:none;letter-spacing:0;">(from solicitation library)</span></div>
+        <div class="box" style="display:flex;justify-content:space-between;font-size:12px;padding:6px 10px;">
+          <span>☑ 📄 RFP-W912DY-26-R-0042.pdf</span><span style="color:var(--muted);font-size:11px;">4.2 MB</span>
+        </div>
+        <div class="box" style="display:flex;justify-content:space-between;font-size:12px;padding:6px 10px;">
+          <span>☑ 📄 PWS-Attachment-A.pdf</span><span style="color:var(--muted);font-size:11px;">1.8 MB</span>
+        </div>
+        <div class="box" style="text-align:center;padding:12px;font-size:12px;">
+          ⬆ Drag &amp; drop additional files
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">PDF, DOCX · or click to browse</div>
+        </div>
+
+        <div style="margin-top:14px;text-align:right;">
+          <div class="box btn ghost">Cancel</div>
+          <div class="box btn">Generate Matrix</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><strong>On-screen:</strong> The New QMat form opens as a compact modal centered over the Solicitation Page (which stays visible and dimmed beneath for context). The user names the QMat, confirms which of the solicitation's library documents should be used as source material (pre-checked), and can drag additional files in. Cancel dismisses without creating anything; Generate Matrix starts requirement extraction and, on completion, takes the user to the Citations Table.</div>
+</section>
+
+<!-- ========================= SCREEN 5: RESULTS - CITATIONS TABLE ========================= -->
+<section class="screen-card">
+  <div class="screen-label">Screen 5 of 6</div>
+  <h2 class="screen-title">Results — Citations Table</h2>
+  <div class="frame">
+    <div class="chrome-bar"><span>WSGC Workspace · … / W912DY-26-R-0042 / QMat — Prospect Round 1</span><span>Khoo · Log out</span></div>
+    <div class="screen-body">
+      <div class="back-link">← Back to Solicitation</div>
+
+      <div class="row center" style="margin-bottom:16px;">
+        <div>
+          <div style="font-size:15px;font-weight:600;">USACE CMMC Compliance — Prospect Round 1</div>
+          <div style="font-size:12px;color:var(--muted);">Generated Apr 22, 2026 · 3:15 PM · 47 requirements · 2 docs · graphrag-validated</div>
+        </div>
+        <div style="text-align:right;flex:0 0 auto;">
+          <div class="box btn">Export ▼</div>
+        </div>
+      </div>
+
+      <div class="row tight" style="margin-bottom:12px;">
+        <div class="input" style="min-width:240px;">🔍 Search requirements…</div>
+        <div class="input">Type: All ▼</div>
+        <div class="input">Section: All ▼</div>
+        <div class="input">Review: All ▼</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:60px;">ID</th>
+              <th style="width:100px;">Section</th>
+              <th>Requirement</th>
+              <th style="width:70px;">Type</th>
+              <th style="width:110px;">Confidence</th>
+              <th style="width:140px;">Citations</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>R-001</td>
+              <td>L.3.2</td>
+              <td>The contractor shall maintain CMMC Level 2 certification throughout the period of performance.</td>
+              <td><span class="pill shall">Shall</span></td>
+              <td>
+                <div class="confidence">
+                  <span>98%</span>
+                  <div class="conf-bar"><div class="conf-fill" style="width:98%;"></div></div>
+                </div>
+              </td>
+              <td>
+                1. <span class="cite-link">RFP p.47</span><br>
+                2. <span class="cite-link">PWS §C.5.1</span>
+              </td>
+            </tr>
+            <tr>
+              <td>R-002</td>
+              <td>L.3.3</td>
+              <td>Offeror shall provide past performance for three contracts of similar scope completed within the last five years.</td>
+              <td><span class="pill shall">Shall</span></td>
+              <td>
+                <div class="confidence">
+                  <span>92%</span>
+                  <div class="conf-bar"><div class="conf-fill good" style="width:92%;"></div></div>
+                </div>
+              </td>
+              <td>1. <span class="cite-link">RFP p.49</span></td>
+            </tr>
+            <tr>
+              <td>R-003</td>
+              <td>M.2.1</td>
+              <td>
+                Evaluation will consider technical approach, management plan, and price.
+                <div class="flag minor"><span class="flag-sev">Minor</span> Vague evaluation weighting; non-contradictory</div>
+              </td>
+              <td><span class="pill will">Will</span></td>
+              <td>
+                <div class="confidence">
+                  <span>74%</span>
+                  <div class="conf-bar"><div class="conf-fill med" style="width:74%;"></div></div>
+                </div>
+              </td>
+              <td>1. <span class="cite-link">RFP p.62</span></td>
+            </tr>
+            <tr>
+              <td>R-004</td>
+              <td>C.4.2</td>
+              <td>
+                The contractor should provide monthly progress reports in accordance with CDRL A001.
+                <div class="flag important"><span class="flag-sev">Important</span> Ambiguous "should" clause; impacts CDRL deliverable scope</div>
+              </td>
+              <td><span class="pill should">Should</span></td>
+              <td>
+                <div class="confidence">
+                  <span>67%</span>
+                  <div class="conf-bar"><div class="conf-fill low" style="width:67%;"></div></div>
+                </div>
+              </td>
+              <td>
+                1. <span class="cite-link">PWS §C.4.2</span><br>
+                2. <span class="cite-link">CDRL A001</span>
+              </td>
+            </tr>
+            <tr>
+              <td>R-005</td>
+              <td>C.6.1</td>
+              <td>
+                All personnel shall possess Secret clearance or higher at contract award.
+                <div class="flag critical"><span class="flag-sev">Critical</span> Contradicts §C.6.4 (Top Secret required for Site Lead) — graphrag validation conflict</div>
+              </td>
+              <td><span class="pill shall">Shall</span></td>
+              <td>
+                <div class="confidence">
+                  <span>28%</span>
+                  <div class="conf-bar"><div class="conf-fill vlow" style="width:28%;"></div></div>
+                </div>
+              </td>
+              <td>
+                1. <span class="cite-link">PWS §C.6.1</span><br>
+                2. <span class="cite-link">PWS §C.6.4</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:20px;display:flex;justify-content:flex-end;">
+        <div class="box btn">Next →</div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><strong>On-screen:</strong> The generated Citations Table. Each row is one extracted requirement with: ID, source section (e.g., L.3.2), the requirement text, a colour-coded type pill (<span class="pill shall">Shall</span>, <span class="pill will">Will</span>, <span class="pill should">Should</span>, <span class="pill may">May</span>), a confidence-score bar coloured by value (<strong style="color:#059669;">green ≥ 95%</strong>, <strong style="color:#65A30D;">lime 80–94%</strong>, <strong style="color:#D97706;">amber 60–79%</strong>, <strong style="color:#EA580C;">orange 40–59%</strong>, <strong style="color:#B91C1C;">red &lt; 40%</strong>), and inline citation links to the source text. Any requirement the system flagged for review shows a tiered flag beneath its text: <strong style="color:var(--crit);">Critical</strong> for validated contradictions (R-005), <strong style="color:var(--imp);">Important</strong> for ambiguity on high-impact clauses (R-004), <strong style="color:var(--minor);">Minor</strong> for non-contradictory vagueness (R-003). Search plus Type, Section, and Review filters narrow the list. Clicking a citation link opens the Citation Drawer (Overlay B); Export ▼ opens the Export Modal; Next → advances to the Questions Form.</div>
+</section>
+
+<!-- ========================= OVERLAY B: CITATION DRAWER (FULL-WIDTH, INLINE) ========================= -->
+<section class="screen-card">
+  <div class="screen-label">Overlay B · follows Citations Table</div>
+  <h2 class="screen-title">Citation Drawer (over Citations Table)</h2>
+  <div class="frame">
+    <div class="chrome-bar"><span>WSGC Workspace · … / W912DY-26-R-0042 / QMat — Prospect Round 1</span><span>Khoo · Log out</span></div>
+    <div class="overlay-wrap">
+      <!-- Full Citations Table dimmed beneath -->
+      <div style="opacity:0.45;">
+        <div class="back-link">← Back to Solicitation</div>
+
+        <div class="row center" style="margin-bottom:16px;">
+          <div>
+            <div style="font-size:15px;font-weight:600;">USACE CMMC Compliance — Prospect Round 1</div>
+            <div style="font-size:12px;color:var(--muted);">Generated Apr 22, 2026 · 3:15 PM · 47 requirements · 2 docs · graphrag-validated</div>
+          </div>
+          <div style="text-align:right;flex:0 0 auto;">
+            <div class="box btn">Export ▼</div>
+          </div>
+        </div>
+
+        <div class="row tight" style="margin-bottom:12px;">
+          <div class="input" style="min-width:240px;">🔍 Search requirements…</div>
+          <div class="input">Type: All ▼</div>
+          <div class="input">Section: All ▼</div>
+          <div class="input">Review: All ▼</div>
+        </div>
+
+        <div class="table-wrap" style="background:white;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60px;">ID</th>
+                <th style="width:100px;">Section</th>
+                <th>Requirement</th>
+                <th style="width:70px;">Type</th>
+                <th style="width:110px;">Confidence</th>
+                <th style="width:140px;">Citations</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>R-001</td>
+                <td>L.3.2</td>
+                <td>The contractor shall maintain CMMC Level 2 certification throughout the period of performance.</td>
+                <td><span class="pill shall">Shall</span></td>
+                <td><div class="confidence"><span>98%</span><div class="conf-bar"><div class="conf-fill" style="width:98%;"></div></div></div></td>
+                <td>1. <span class="cite-link">RFP p.47</span><br>2. <span class="cite-link">PWS §C.5.1</span></td>
+              </tr>
+              <tr>
+                <td>R-002</td>
+                <td>L.3.3</td>
+                <td>Offeror shall provide past performance for three contracts of similar scope completed within the last five years.</td>
+                <td><span class="pill shall">Shall</span></td>
+                <td><div class="confidence"><span>92%</span><div class="conf-bar"><div class="conf-fill good" style="width:92%;"></div></div></div></td>
+                <td>1. <span class="cite-link">RFP p.49</span></td>
+              </tr>
+              <tr>
+                <td>R-003</td>
+                <td>M.2.1</td>
+                <td>
+                  Evaluation will consider technical approach, management plan, and price.
+                  <div class="flag minor"><span class="flag-sev">Minor</span> Vague evaluation weighting; non-contradictory</div>
+                </td>
+                <td><span class="pill will">Will</span></td>
+                <td><div class="confidence"><span>74%</span><div class="conf-bar"><div class="conf-fill med" style="width:74%;"></div></div></div></td>
+                <td>1. <span class="cite-link">RFP p.62</span></td>
+              </tr>
+              <tr>
+                <td>R-004</td>
+                <td>C.4.2</td>
+                <td>
+                  The contractor should provide monthly progress reports in accordance with CDRL A001.
+                  <div class="flag important"><span class="flag-sev">Important</span> Ambiguous "should" clause; impacts CDRL deliverable scope</div>
+                </td>
+                <td><span class="pill should">Should</span></td>
+                <td><div class="confidence"><span>67%</span><div class="conf-bar"><div class="conf-fill low" style="width:67%;"></div></div></div></td>
+                <td>1. <span class="cite-link">PWS §C.4.2</span><br>2. <span class="cite-link">CDRL A001</span></td>
+              </tr>
+              <tr>
+                <td>R-005</td>
+                <td>C.6.1</td>
+                <td>
+                  All personnel shall possess Secret clearance or higher at contract award.
+                  <div class="flag critical"><span class="flag-sev">Critical</span> Contradicts §C.6.4 (Top Secret required for Site Lead) — graphrag validation conflict</div>
+                </td>
+                <td><span class="pill shall">Shall</span></td>
+                <td><div class="confidence"><span>28%</span><div class="conf-bar"><div class="conf-fill vlow" style="width:28%;"></div></div></div></td>
+                <td>1. <span class="cite-link">PWS §C.6.1</span><br>2. <span class="cite-link">PWS §C.6.4</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:20px;display:flex;justify-content:flex-end;">
+          <div class="box btn">Next →</div>
+        </div>
+      </div>
+
+      <!-- Drawer overlay -->
+      <div class="overlay-panel">
+        <div class="overlay-panel-scroll">
+          <div class="close">✕</div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;">Citation</div>
+          <div style="font-size:15px;font-weight:600;margin:4px 0 12px;">PWS §C.6.1 · Personnel Clearance</div>
+
+          <div class="label">For Requirement</div>
+          <div class="box" style="font-size:12.5px;">R-005: All personnel shall possess Secret clearance or higher at contract award.</div>
+
+          <div class="flag critical" style="margin-top:10px;"><span class="flag-sev">Critical</span> Contradicts §C.6.4 — Top Secret required for Site Lead</div>
+
+          <div class="label">Source Snippet</div>
+          <div class="box" style="background:white;min-height:100px;font-size:12.5px;">
+            "…all personnel <strong>shall possess Secret clearance or higher</strong> at contract award. The contractor shall maintain clearance throughout performance. A designated Site Lead shall additionally possess Top Secret clearance (§C.6.4)…"
+          </div>
+
+          <div class="label">Source</div>
+          <div class="box" style="margin-bottom:12px;font-size:12.5px;">📄 PWS-Attachment-A.pdf · §C.6.1 · p. 14</div>
+
+          <div class="label">Related Citations</div>
+          <div class="box" style="font-size:12.5px;">
+            · <span class="cite-link">PWS §C.6.4</span> — Site Lead Top Secret requirement<br>
+            · <span class="cite-link">RFP §H.7</span> — Clearance sponsorship clause
+          </div>
+        </div>
+        <div class="overlay-panel-footer">
+          <div class="box btn" style="width:100%;text-align:center;">📄 Open in PDF</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><strong>On-screen:</strong> A right-side drawer opens over the Citations Table (dimmed beneath for context). The drawer header labels the citation — <strong>PWS §C.6.1 · Personnel Clearance</strong>. <em>For Requirement</em> shows the exact requirement row the user clicked from (R-005). Because R-005 carries a <strong style="color:var(--crit);">Critical</strong> review flag, the flag is surfaced inline under the requirement with the graphrag-detected conflict (<em>"Contradicts §C.6.4 — Top Secret required for Site Lead"</em>). <em>Source Snippet</em> shows the surrounding passage from the source document with the matched requirement clause bolded. <em>Source</em> names the file, section, and page (<code>PWS-Attachment-A.pdf · §C.6.1 · p. 14</code>). <em>Related Citations</em> lists other clauses the requirement touches (§C.6.4, RFP §H.7) as clickable links. A fixed footer action <strong>Open in PDF</strong> jumps to the source page in the document viewer; the ✕ in the top-right closes the drawer and returns to the Citations Table.</div>
+</section>
+
+<!-- ========================= SCREEN 6: QUESTIONS FORM ========================= -->
+<section class="screen-card">
+  <div class="screen-label">Screen 6 of 6</div>
+  <h2 class="screen-title">Questions Form</h2>
+  <div class="frame">
+    <div class="chrome-bar"><span>WSGC Workspace · … / W912DY-26-R-0042 / QMat — Prospect Round 1</span><span>Khoo · Log out</span></div>
+    <div class="screen-body">
+      <div class="back-link">← Back to Solicitation</div>
+
+      <div class="row center" style="margin-bottom:12px;">
+        <div>
+          <div style="font-size:15px;font-weight:600;">USACE CMMC Compliance — Prospect Round 1</div>
+          <div style="font-size:12px;color:var(--muted);">Capture prospect answers · 47 questions · 2 of 5 answered in this view</div>
+        </div>
+        <div style="text-align:right;flex:0 0 auto;">
+          <div class="box btn">Export ▼</div>
+        </div>
+      </div>
+
+      <div class="row tight" style="margin-bottom:14px;">
+        <div class="input" style="min-width:240px;">🔍 Search questions…</div>
+        <div class="input">Type: All ▼</div>
+        <div class="input">Answered: Any ▼</div>
+      </div>
+
+      <!-- Q-Card: R-001 -->
+      <div class="q-card">
+        <div class="q-card-head">
+          <span class="q-id">R-001 · L.3.2</span>
+          <span><span class="pill shall">Shall</span></span>
+        </div>
+        <div class="q-req">Requirement: "The contractor shall maintain CMMC Level 2 certification throughout the period of performance."</div>
+        <div class="q-question">Does your organization currently hold an active CMMC Level 2 certification?</div>
+        <div class="q-options">
+          <div class="q-option selected"><span class="dot">●</span><span>Yes — active certification in place</span></div>
+          <div class="q-option"><span class="dot">○</span><span>In progress — assessment scheduled or underway</span></div>
+          <div class="q-option"><span class="dot">○</span><span>Not yet — planning to pursue</span></div>
+          <div class="q-option"><span class="dot">○</span><span>No — need guidance on getting started</span></div>
+        </div>
+        <div class="q-detail">Follow-up: please share certifying body, certificate #, and expiration date…</div>
+      </div>
+
+      <!-- Q-Card: R-002 -->
+      <div class="q-card">
+        <div class="q-card-head">
+          <span class="q-id">R-002 · L.3.3</span>
+          <span><span class="pill shall">Shall</span></span>
+        </div>
+        <div class="q-req">Requirement: "Offeror shall provide past performance for three contracts of similar scope completed within the last five years."</div>
+        <div class="q-question">How many completed contracts of comparable scope have you delivered in the last 5 years?</div>
+        <div class="q-options">
+          <div class="q-option"><span class="dot">○</span><span>3 or more — ready to share references</span></div>
+          <div class="q-option selected"><span class="dot">●</span><span>1–2 — we have some but not three</span></div>
+          <div class="q-option"><span class="dot">○</span><span>None yet in this scope</span></div>
+          <div class="q-option"><span class="dot">○</span><span>Unsure — let's discuss</span></div>
+        </div>
+        <div class="q-detail">Follow-up: customer name, contract #, POP, and CPARS or POC reference for each…</div>
+      </div>
+
+      <!-- Q-Card: R-003 -->
+      <div class="q-card">
+        <div class="q-card-head">
+          <span class="q-id">R-003 · M.2.1</span>
+          <span><span class="pill will">Will</span></span>
+        </div>
+        <div class="q-req">Requirement: "Evaluation will consider technical approach, management plan, and price."</div>
+        <div class="q-question">Do you have existing win themes, discriminators, or materials we should build from?</div>
+        <div class="q-options">
+          <div class="q-option"><span class="dot">○</span><span>Yes — I'll share templates &amp; narratives</span></div>
+          <div class="q-option"><span class="dot">○</span><span>Partial — some ideas, help us refine</span></div>
+          <div class="q-option"><span class="dot">○</span><span>No — please draft from scratch</span></div>
+          <div class="q-option"><span class="dot">○</span><span>Not applicable / unsure</span></div>
+        </div>
+        <div class="q-detail">Follow-up: attach prior materials, pricing assumptions, or target price point…</div>
+      </div>
+
+      <!-- Q-Card: R-004 -->
+      <div class="q-card">
+        <div class="q-card-head">
+          <span class="q-id">R-004 · C.4.2</span>
+          <span><span class="pill should">Should</span></span>
+        </div>
+        <div class="q-req">Requirement: "The contractor should provide monthly progress reports in accordance with CDRL A001."</div>
+        <div class="q-question">Do you currently produce CDRL A001-compliant monthly progress reports?</div>
+        <div class="q-options">
+          <div class="q-option"><span class="dot">○</span><span>Yes — I can share a sample</span></div>
+          <div class="q-option"><span class="dot">○</span><span>Informal only — not CDRL-compliant</span></div>
+          <div class="q-option"><span class="dot">○</span><span>No — please draft a reporting approach</span></div>
+          <div class="q-option"><span class="dot">○</span><span>Unsure — need to check with PM</span></div>
+        </div>
+        <div class="q-detail">Follow-up: attach a recent sample or describe your current reporting cadence…</div>
+      </div>
+
+      <!-- Q-Card: R-005 -->
+      <div class="q-card">
+        <div class="q-card-head">
+          <span class="q-id">R-005 · C.6.1</span>
+          <span><span class="pill shall">Shall</span></span>
+        </div>
+        <div class="q-req">Requirement: "All personnel shall possess Secret clearance or higher at contract award." <span style="color:var(--crit);font-weight:600;">⚑ Critical flag — contradicts §C.6.4</span></div>
+        <div class="q-question">How many of your proposed personnel currently hold Secret (or higher) clearance?</div>
+        <div class="q-options">
+          <div class="q-option"><span class="dot">○</span><span>All proposed personnel are cleared</span></div>
+          <div class="q-option"><span class="dot">○</span><span>Most — a few need sponsorship</span></div>
+          <div class="q-option"><span class="dot">○</span><span>About half are cleared</span></div>
+          <div class="q-option"><span class="dot">○</span><span>Few/none — need a clearance plan</span></div>
+        </div>
+        <div class="q-detail">Follow-up: share clearance roster and sponsorship plan + timeline for uncleared candidates…</div>
+      </div>
+
+      <div style="margin-top:20px;display:flex;justify-content:space-between;">
+        <div class="box btn ghost">← Back to Citations</div>
+        <div class="box btn">Finish</div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><strong>On-screen:</strong> A prospect-facing form titled <em>USACE CMMC Compliance — Prospect Round 1</em>, with a counter showing 47 total questions and 2 of 5 answered in this view, plus an <strong>Export ▼</strong> button that opens the Export Modal (Overlay C). A filter row above the stack offers Search, Type, and Answered filters. Each requirement renders as its own <strong>question card</strong>: requirement ID and source section (e.g., R-001 · L.3.2) sit top-left, the colour-coded type pill (<span class="pill shall">Shall</span>, <span class="pill will">Will</span>, <span class="pill should">Should</span>, <span class="pill may">May</span>) sits top-right. Beneath that, the quoted requirement text, then the AI-drafted prospect-facing question, then a 4-option multiple-choice grid with one option pre-selected (filled dot, blue background) and the other three unselected (hollow dots). A free-text <em>Follow-up</em> field below the options captures specifics (certificate number, facility details, etc.). At the bottom of the page, <strong>← Back to Citations</strong> returns to the Citations Table and <strong>Finish</strong> completes the round.</div>
+</section>
+
+<!-- ========================= OVERLAY C: EXPORT MODAL (OVER QUESTIONS FORM) ========================= -->
+<section class="screen-card">
+  <div class="screen-label">Overlay C · follows Questions Form</div>
+  <h2 class="screen-title">Export Modal (over Questions Form)</h2>
+  <div class="frame">
+    <div class="chrome-bar"><span>WSGC Workspace · … / W912DY-26-R-0042 / QMat — Prospect Round 1</span><span>Khoo · Log out</span></div>
+    <div class="modal-wrap" style="padding:0;">
+      <!-- Full Questions Form dimmed beneath (copied from Screen 6) -->
+      <div class="screen-body" style="opacity:0.45;">
+        <div class="back-link">← Back to Solicitation</div>
+
+        <div class="row center" style="margin-bottom:12px;">
+          <div>
+            <div style="font-size:15px;font-weight:600;">USACE CMMC Compliance — Prospect Round 1</div>
+            <div style="font-size:12px;color:var(--muted);">Capture prospect answers · 47 questions · 2 of 5 answered in this view</div>
+          </div>
+          <div style="text-align:right;flex:0 0 auto;">
+            <div class="box btn">Export ▼</div>
+          </div>
+        </div>
+
+        <div class="row tight" style="margin-bottom:14px;">
+          <div class="input" style="min-width:240px;">🔍 Search questions…</div>
+          <div class="input">Type: All ▼</div>
+          <div class="input">Answered: Any ▼</div>
+        </div>
+
+        <!-- Q-Card: R-001 -->
+        <div class="q-card">
+          <div class="q-card-head">
+            <span class="q-id">R-001 · L.3.2</span>
+            <span><span class="pill shall">Shall</span></span>
+          </div>
+          <div class="q-req">Requirement: "The contractor shall maintain CMMC Level 2 certification throughout the period of performance."</div>
+          <div class="q-question">Does your organization currently hold an active CMMC Level 2 certification?</div>
+          <div class="q-options">
+            <div class="q-option selected"><span class="dot">●</span><span>Yes — active certification in place</span></div>
+            <div class="q-option"><span class="dot">○</span><span>In progress — assessment scheduled or underway</span></div>
+            <div class="q-option"><span class="dot">○</span><span>Not yet — planning to pursue</span></div>
+            <div class="q-option"><span class="dot">○</span><span>No — need guidance on getting started</span></div>
+          </div>
+          <div class="q-detail">Follow-up: please share certifying body, certificate #, and expiration date…</div>
+        </div>
+
+        <!-- Q-Card: R-002 -->
+        <div class="q-card">
+          <div class="q-card-head">
+            <span class="q-id">R-002 · L.3.3</span>
+            <span><span class="pill shall">Shall</span></span>
+          </div>
+          <div class="q-req">Requirement: "Offeror shall provide past performance for three contracts of similar scope completed within the last five years."</div>
+          <div class="q-question">How many completed contracts of comparable scope have you delivered in the last 5 years?</div>
+          <div class="q-options">
+            <div class="q-option"><span class="dot">○</span><span>3 or more — ready to share references</span></div>
+            <div class="q-option selected"><span class="dot">●</span><span>1–2 — we have some but not three</span></div>
+            <div class="q-option"><span class="dot">○</span><span>None yet in this scope</span></div>
+            <div class="q-option"><span class="dot">○</span><span>Unsure — let's discuss</span></div>
+          </div>
+          <div class="q-detail">Follow-up: customer name, contract #, POP, and CPARS or POC reference for each…</div>
+        </div>
+
+        <!-- Q-Card: R-003 -->
+        <div class="q-card">
+          <div class="q-card-head">
+            <span class="q-id">R-003 · M.2.1</span>
+            <span><span class="pill will">Will</span></span>
+          </div>
+          <div class="q-req">Requirement: "Evaluation will consider technical approach, management plan, and price."</div>
+          <div class="q-question">Do you have existing win themes, discriminators, or materials we should build from?</div>
+          <div class="q-options">
+            <div class="q-option"><span class="dot">○</span><span>Yes — I'll share templates &amp; narratives</span></div>
+            <div class="q-option"><span class="dot">○</span><span>Partial — some ideas, help us refine</span></div>
+            <div class="q-option"><span class="dot">○</span><span>No — please draft from scratch</span></div>
+            <div class="q-option"><span class="dot">○</span><span>Not applicable / unsure</span></div>
+          </div>
+          <div class="q-detail">Follow-up: attach prior materials, pricing assumptions, or target price point…</div>
+        </div>
+
+        <!-- Q-Card: R-004 -->
+        <div class="q-card">
+          <div class="q-card-head">
+            <span class="q-id">R-004 · C.4.2</span>
+            <span><span class="pill should">Should</span></span>
+          </div>
+          <div class="q-req">Requirement: "The contractor should provide monthly progress reports in accordance with CDRL A001."</div>
+          <div class="q-question">Do you currently produce CDRL A001-compliant monthly progress reports?</div>
+          <div class="q-options">
+            <div class="q-option"><span class="dot">○</span><span>Yes — I can share a sample</span></div>
+            <div class="q-option"><span class="dot">○</span><span>Informal only — not CDRL-compliant</span></div>
+            <div class="q-option"><span class="dot">○</span><span>No — please draft a reporting approach</span></div>
+            <div class="q-option"><span class="dot">○</span><span>Unsure — need to check with PM</span></div>
+          </div>
+          <div class="q-detail">Follow-up: attach a recent sample or describe your current reporting cadence…</div>
+        </div>
+
+        <!-- Q-Card: R-005 -->
+        <div class="q-card">
+          <div class="q-card-head">
+            <span class="q-id">R-005 · C.6.1</span>
+            <span><span class="pill shall">Shall</span></span>
+          </div>
+          <div class="q-req">Requirement: "All personnel shall possess Secret clearance or higher at contract award." <span style="color:var(--crit);font-weight:600;">⚑ Critical flag — contradicts §C.6.4</span></div>
+          <div class="q-question">How many of your proposed personnel currently hold Secret (or higher) clearance?</div>
+          <div class="q-options">
+            <div class="q-option"><span class="dot">○</span><span>All proposed personnel are cleared</span></div>
+            <div class="q-option"><span class="dot">○</span><span>Most — a few need sponsorship</span></div>
+            <div class="q-option"><span class="dot">○</span><span>About half are cleared</span></div>
+            <div class="q-option"><span class="dot">○</span><span>Few/none — need a clearance plan</span></div>
+          </div>
+          <div class="q-detail">Follow-up: share clearance roster and sponsorship plan + timeline for uncleared candidates…</div>
+        </div>
+
+        <div style="margin-top:20px;display:flex;justify-content:space-between;">
+          <div class="box btn ghost">← Back to Citations</div>
+          <div class="box btn">Finish</div>
+        </div>
+      </div>
+
+      <div class="modal-dimmer"></div>
+
+      <!-- Compact export modal, positioned near the top so it stays in view -->
+      <div class="modal" style="max-width:460px;position:absolute;top:56px;left:50%;transform:translateX(-50%);margin:0;">
+        <div class="close">✕</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px;">Export Qualification Matrix</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">47 requirements · W912DY-26-R-0042</div>
+
+        <div class="label" style="margin-top:4px;">Format</div>
+        <div class="row tight">
+          <div class="box solid" style="padding:6px 12px;font-size:12px;">● .xlsx</div>
+          <div class="box" style="padding:6px 12px;font-size:12px;">○ .csv</div>
+          <div class="box" style="padding:6px 12px;font-size:12px;">○ .docx</div>
+        </div>
+
+        <div class="label" style="margin-top:12px;">Include</div>
+        <div class="box" style="padding:6px 10px;font-size:12px;">☑ Prospect answers &amp; follow-ups</div>
+        <div class="box" style="padding:6px 10px;font-size:12px;">☑ Citation list per requirement</div>
+        <div class="box" style="padding:6px 10px;font-size:12px;">☑ Confidence scores &amp; review flags</div>
+        <div class="box" style="padding:6px 10px;font-size:12px;">☐ Colour coding (pills &amp; confidence bars)</div>
+
+        <div style="margin-top:14px;text-align:right;">
+          <div class="box btn ghost">Cancel</div>
+          <div class="box btn">Download</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><strong>On-screen:</strong> The Export dialog opens as a compact modal over the Questions Form (which stays visible and dimmed beneath). The user picks a file format (.xlsx / .csv / .docx) and toggles what to include in the export: prospect answers plus follow-ups, the citation list per requirement, confidence scores with review flags, and optionally the colour coding of pills and confidence bars. Download generates the file; Cancel closes the dialog and returns to the form.</div>
+</section>
+
+</body>
+</html>

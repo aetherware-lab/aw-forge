@@ -1,0 +1,27 @@
+# Old broken prototype — has its own nested .git, not part of this repo's history
+_app_broken/
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Build / bundler output
+out/
+dist/
+.vite/
+.webpack/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+
+# Env
+.env
+.env.test
+
+# TypeScript cache
+*.tsbuildinfo
