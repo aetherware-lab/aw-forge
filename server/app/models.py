@@ -64,7 +64,10 @@ class Citation(BaseModel):
     run_id: str
     doc_id: str
     chunk_id: str
-    section: SectionCode
+    section: str = Field(
+        description="Section/block/item reference as the solicitation itself labels it — "
+        "letters (L, M), numbers (Item 11), or whatever scheme this document actually uses."
+    )
     subsection: Optional[str] = None
     page: Optional[int] = None
     verbatim_text: str

@@ -16,6 +16,7 @@ out in parallel).
 
 from __future__ import annotations
 
+import logging
 from typing import Optional
 
 from langchain_anthropic import ChatAnthropic
@@ -29,8 +30,9 @@ from app.models import (
     Requirement,
     RequirementCategory,
     RequirementType,
-    SectionCode,
 )
+
+logger = logging.getLogger("forge.extraction")
 
 EXTRACTION_SYSTEM_PROMPT = """\
 You extract qualification requirements from a single section of a US federal \
@@ -77,7 +79,10 @@ Rules:
 
 class ExtractedCitation(BaseModel):
     ref: str = Field(description="Short local id, e.g. 'c1', used only within this response.")
-    section: SectionCode
+    section: str = Field(
+        description="Section/block/item reference as the solicitation itself labels it — "
+        "letters (L, M), numbers (Item 11), or whatever scheme this document actually uses."
+    )
     subsection: Optional[str] = None
     page: Optional[int] = None
     verbatim_text: str
@@ -104,20 +109,29 @@ def extract_from_chunk(chunk: DocumentChunk) -> tuple[list[Requirement], list[Ci
             "ANTHROPIC_API_KEY is not set. Add it to server/.env and restart the server."
         )
 
-    llm = ChatAnthropic(model=EXTRACTION_MODEL, api_key=ANTHROPIC_API_KEY, temperature=0)
+    llm = ChatAnthropic(model=EXTRACTION_MODEL, api_key=ANTHROPIC_API_KEY)
     structured_llm = llm.with_structured_output(ChunkExtraction)
 
-    result = structured_llm.invoke(
-        [
-            ("system", EXTRACTION_SYSTEM_PROMPT),
-            (
-                "human",
-                f"Section heading: {chunk.section_title}\n"
-                f"Source file: {chunk.source_file}\n\n"
-                f"Section text:\n{chunk.text}",
-            ),
-        ]
-    )
+    messages = [
+        ("system", EXTRACTION_SYSTEM_PROMPT),
+        (
+            "human",
+            f"Section heading: {chunk.section_title}\n"
+            f"Source file: {chunk.source_file}\n\n"
+            f"Section text:\n{chunk.text}",
+        ),
+    ]
+
+    # One retry: malformed structured output (e.g. a field coming back as a
+    # JSON-encoded string instead of a real list) is usually a one-off, not
+    # reproducible on a second call — worth a retry before giving up on an
+    # otherwise-successful ~50-chunk run over one flaky response.
+    try:
+        result = structured_llm.invoke(messages)
+    except Exception:
+        logger.warning("extraction retry for chunk %s after a malformed response", chunk.id)
+        result = structured_llm.invoke(messages)
+
     assert isinstance(result, ChunkExtraction)
 
     citations: list[Citation] = []

@@ -688,6 +688,9 @@ textarea:focus,
 }
 .table-wrap tr:last-child td { border-bottom: none; }
 .table-wrap tr:hover td { background: var(--surface-2); }
+.table-wrap tr.clickable-row { cursor: pointer; }
+
+.pill.error { background: var(--crit-bg); color: var(--crit-fg); font-weight: 600; }
 
 /* Confidence visual */
 .confidence {

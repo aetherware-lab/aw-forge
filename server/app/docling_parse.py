@@ -28,6 +28,13 @@ from app.models import DocumentChunk, SectionCode, SourceFile
 _SECTION_RE = re.compile(r"\bSECTION\s+([A-M])\b", re.IGNORECASE)
 _VALID_SECTIONS = set("ABCDEFGHIJKLM")
 
+# HierarchicalChunker splits at roughly the table-cell/paragraph level, which
+# for a tabular form like an SF-1449 means dozens of chunks per page — one
+# LLM call per table cell. Merge consecutive raw chunks that share the same
+# heading into a single, larger chunk before extraction, capping size so one
+# very long section still gets split rather than producing one giant chunk.
+_MAX_MERGED_CHARS = 6000
+
 
 def _guess_section(heading_text: str) -> SectionCode:
     match = _SECTION_RE.search(heading_text)
@@ -38,15 +45,38 @@ def _guess_section(heading_text: str) -> SectionCode:
     return "OTHER"
 
 
+def _merge_raw_chunks(raw_chunks: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    """[(heading, text), ...] -> merged [(heading, text), ...], same heading + size cap."""
+    merged: list[tuple[str, str]] = []
+    for heading, text in raw_chunks:
+        text = text.strip()
+        if not text:
+            continue
+        if (
+            merged
+            and merged[-1][0] == heading
+            and len(merged[-1][1]) + len(text) + 1 <= _MAX_MERGED_CHARS
+        ):
+            prev_heading, prev_text = merged[-1]
+            merged[-1] = (prev_heading, f"{prev_text}\n{text}")
+        else:
+            merged.append((heading, text))
+    return merged
+
+
 def parse_source_file(source: SourceFile, run_id: str) -> list[DocumentChunk]:
     converter = DocumentConverter()
     result = converter.convert(source.path)
     document = result.document
 
-    chunks: list[DocumentChunk] = []
-    for index, chunk in enumerate(HierarchicalChunker().chunk(document)):
+    raw_chunks: list[tuple[str, str]] = []
+    for chunk in HierarchicalChunker().chunk(document):
         headings = getattr(chunk.meta, "headings", None) or []
         heading_text = headings[-1] if headings else source.filename
+        raw_chunks.append((heading_text, chunk.text))
+
+    chunks: list[DocumentChunk] = []
+    for index, (heading_text, text) in enumerate(_merge_raw_chunks(raw_chunks)):
         chunks.append(
             DocumentChunk(
                 id=f"{run_id}-{source.doc_id}-CHUNK-{index:04d}",
@@ -56,7 +86,7 @@ def parse_source_file(source: SourceFile, run_id: str) -> list[DocumentChunk]:
                 section=_guess_section(heading_text),
                 section_title=heading_text,
                 chunk_index=index,
-                text=chunk.text,
+                text=text,
             )
         )
     return chunks

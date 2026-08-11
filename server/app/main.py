@@ -85,12 +85,31 @@ async def create_extraction_run(
     return {"id": run_id, "status": "pending"}
 
 
+def _run_response(run: dict) -> dict:
+    return {
+        "id": run["id"],
+        "name": run["name"],
+        "status": run["status"],
+        "error": run.get("error"),
+        "createdAt": run["created_at"],
+        "solicitationNumber": run["solicitation_number"],
+        "solicitationTitle": run["solicitation_title"],
+        "solicitationAgency": run["solicitation_agency"],
+        "requirementCount": run["requirement_count"],
+    }
+
+
+@app.get("/extraction-runs")
+def list_extraction_runs() -> list[dict]:
+    return [_run_response(r) for r in neo4j_client.list_runs()]
+
+
 @app.get("/extraction-runs/{run_id}")
 def get_extraction_run(run_id: str) -> dict:
     run = neo4j_client.get_run(run_id)
     if run is None:
         raise HTTPException(status_code=404, detail="Extraction run not found.")
-    return {"id": run["id"], "status": run["status"], "error": run.get("error")}
+    return _run_response(run)
 
 
 @app.get("/extraction-runs/{run_id}/requirements")

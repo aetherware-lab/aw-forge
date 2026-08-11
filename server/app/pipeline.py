@@ -41,12 +41,31 @@ def parse_documents(state: PipelineState) -> PipelineState:
 
 
 def extract(state: PipelineState) -> PipelineState:
+    """
+    One Claude call per chunk. A single chunk failing (malformed structured
+    output, a transient API error, whatever) must not throw away every other
+    chunk's already-successful extraction — a ~50-chunk run is minutes of
+    real API calls, and losing all of it over one bad chunk isn't acceptable.
+    Failed chunks are logged and skipped; the run still completes with
+    whatever it could extract.
+    """
     requirements: list[Requirement] = []
     citations: list[Citation] = []
+    failed_chunk_ids: list[str] = []
     for chunk in state["chunks"]:
-        chunk_reqs, chunk_cites = extract_from_chunk(chunk)
+        try:
+            chunk_reqs, chunk_cites = extract_from_chunk(chunk)
+        except Exception:
+            logger.exception("extraction failed for chunk %s — skipping it", chunk.id)
+            failed_chunk_ids.append(chunk.id)
+            continue
         requirements.extend(chunk_reqs)
         citations.extend(chunk_cites)
+    if failed_chunk_ids:
+        logger.warning(
+            "extraction failed for %d/%d chunk(s): %s",
+            len(failed_chunk_ids), len(state["chunks"]), ", ".join(failed_chunk_ids),
+        )
     logger.info("extracted %d requirement(s), %d citation(s)", len(requirements), len(citations))
     return {**state, "requirements": requirements, "citations": citations}
 

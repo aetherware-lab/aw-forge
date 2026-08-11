@@ -26,6 +26,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Workspace',
     items: [
       { to: '/solicitations', label: 'Solicitations', icon: '📋' },
+      { to: '/extraction-runs', label: 'Extraction Runs', icon: '⚙️' },
     ],
   },
 ];

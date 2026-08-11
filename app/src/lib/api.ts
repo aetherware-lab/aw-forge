@@ -18,8 +18,14 @@ export type RunStatus = 'pending' | 'running' | 'complete' | 'error';
 
 export interface ExtractionRunStatus {
   id: string;
+  name: string;
   status: RunStatus;
   error: string | null;
+  createdAt: string;
+  solicitationNumber: string;
+  solicitationTitle: string;
+  solicitationAgency: string;
+  requirementCount: number;
 }
 
 class ApiError extends Error {}
@@ -50,6 +56,17 @@ export async function createExtractionRun(
 
 export async function getExtractionRunStatus(runId: string): Promise<ExtractionRunStatus> {
   const res = await fetch(`${BASE_URL}/extraction-runs/${runId}`);
+  if (!res.ok) throw new ApiError(await parseErrorDetail(res));
+  return res.json();
+}
+
+/**
+ * Every run the server knows about, regardless of how it was created — the
+ * app has no local record of runs made via a direct API call (curl, a
+ * script, etc.), so this is the only way to discover them from inside FORGE.
+ */
+export async function listExtractionRuns(): Promise<ExtractionRunStatus[]> {
+  const res = await fetch(`${BASE_URL}/extraction-runs`);
   if (!res.ok) throw new ApiError(await parseErrorDetail(res));
   return res.json();
 }

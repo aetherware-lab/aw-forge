@@ -35,7 +35,7 @@ def create_run(run: ExtractionRun) -> None:
         session.run(
             """
             MERGE (s:Solicitation {solicitation_number: $sol_number})
-              ON CREATE SET s.title = $sol_title, s.agency = $sol_agency
+              SET s.title = $sol_title, s.agency = $sol_agency
             MERGE (run:ExtractionRun {id: $id})
               SET run.name = $name,
                   run.status = $status,
@@ -63,12 +63,46 @@ def set_run_status(run_id: str, status: str, error: str | None = None) -> None:
         )
 
 
+def _run_row(record) -> dict:
+    row = dict(record["run"])
+    row["solicitation_number"] = record["sol_number"]
+    row["solicitation_title"] = record["sol_title"]
+    row["solicitation_agency"] = record["sol_agency"]
+    row["requirement_count"] = record["req_count"]
+    return row
+
+
 def get_run(run_id: str) -> dict | None:
+    """Full run info joined with its parent Solicitation — the app has no
+    other way to find out what a run actually is beyond its id."""
     with get_driver().session() as session:
         record = session.run(
-            "MATCH (run:ExtractionRun {id: $id}) RETURN run", id=run_id
+            """
+            MATCH (s:Solicitation)-[:HAS_RUN]->(run:ExtractionRun {id: $id})
+            OPTIONAL MATCH (run)<-[:BELONGS_TO_RUN]-(r:Requirement)
+            RETURN run, s.solicitation_number AS sol_number, s.title AS sol_title,
+                   s.agency AS sol_agency, count(r) AS req_count
+            """,
+            id=run_id,
         ).single()
-        return dict(record["run"]) if record else None
+        return _run_row(record) if record else None
+
+
+def list_runs() -> list[dict]:
+    """Every extraction run that exists, regardless of how it was created —
+    the client has no local record of runs made via a direct API call, so
+    this is the only way the app can discover them."""
+    with get_driver().session() as session:
+        result = session.run(
+            """
+            MATCH (s:Solicitation)-[:HAS_RUN]->(run:ExtractionRun)
+            OPTIONAL MATCH (run)<-[:BELONGS_TO_RUN]-(r:Requirement)
+            RETURN run, s.solicitation_number AS sol_number, s.title AS sol_title,
+                   s.agency AS sol_agency, count(r) AS req_count
+            ORDER BY run.created_at DESC
+            """
+        )
+        return [_run_row(record) for record in result]
 
 
 def write_chunks(chunks: list[DocumentChunk]) -> None:

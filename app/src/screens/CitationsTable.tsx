@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useSolicitations } from '@/store/solicitations';
-import { getExtractionRunRequirements, getExtractionRunStatus } from '@/lib/api';
+import {
+  ExtractionRunStatus,
+  getExtractionRunRequirements,
+  getExtractionRunStatus,
+} from '@/lib/api';
 import CitationDrawer from '@/components/CitationDrawer';
 import ExportModal from '@/components/ExportModal';
 import type {
@@ -40,6 +44,11 @@ const CitationsTable: React.FC = () => {
   const { runId } = useParams<{ runId: string }>();
   const navigate = useNavigate();
 
+  // A local doc record only exists if this run was started from inside this
+  // app (NewExtractionRunModal creates one). Runs started directly against
+  // the server — via curl, a script, whatever — have no local record, so
+  // everything this screen needs to render has to come from the server
+  // response, not from this optional local lookup.
   const documents = useSolicitations((s) => s.documents);
   const runDoc = useMemo(
     () => documents.find((d) => d.id === runId),
@@ -48,6 +57,7 @@ const CitationsTable: React.FC = () => {
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [runInfo, setRunInfo] = useState<ExtractionRunStatus | null>(null);
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const pollTimer = useRef<ReturnType<typeof setTimeout>>();
 
@@ -59,6 +69,7 @@ const CitationsTable: React.FC = () => {
       try {
         const status = await getExtractionRunStatus(runId);
         if (cancelled) return;
+        setRunInfo(status);
 
         if (status.status === 'error') {
           setPhase('error');
@@ -123,14 +134,17 @@ const CitationsTable: React.FC = () => {
     });
   }, [requirements, query, typeFilter, sectionFilter, reviewFilter]);
 
-  if (!runDoc) return <Navigate to="/dashboard" replace />;
+  if (!runId) return <Navigate to="/dashboard" replace />;
+
+  const runName = runInfo?.name ?? runDoc?.name ?? 'Extraction Run';
 
   const statusLine = (): string => {
     if (phase === 'loading') return 'Checking run status…';
     if (phase === 'pending') return 'Queued — waiting for the server to pick this up…';
     if (phase === 'running') return 'Extracting requirements…';
     if (phase === 'error') return `Extraction failed: ${errorMessage}`;
-    return `Generated ${formatGenerated(runDoc.dateAdded)} · ${requirements.length} requirements`;
+    const generated = runInfo ? formatGenerated(runInfo.createdAt) : '';
+    return `Generated ${generated} · ${requirements.length} requirements`;
   };
 
   return (
@@ -138,14 +152,23 @@ const CitationsTable: React.FC = () => {
       <button
         type="button"
         className="back-link"
-        onClick={() => navigate(`/solicitations/${runDoc.solicitationId}`)}
+        onClick={() =>
+          runDoc
+            ? navigate(`/solicitations/${runDoc.solicitationId}`)
+            : navigate('/extraction-runs')
+        }
       >
-        ← Back to Solicitation
+        {runDoc ? '← Back to Solicitation' : '← Back to Extraction Runs'}
       </button>
 
       <header className="page-header" style={{ marginTop: 8 }}>
         <div>
-          <div className="run-title">{runDoc.name}</div>
+          <div className="run-title">{runName}</div>
+          {runInfo && (
+            <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
+              {runInfo.solicitationTitle} · {runInfo.solicitationNumber}
+            </div>
+          )}
           <div className="run-sub" style={phase === 'error' ? { color: 'var(--crit)' } : undefined}>
             {statusLine()}
           </div>

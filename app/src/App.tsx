@@ -8,6 +8,7 @@ import NewSolicitation from '@/screens/NewSolicitation';
 import EditSolicitation from '@/screens/EditSolicitation';
 import SolicitationPage from '@/screens/SolicitationPage';
 import CitationsTable from '@/screens/CitationsTable';
+import ExtractionRuns from '@/screens/ExtractionRuns';
 import Settings from '@/screens/Settings';
 
 const App: React.FC = () => {
@@ -30,6 +31,7 @@ const App: React.FC = () => {
         <Route path="/solicitations/:id" element={<SolicitationPage />} />
         <Route path="/solicitations/:id/edit" element={<EditSolicitation />} />
         <Route path="/extraction/:runId/citations" element={<CitationsTable />} />
+        <Route path="/extraction-runs" element={<ExtractionRuns />} />
 
         <Route path="/settings" element={<Settings />} />
 
