@@ -224,7 +224,7 @@ input[type='checkbox'] {
 }
 .auth-dialog {
   width: 100%;
-  max-width: 400px;
+  max-width: 452px;
   border: 1.5px solid var(--box-line);
   border-radius: var(--radius-md);
   /* The frame itself is transparent — only the top/bottom bars and the
@@ -298,14 +298,14 @@ input[type='checkbox'] {
  * .auth-form-card below — always centers it, so it stays centered in the
  * middle of the screen once the frame expands, not pinned top-left. */
 .auth-dialog-body {
-  padding: 20px;
+  padding: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .auth-form-card {
   width: 100%;
-  max-width: 340px;
+  max-width: 400px;
   background: var(--surface);
   border: 1.5px solid var(--box-line);
   border-radius: 0;

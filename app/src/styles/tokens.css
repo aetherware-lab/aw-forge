@@ -514,18 +514,27 @@
   --shadow-btn: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(7, 30, 61, 0.35), 0 2px 4px rgba(7, 30, 61, 0.35), 0 1px 1px rgba(7, 30, 61, 0.2);
 }
 
-/* Buttons — the clearest "pressable key": light-to-dark navy gradient,
- * bright top inset highlight, soft drop shadow; pressing flattens it. */
+/* Buttons — the clearest "pressable key": a navy vertical gradient with
+ * a glossy highlight pooled toward the left (not just a flat top-to-
+ * bottom bevel), bright top inset highlight, soft drop shadow; pressing
+ * flattens it. This left-pooled highlight is specifically the skeu
+ * button treatment — cards/inputs/other skeu surfaces are untouched. */
 [data-theme='skeu'] .btn {
-  background: linear-gradient(180deg, #2a5d95 0%, #0b3162 55%, #071e3d 100%);
+  background:
+    radial-gradient(120% 140% at 14% 22%, rgba(255, 255, 255, 0.45), transparent 55%),
+    linear-gradient(180deg, #2a5d95 0%, #0b3162 55%, #071e3d 100%);
   border-color: #071e3d;
   color: #ffffff;
 }
 [data-theme='skeu'] .btn:hover {
-  background: linear-gradient(180deg, #3a6ea6 0%, #123f74 55%, #0a2850 100%);
+  background:
+    radial-gradient(120% 140% at 14% 22%, rgba(255, 255, 255, 0.5), transparent 55%),
+    linear-gradient(180deg, #3a6ea6 0%, #123f74 55%, #0a2850 100%);
 }
 [data-theme='skeu'] .btn:active {
-  background: linear-gradient(180deg, #071e3d 0%, #0b3162 100%);
+  background:
+    radial-gradient(120% 140% at 14% 22%, rgba(255, 255, 255, 0.22), transparent 55%),
+    linear-gradient(180deg, #071e3d 0%, #0b3162 100%);
   box-shadow: inset 0 2px 5px rgba(3, 12, 25, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
   transform: translateY(1px);
 }
@@ -565,8 +574,20 @@
   background: linear-gradient(180deg, #fbfcfe, #eef1f6);
 }
 
-/* Auth dialog top/bottom intentionally have no skeu-specific override —
- * the shared --auth-bar-bg (set above) already gives them a minimal,
- * theme-appropriate blue-grey; a bold navy gradient here would "stand
- * out" against the otherwise minimal auth card, which is the opposite
- * of what these bars are meant to do. */
+/* Auth dialog top/bottom — darker than the shared --auth-bar-bg (used
+ * as-is by every other theme) and given the same bevel physics as
+ * everything else in this theme: a bright top inset highlight, a darker
+ * inset shadow at the bottom edge of the bevel, and a distinctly darker
+ * line at the bar's own outer edge (border-bottom on the top bar,
+ * border-bottom on the bottom bar — i.e. the card's actual bottom edge)
+ * so each bar reads as its own separate raised strip. */
+[data-theme='skeu'] .auth-dialog-top,
+[data-theme='skeu'] .auth-dialog-bottom {
+  background: linear-gradient(180deg, #6b7d95 0%, #46586f 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 rgba(7, 30, 61, 0.3);
+  color: #f2f5f9;
+}
+[data-theme='skeu'] .auth-dialog-top,
+[data-theme='skeu'] .auth-dialog-bottom {
+  border-bottom: 1px solid #2f3d52;
+}
