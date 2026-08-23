@@ -11,6 +11,12 @@
  * themes.
  * ==================================================================== */
 
+/* Theme web-fonts — @import must precede every other statement (besides
+ * @charset) or the browser silently drops it, so these live at the very
+ * top of the file rather than next to the theme blocks that use them. */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap');
+
 /* Geist Sans + Geist Mono — Vercel's design system fonts. */
 @font-face {
   font-family: 'Geist';
@@ -120,6 +126,18 @@
 
   /* Focus ring */
   --focus-ring: rgba(28, 28, 30, 0.12);
+
+  /* Chrome/topbar text — the chrome bar's background doesn't always track
+   * --ink (some themes give it a dark brand color while the rest of the
+   * UI stays light), so topbar text gets its own tokens. */
+  --chrome-fg: #1c1c1e;
+  --chrome-fg-muted: #6c6c70;
+  --chrome-hover: rgba(0, 0, 0, 0.06);
+  --chrome-active-bg: rgba(0, 0, 0, 0.08);
+  --chrome-border: var(--box-line);
+
+  /* Subtle background grid (graph-paper texture) */
+  --grid-line: rgba(28, 28, 30, 0.05);
 }
 
 /* -----------------------------------------------------------------
@@ -173,6 +191,14 @@
 
   --focus-ring: rgba(237, 237, 237, 0.18);
 
+  --chrome-fg: #ededed;
+  --chrome-fg-muted: #8e8e93;
+  --chrome-hover: rgba(255, 255, 255, 0.08);
+  --chrome-active-bg: rgba(255, 255, 255, 0.12);
+  --chrome-border: var(--box-line);
+
+  --grid-line: rgba(237, 237, 237, 0.06);
+
   /* Elevation on dark surfaces reads better as a soft light halo + a
    * heavier drop than on light theme — a black shadow on a near-black
    * bg is otherwise invisible. */
@@ -192,8 +218,6 @@
  * Fonts: Source Sans 3 (body), Oswald (UI), Bebas Neue (display).
  * Loaded via Google Fonts; safe to bundle later for offline builds.
  * ----------------------------------------------------------------- */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap');
-
 [data-theme='gca'] {
   /* Type — Source Sans 3 for body, Bebas Neue for big titles */
   --font-sans: 'Source Sans 3', 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -265,6 +289,15 @@
   /* Calendar indicator in date picker — navy on light surfaces */
   --cal-icon-invert: 0.25;
 
+  /* Topbar text — chrome is dark navy while the rest of the UI is light */
+  --chrome-fg: #ffffff;
+  --chrome-fg-muted: rgba(255, 255, 255, 0.62);
+  --chrome-hover: rgba(255, 255, 255, 0.1);
+  --chrome-active-bg: rgba(255, 255, 255, 0.16);
+  --chrome-border: #0b3162;
+
+  --grid-line: rgba(11, 49, 98, 0.06);
+
   /* Elevation — navy-tinted so shadows feel like part of the brand rather
    * than a generic default. */
   --shadow-card: 0 1px 2px rgba(11, 49, 98, 0.06), 0 1px 1px rgba(11, 49, 98, 0.04);
@@ -274,26 +307,257 @@
 }
 
 /* GCA-specific typographic polish — display font on page titles and the
- * sidebar brand. Stays scoped to the theme so swapping back to Light/Dark
+ * topbar brand. Stays scoped to the theme so swapping back to Light/Dark
  * doesn't drag GCA fonts along. */
 [data-theme='gca'] .page-title,
 [data-theme='gca'] .sol-header-title,
 [data-theme='gca'] .run-title,
-[data-theme='gca'] .sidebar-brand-name {
+[data-theme='gca'] .topbar-brand-name {
   font-family: var(--font-display);
   letter-spacing: 0.04em;
 }
 [data-theme='gca'] .page-title { font-size: 22px; }
 [data-theme='gca'] .sol-header-title { font-size: 26px; letter-spacing: 0.05em; }
 
-/* Sidebar links use the UI font in GCA */
-[data-theme='gca'] .sidebar-link,
-[data-theme='gca'] .sidebar-section-label {
+/* Topbar nav links use the UI font in GCA */
+[data-theme='gca'] .topbar-link,
+[data-theme='gca'] .topbar-workspace {
   font-family: var(--font-ui);
 }
 
-/* Chrome bar is dark in GCA; flip its text accordingly. */
-[data-theme='gca'] .chrome-bar {
-  color: rgba(255, 255, 255, 0.5);
-  border-bottom-color: #0b3162;
+/* -----------------------------------------------------------------
+ * SAM theme — visual language borrowed from GSA's U.S. Web Design
+ * System (USWDS), the design system behind SAM.gov: USWDS blue,
+ * Public Sans, square-ish geometry, and a highly visible focus style.
+ * This is a stylistic reference only — FORGE is an internal GCA tool,
+ * not a .gov site, so no official government branding/banner is used.
+ * ----------------------------------------------------------------- */
+[data-theme='sam'] {
+  --font-sans: 'Public Sans', 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 4px;
+
+  /* Surfaces */
+  --bg: #f0f0f0;
+  --surface: #ffffff;
+  --surface-2: #f5f5f5;
+  --surface-3: #e6e6e6;
+  --chrome: #1a4480;
+  --hover: rgba(0, 94, 162, 0.06);
+
+  /* Ink */
+  --ink: #1b1b1b;
+  --muted: #5c5c5c;
+  --accent: #005ea2;
+  --on-ink: #ffffff;
+
+  /* Lines */
+  --line: #005ea2;
+  --box-line: #a9aeb1;
+  --divider: #dfe1e2;
+
+  /* Action — USWDS primary blue */
+  --action: #005ea2;
+  --action-hover: #1a4480;
+  --action-ink: #ffffff;
+  --link: #005ea2;
+  --link-hover: #1a4480;
+
+  /* Notes / flags — USWDS warning/error/emergency palette */
+  --note: #936316;
+  --note-bg: #faf3d1;
+  --note-fg: #5c4809;
+  --crit: #b50909;
+  --crit-bg: #f4e3db;
+  --crit-fg: #6f3331;
+  --imp: #936316;
+  --imp-bg: #faf3d1;
+  --imp-fg: #5c4809;
+  --minor: #5c5c5c;
+  --minor-bg: #e6e6e6;
+  --minor-fg: #1b1b1b;
+
+  /* Confidence ramp */
+  --conf-high: #00a91c;
+  --conf-good: #4d8055;
+  --conf-med: #936316;
+  --conf-low: #e5a000;
+  --conf-vlow: #b50909;
+
+  --th-bg: #e6e6e6;
+
+  --backdrop: rgba(27, 27, 27, 0.5);
+
+  /* USWDS favors a visible focus outline over a soft box-shadow ring */
+  --focus-ring: rgba(0, 94, 162, 0.35);
+
+  --chrome-fg: #ffffff;
+  --chrome-fg-muted: rgba(255, 255, 255, 0.75);
+  --chrome-hover: rgba(255, 255, 255, 0.12);
+  --chrome-active-bg: rgba(255, 255, 255, 0.18);
+  --chrome-border: #0f2c52;
+
+  --grid-line: rgba(0, 94, 162, 0.07);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 4px 10px rgba(0, 0, 0, 0.12);
+  --shadow-modal: 0 12px 32px rgba(0, 0, 0, 0.22);
+  --shadow-btn: none;
+}
+
+[data-theme='sam'] .btn {
+  font-weight: 600;
+  box-shadow: none;
+}
+[data-theme='sam'] .btn:focus-visible,
+[data-theme='sam'] input:focus,
+[data-theme='sam'] select:focus,
+[data-theme='sam'] textarea:focus {
+  outline: 3px solid #2491ff;
+  outline-offset: 1px;
+  box-shadow: none;
+}
+[data-theme='sam'] .topbar-link.active {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+}
+
+/* -----------------------------------------------------------------
+ * Skeuomorphic (Tactile) theme — a modern take on physical UI: bevel
+ * geometry (bright inset highlight on top, soft shadow below) and a
+ * gradient on pressable surfaces so buttons read as physical keys,
+ * refined with soft, generous shadows rather than the hard 1px pixel
+ * borders of literal '90s chrome.
+ * ----------------------------------------------------------------- */
+[data-theme='skeu'] {
+  --radius-sm: 8px;
+  --radius-md: 12px;
+
+  /* Surfaces — brushed-steel neutrals */
+  --bg: #dfe3e8;
+  --surface: #f3f4f6;
+  --surface-2: #e9ebee;
+  --surface-3: #dde1e6;
+  --chrome: linear-gradient(180deg, #565f6b, #2f3540);
+  --hover: rgba(0, 0, 0, 0.04);
+
+  --ink: #1a1d21;
+  --muted: #6b7280;
+  --accent: #333941;
+  --on-ink: #f5f6f7;
+
+  --line: #8a95a3;
+  --box-line: #b6bfc9;
+  --divider: #d5dae0;
+
+  /* Action — a dark, pressable key */
+  --action: #262b32;
+  --action-hover: #323841;
+  --action-ink: #f5f6f7;
+  --link: #2563eb;
+  --link-hover: #1d4ed8;
+
+  --note: #b45309;
+  --note-bg: #fef3c7;
+  --note-fg: #78350f;
+  --crit: #b91c1c;
+  --crit-bg: #fee2e2;
+  --crit-fg: #7f1d1d;
+  --imp: #b45309;
+  --imp-bg: #fef3c7;
+  --imp-fg: #78350f;
+  --minor: #4b5563;
+  --minor-bg: #e5e7eb;
+  --minor-fg: #1f2937;
+
+  --conf-high: #059669;
+  --conf-good: #65a30d;
+  --conf-med: #d97706;
+  --conf-low: #ea580c;
+  --conf-vlow: #b91c1c;
+
+  --th-bg: #e2e5e9;
+
+  --backdrop: rgba(20, 22, 26, 0.45);
+  --focus-ring: rgba(38, 43, 50, 0.25);
+
+  --chrome-fg: #f5f6f7;
+  --chrome-fg-muted: rgba(245, 246, 247, 0.68);
+  --chrome-hover: rgba(255, 255, 255, 0.1);
+  --chrome-active-bg: rgba(255, 255, 255, 0.16);
+  --chrome-border: #14161a;
+
+  --grid-line: rgba(20, 22, 26, 0.06);
+
+  /* Elevation — the bevel physics: a bright highlight along the top
+   * inside edge, a soft shadow beneath, like a raised, pressable key. */
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 3px 8px rgba(20, 22, 26, 0.14), 0 1px 2px rgba(20, 22, 26, 0.08);
+  --shadow-card-hover: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 8px 18px rgba(20, 22, 26, 0.18), 0 2px 4px rgba(20, 22, 26, 0.1);
+  --shadow-modal: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 24px 48px rgba(20, 22, 26, 0.38), 0 4px 12px rgba(20, 22, 26, 0.18);
+  --shadow-btn: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.35), 0 2px 4px rgba(20, 22, 26, 0.35), 0 1px 1px rgba(20, 22, 26, 0.2);
+}
+
+/* Buttons — the clearest "pressable key": light-to-dark gradient, bright
+ * top inset highlight, soft drop shadow; pressing flattens/inverts it. */
+[data-theme='skeu'] .btn {
+  background: linear-gradient(180deg, #3f4650 0%, #262b32 55%, #1a1e24 100%);
+  border-color: #14161a;
+  color: #f5f6f7;
+}
+[data-theme='skeu'] .btn:hover {
+  background: linear-gradient(180deg, #4a525d 0%, #2d333b 55%, #1f242b 100%);
+}
+[data-theme='skeu'] .btn:active {
+  background: linear-gradient(180deg, #1a1e24 0%, #262b32 100%);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(1px);
+}
+[data-theme='skeu'] .btn.ghost {
+  background: transparent;
+  box-shadow: none;
+  border-color: var(--box-line);
+  color: var(--ink);
+}
+[data-theme='skeu'] .btn.ghost:hover { background: var(--hover); }
+
+/* Inputs — a sunken well: inset shadow instead of a raised bevel */
+[data-theme='skeu'] input,
+[data-theme='skeu'] select,
+[data-theme='skeu'] textarea {
+  background: linear-gradient(180deg, #eef0f2, #ffffff 45%);
+  box-shadow: inset 0 1px 3px rgba(20, 22, 26, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-color: #b6bfc9;
+}
+[data-theme='skeu'] input:focus,
+[data-theme='skeu'] select:focus,
+[data-theme='skeu'] textarea:focus {
+  box-shadow: inset 0 1px 3px rgba(20, 22, 26, 0.16), 0 0 0 3px var(--focus-ring);
+}
+
+/* Cards/panels/modals — a raised, brushed-metal surface */
+[data-theme='skeu'] .sol-card,
+[data-theme='skeu'] .panel,
+[data-theme='skeu'] .modal-card,
+[data-theme='skeu'] .settings-card,
+[data-theme='skeu'] .table-wrap,
+[data-theme='skeu'] .auth-dialog,
+[data-theme='skeu'] .drawer {
+  background: linear-gradient(180deg, #fbfbfc, #eef0f2);
+}
+
+/* Auth dialog top/bottom get the metallic steel gradient treatment. Scoped
+ * to the (self-contained) auth dialog rather than panel/settings headers,
+ * whose children hard-code var(--ink)/var(--muted) for a light head and
+ * would go invisible against a dark one. */
+[data-theme='skeu'] .auth-dialog-top,
+[data-theme='skeu'] .auth-dialog-bottom {
+  background: linear-gradient(180deg, #565f6b, #333940);
+  color: #e7e9eb;
+  border-color: #14161a;
+}
+[data-theme='skeu'] .auth-dialog-sub,
+[data-theme='skeu'] .auth-dialog-bottom .muted {
+  color: rgba(231, 233, 235, 0.7);
 }

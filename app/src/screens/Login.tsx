@@ -2,11 +2,14 @@ import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
 
+const DETAIL_FADE_MS = 160;
 const EXPAND_MS = 320;
+const JUST_LOGGED_IN_KEY = 'forge-just-logged-in';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [detailsHidden, setDetailsHidden] = useState(false);
   const [expanding, setExpanding] = useState(false);
   const navigate = useNavigate();
   const login = useAuth((s) => s.login);
@@ -15,13 +18,17 @@ const Login: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || expanding) return;
+    if (!email.trim() || detailsHidden) return;
 
-    // Pin the dialog to its current on-screen rect, then let it grow to
-    // cover the backdrop — a FLIP transition into the dashboard shell.
+    // Step 1: fade out the card's own details (fields, copy) first, so the
+    // card frame itself is what visibly grows in step 2.
+    setDetailsHidden(true);
+
     const dialog = dialogRef.current;
     const bounds = backdropRef.current?.getBoundingClientRect();
     if (dialog && bounds) {
+      // Pin the dialog to its current on-screen rect now, before anything
+      // moves, so step 2 can FLIP it out to cover the backdrop.
       const rect = dialog.getBoundingClientRect();
       dialog.style.position = 'fixed';
       dialog.style.margin = '0';
@@ -31,20 +38,28 @@ const Login: React.FC = () => {
       dialog.style.height = `${rect.height}px`;
       // Force layout so the pinned rect is committed before animating.
       void dialog.offsetHeight;
-      requestAnimationFrame(() => {
+
+      window.setTimeout(() => {
+        // Step 2: expand the (now detail-less) card to fill the backdrop.
         setExpanding(true);
         dialog.style.top = `${bounds.top}px`;
         dialog.style.left = `${bounds.left}px`;
         dialog.style.width = `${bounds.width}px`;
         dialog.style.height = `${bounds.height}px`;
-      });
+      }, DETAIL_FADE_MS);
     }
 
-    // Stubbed — no real auth yet.
+    // Step 3: once the card fills the screen, hand off to the app shell,
+    // which fades its own screen in (see AppShell.tsx / app-enter).
     window.setTimeout(() => {
+      try {
+        sessionStorage.setItem(JUST_LOGGED_IN_KEY, '1');
+      } catch {
+        /* sessionStorage unavailable — app shell just skips the fade-in */
+      }
       login(email.trim());
       navigate('/solicitations', { replace: true });
-    }, dialog && bounds ? EXPAND_MS : 0);
+    }, dialog && bounds ? DETAIL_FADE_MS + EXPAND_MS : 0);
   };
 
   return (
@@ -53,48 +68,50 @@ const Login: React.FC = () => {
         <span>forge.wsgc.local</span>
         <span aria-hidden="true">·</span>
       </div>
-      <main className="auth-backdrop" ref={backdropRef}>
+      <main className="auth-backdrop bg-grid" ref={backdropRef}>
         <form
           className={`auth-dialog${expanding ? ' auth-dialog--expand' : ''}`}
           ref={dialogRef}
           onSubmit={handleSubmit}
         >
-          <div className="auth-dialog-top">
-            <span className="auth-dialog-brand">FORGE</span>
-            <span className="auth-dialog-sub">Sign in to continue</span>
-          </div>
+          <div className={`auth-dialog-inner${detailsHidden ? ' is-hidden' : ''}`}>
+            <div className="auth-dialog-top">
+              <span className="auth-dialog-brand">FORGE</span>
+              <span className="auth-dialog-sub">Sign in to continue</span>
+            </div>
 
-          <div className="auth-dialog-body">
-            <label className="label" htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@wsgc.us"
-              autoComplete="email"
-              autoFocus
-              required
-              disabled={expanding}
-            />
+            <div className="auth-dialog-body">
+              <label className="label" htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@wsgc.us"
+                autoComplete="email"
+                autoFocus
+                required
+                disabled={detailsHidden}
+              />
 
-            <label className="label" htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••"
-              autoComplete="current-password"
-              disabled={expanding}
-            />
-          </div>
+              <label className="label" htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••"
+                autoComplete="current-password"
+                disabled={detailsHidden}
+              />
+            </div>
 
-          <div className="auth-dialog-bottom">
-            <button type="submit" className="btn full" disabled={expanding}>
-              {expanding ? 'Signing in…' : 'Log In'}
-            </button>
-            <p className="muted">Prototype build — any email signs you in.</p>
+            <div className="auth-dialog-bottom">
+              <button type="submit" className="btn full" disabled={detailsHidden}>
+                {expanding ? 'Signing in…' : 'Log In'}
+              </button>
+              <p className="muted">Prototype build — any email signs you in.</p>
+            </div>
           </div>
         </form>
       </main>

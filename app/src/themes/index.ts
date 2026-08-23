@@ -23,14 +23,16 @@ export interface ThemeOption {
  * rendered theme it resolves to is either `light` or `dark`.
  */
 export const THEMES: ThemeOption[] = [
-  { id: 'system', label: 'System', hint: 'Match OS preference' },
-  { id: 'light',  label: 'Light',  hint: 'Default' },
-  { id: 'dark',   label: 'Dark',   hint: 'Easier on the eyes' },
-  { id: 'gca',    label: 'GCA',    hint: 'Greenline Capture brand' },
+  { id: 'system', label: 'System',  hint: 'Match OS preference' },
+  { id: 'light',  label: 'Light',   hint: 'Default' },
+  { id: 'dark',   label: 'Dark',    hint: 'Easier on the eyes' },
+  { id: 'gca',    label: 'GCA',     hint: 'Greenline Capture brand' },
+  { id: 'sam',    label: 'SAM',     hint: 'GSA design system' },
+  { id: 'skeu',   label: 'Tactile', hint: 'Skeuomorphic bevels' },
 ];
 
 /** Themes that produce a real CSS data-theme value (excludes 'system'). */
-export const RENDERABLE_THEME_IDS: ThemeId[] = ['light', 'dark', 'gca'];
+export const RENDERABLE_THEME_IDS: ThemeId[] = ['light', 'dark', 'gca', 'sam', 'skeu'];
 
 /**
  * Resolves a stored theme id to the actual data-theme to apply on <html>.
