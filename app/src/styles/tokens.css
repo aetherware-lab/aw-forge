@@ -138,6 +138,10 @@
 
   /* Subtle background grid (graph-paper texture) */
   --grid-line: rgba(28, 28, 30, 0.05);
+
+  /* Auth dialog's top/bottom bars — a minimal, faintly blue-grey status
+   * chrome, distinct from --surface-2 (not blue-tinted in every theme). */
+  --auth-bar-bg: #e6e9ee;
 }
 
 /* -----------------------------------------------------------------
@@ -198,6 +202,8 @@
   --chrome-border: var(--box-line);
 
   --grid-line: rgba(237, 237, 237, 0.06);
+
+  --auth-bar-bg: #1a1e26;
 
   /* Elevation on dark surfaces reads better as a soft light halo + a
    * heavier drop than on light theme — a black shadow on a near-black
@@ -297,6 +303,8 @@
   --chrome-border: #0b3162;
 
   --grid-line: rgba(11, 49, 98, 0.06);
+
+  --auth-bar-bg: #e6eaf1;
 
   /* Elevation — navy-tinted so shadows feel like part of the brand rather
    * than a generic default. */
@@ -399,6 +407,8 @@
 
   --grid-line: rgba(0, 94, 162, 0.07);
 
+  --auth-bar-bg: #e6ebf1;
+
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.08);
   --shadow-card-hover: 0 4px 10px rgba(0, 0, 0, 0.12);
   --shadow-modal: 0 12px 32px rgba(0, 0, 0, 0.22);
@@ -493,6 +503,8 @@
 
   --grid-line: rgba(11, 49, 98, 0.07);
 
+  --auth-bar-bg: #e2e7ee;
+
   /* Elevation — the bevel physics: a bright highlight along the top
    * inside edge, a soft navy-tinted shadow beneath, like a raised,
    * pressable key. */
@@ -553,13 +565,8 @@
   background: linear-gradient(180deg, #fbfcfe, #eef1f6);
 }
 
-/* Auth dialog top/bottom get the metallic navy gradient treatment. Scoped
- * to the (self-contained) auth dialog rather than panel/settings headers,
- * whose children hard-code var(--ink)/var(--muted) for a light head and
- * would go invisible against a dark one. */
-[data-theme='skeu'] .auth-dialog-top,
-[data-theme='skeu'] .auth-dialog-bottom {
-  background: linear-gradient(180deg, #3465a0, #0b3162 55%, #071e3d 100%);
-  color: #ffffff;
-  border-color: #071e3d;
-}
+/* Auth dialog top/bottom intentionally have no skeu-specific override —
+ * the shared --auth-bar-bg (set above) already gives them a minimal,
+ * theme-appropriate blue-grey; a bold navy gradient here would "stand
+ * out" against the otherwise minimal auth card, which is the opposite
+ * of what these bars are meant to do. */

@@ -224,7 +224,7 @@ input[type='checkbox'] {
 }
 .auth-dialog {
   width: 100%;
-  max-width: 360px;
+  max-width: 400px;
   border: 1.5px solid var(--box-line);
   border-radius: var(--radius-md);
   /* The frame itself is transparent — only the top/bottom bars and the
@@ -277,10 +277,15 @@ input[type='checkbox'] {
   opacity: 0;
   pointer-events: none;
 }
+/* Both bars use a dedicated blue-grey — --auth-bar-bg (defined per theme
+ * in tokens.css) — rather than --surface-2, since --surface-2 isn't
+ * blue-tinted in every theme and these should read as a minimal, faintly
+ * blue-grey status chrome rather than blend into (or clash with) the
+ * theme's ordinary surfaces. */
 .auth-dialog-top {
   padding: 8px 16px;
   border-bottom: 1px solid var(--box-line);
-  background: var(--surface-2);
+  background: var(--auth-bar-bg);
   text-align: left;
 }
 .auth-dialog-brand {
@@ -300,26 +305,31 @@ input[type='checkbox'] {
 }
 .auth-form-card {
   width: 100%;
-  max-width: 300px;
+  max-width: 340px;
   background: var(--surface);
   border: 1.5px solid var(--box-line);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-  padding: 18px 18px 16px;
+  border-radius: 0;
+  padding: 22px 22px 20px;
 }
 .auth-submit { margin-top: 14px; }
 
 /* Shrunk status strip — region + a live clock, in place of the old
- * Sign In button (now inside .auth-form-card). */
+ * Sign In button (now inside .auth-form-card). Monospace, like a system
+ * status bar's digits. */
 .auth-dialog-bottom {
   padding: 5px 16px;
   border-top: 1px solid var(--box-line);
-  background: var(--surface-2);
+  background: var(--auth-bar-bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 10.5px;
+  font-family: var(--font-mono);
   color: var(--muted);
+}
+.auth-status-region {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 /* Remember me / Forgot password row */

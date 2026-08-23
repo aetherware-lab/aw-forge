@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
+import { useSolicitations } from '@/store/solicitations';
 
 const DETAIL_FADE_MS = 160;
 const EXPAND_MS = 320;
@@ -14,6 +15,24 @@ const JUST_LOGGED_IN_KEY = 'forge-just-logged-in';
 const TOPBAR_H = 48;
 const CARD_MARGIN = 24;
 const CARD_MAX_WIDTH = 1200;
+
+// .app-card's height is content-based (auto), not stretched to fill the
+// viewport — Dashboard.tsx renders a page-header, a toolbar row, and one
+// .sol-card per solicitation (or a shorter .empty state with none). There's
+// no way to know its real rendered height without mounting it, so this
+// estimates it from the same data Dashboard reads, rather than filling the
+// entire space below the topbar regardless of how much content there is.
+const APP_CARD_PADDING = 48; // .app-card's own 24px top + 24px bottom
+const HEADER_H = 40; // .page-header (title only, no supporting text)
+const TOOLBAR_H = 56; // search + tag/agency/sort selects row
+const SOL_CARD_H = 112; // one .sol-card, incl. its margin-bottom
+const EMPTY_STATE_H = 90; // .empty box shown when there are none
+
+const estimateDashboardCardHeight = (solicitationCount: number): number =>
+  APP_CARD_PADDING +
+  HEADER_H +
+  TOOLBAR_H +
+  (solicitationCount > 0 ? solicitationCount * SOL_CARD_H : EMPTY_STATE_H);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -44,6 +63,7 @@ const Login: React.FC = () => {
   const [loginFailed, setLoginFailed] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const [regionName] = useState(regionNameFromLocale);
+  const solicitationCount = useSolicitations((s) => s.solicitations.length);
   const navigate = useNavigate();
   const login = useAuth((s) => s.login);
   const backdropRef = useRef<HTMLElement>(null);
@@ -71,7 +91,14 @@ const Login: React.FC = () => {
       top: backdropRect.top + TOPBAR_H + CARD_MARGIN,
       left: backdropRect.left + Math.max(CARD_MARGIN, (backdropRect.width - CARD_MAX_WIDTH) / 2),
       width: Math.min(backdropRect.width - CARD_MARGIN * 2, CARD_MAX_WIDTH),
-      height: backdropRect.height - TOPBAR_H - CARD_MARGIN * 2,
+      // The bottom of the card should land where the real .app-card ends,
+      // not stretch all the way to the bottom of the viewport — see
+      // estimateDashboardCardHeight above. Still capped at the space
+      // actually available, same as before, for very long lists.
+      height: Math.min(
+        backdropRect.height - TOPBAR_H - CARD_MARGIN * 2,
+        estimateDashboardCardHeight(solicitationCount),
+      ),
     };
     if (dialog && bounds) {
       // Pin the dialog to its current on-screen rect now, before anything
@@ -183,8 +210,8 @@ const Login: React.FC = () => {
           </div>
 
           <div className="auth-dialog-bottom">
-            <span>{regionName}</span>
-            <span className="mono">{formatStatusClock(now)}</span>
+            <span className="auth-status-region">{regionName}</span>
+            <span>{formatStatusClock(now)}</span>
           </div>
         </div>
       </form>
