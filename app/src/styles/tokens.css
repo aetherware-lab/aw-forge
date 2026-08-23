@@ -556,7 +556,3 @@
   color: #e7e9eb;
   border-color: #14161a;
 }
-[data-theme='skeu'] .auth-dialog-sub,
-[data-theme='skeu'] .auth-dialog-bottom .muted {
-  color: rgba(231, 233, 235, 0.7);
-}

@@ -211,9 +211,12 @@ input[type='checkbox'] {
 .back-link svg,
 .cite-link svg { flex-shrink: 0; }
 
-/* ----- Auth dialog (login) ------------------------------------------- */
+/* ----- Auth dialog (login) -------------------------------------------
+ * No chrome bar on this screen — the topbar only appears once signed in,
+ * dropping in from above (see the topbar-drop-in keyframes in the App
+ * shell section below). */
 .auth-backdrop {
-  min-height: calc(100vh - 41px);
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -232,11 +235,13 @@ input[type='checkbox'] {
     box-shadow 320ms ease;
 }
 .auth-dialog--expand {
-  /* Grows toward the floating .app-card's footprint (see Login.tsx), so it
-   * keeps card chrome — border/radius/shadow — rather than flattening to
-   * fill the screen edge-to-edge. */
+  /* Fills the whole screen (see Login.tsx) — flatten the card chrome so
+   * it reads as a full-bleed cover rather than an oversized card. */
   display: flex;
   flex-direction: column;
+  border-radius: 0;
+  border-color: transparent;
+  box-shadow: none;
   z-index: 1000;
 }
 .auth-dialog--expand .auth-dialog-inner {
@@ -264,7 +269,7 @@ input[type='checkbox'] {
   pointer-events: none;
 }
 .auth-dialog-top {
-  padding: 18px 20px;
+  padding: 10px 20px;
   border-bottom: 1px solid var(--box-line);
   background: var(--surface-2);
   text-align: center;
@@ -275,21 +280,30 @@ input[type='checkbox'] {
   font-size: 14px;
   letter-spacing: 0.01em;
 }
-.auth-dialog-sub {
-  display: block;
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 3px;
-}
 .auth-dialog-body { padding: 20px; }
 .auth-dialog-bottom {
-  padding: 14px 20px;
+  padding: 10px 20px;
   border-top: 1px solid var(--box-line);
   background: var(--surface-2);
   text-align: center;
 }
-.auth-dialog-bottom .btn { margin-bottom: 10px; }
-.auth-dialog-bottom p { margin: 0; font-size: 11px; }
+.auth-dialog-bottom .btn { margin: 0; }
+
+/* Remember me / Forgot password row */
+.auth-remember-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+.auth-remember-row .field-aside { margin-top: 0; }
+
+/* Field highlighted after a failed sign-in attempt. Scoped to .auth-dialog
+ * so it outranks the shared form-control border rule regardless of
+ * source order (same fix as the .search-field icon overlap above). */
+.auth-dialog input.input-error {
+  border-color: var(--crit);
+}
 
 /* Solicitation cards */
 .sol-card {
@@ -443,6 +457,20 @@ input[type='checkbox'] {
 .spacer { height: 12px; }
 .link-reset { text-decoration: none; }
 
+/* Plain button styled as a text link (e.g. "Forgot Password?") */
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--link);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  padding: 0;
+}
+.link-btn:hover { color: var(--link-hover); }
+.link-btn:disabled { color: var(--muted); cursor: not-allowed; text-decoration: none; }
+
 /* ----- Modal --------------------------------------------------------- */
 @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes modal-in {
@@ -473,7 +501,9 @@ input[type='checkbox'] {
   animation: modal-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 @media (prefers-reduced-motion: reduce) {
-  .modal-backdrop, .modal-card, .app-shell.app-enter, .spin { animation: none; }
+  .modal-backdrop, .modal-card, .spin,
+  .app-shell.app-enter .chrome-bar.topbar,
+  .app-shell.app-enter .app-main { animation: none; }
   .auth-dialog-inner { transition: none; }
 }
 
@@ -1135,7 +1165,15 @@ textarea:focus,
 /* One-time fade-in when the topbar+main shell mounts right after login
  * (Login.tsx sets the flag that triggers `app-enter`). */
 @keyframes app-fade-in { from { opacity: 0; } to { opacity: 1; } }
-.app-shell.app-enter { animation: app-fade-in 420ms ease-out; }
+@keyframes topbar-drop-in { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+/* The topbar drops in from above (Login has none of its own — see
+ * .auth-backdrop) while the workspace card fades in beneath it. */
+.app-shell.app-enter .chrome-bar.topbar {
+  animation: topbar-drop-in 380ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.app-shell.app-enter .app-main {
+  animation: app-fade-in 420ms ease-out;
+}
 
 /* ----- Topbar ---------------------------------------------------------
  * Everything the old sidebar held now lives in the chrome bar: brand,
