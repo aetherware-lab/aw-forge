@@ -1,52 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
-import { useSolicitations } from '@/store/solicitations';
 
 const DETAIL_FADE_MS = 160;
 const EXPAND_MS = 320;
 const JUST_LOGGED_IN_KEY = 'forge-just-logged-in';
 
-// Matches AppShell's layout exactly (see global.css): a 48px topbar,
-// then .app-main's 24px padding around a max-1200px-wide .app-card. The
-// expand step below targets this same rect so the sign-in card visibly
-// becomes the workspace card once the topbar drops in over it, rather
-// than a mismatched size swap at the moment AppShell mounts.
+// Matches AppShell's layout exactly (see global.css): a 48px topbar, then
+// .app-main's 24px padding around a max-1200px-wide .app-card. .app-card
+// always fills that space (flex: 1 1 auto, scrolling its own overflow)
+// rather than sizing to its own content, so this rect is exact — not an
+// estimate — for every route, not just Dashboard.
 const TOPBAR_H = 48;
 const CARD_MARGIN = 24;
 const CARD_MAX_WIDTH = 1200;
 
-// .app-card's height is content-based (auto), not stretched to fill the
-// viewport — Dashboard.tsx renders a page-header, a toolbar row, and one
-// .sol-card per solicitation (or a shorter .empty state with none). There's
-// no way to know its real rendered height without mounting it, so this
-// estimates it from the same data Dashboard reads, rather than filling the
-// entire space below the topbar regardless of how much content there is.
-const APP_CARD_PADDING = 48; // .app-card's own 24px top + 24px bottom
-const HEADER_H = 40; // .page-header (title only, no supporting text)
-const TOOLBAR_H = 56; // search + tag/agency/sort selects row
-const SOL_CARD_H = 112; // one .sol-card, incl. its margin-bottom
-const EMPTY_STATE_H = 90; // .empty box shown when there are none
-
-const estimateDashboardCardHeight = (solicitationCount: number): number =>
-  APP_CARD_PADDING +
-  HEADER_H +
-  TOOLBAR_H +
-  (solicitationCount > 0 ? solicitationCount * SOL_CARD_H : EMPTY_STATE_H);
-
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/** Best-effort region name from the OS locale, for the status bar — falls
- * back to "United States" (this is a US-based GCA tool) if unavailable. */
-const regionNameFromLocale = (): string => {
-  try {
-    const code = navigator.language.split('-')[1];
-    if (!code) return 'United States';
-    return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) ?? 'United States';
-  } catch {
-    return 'United States';
-  }
-};
 
 const formatStatusClock = (d: Date): string =>
   `${d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: '2-digit' }).toUpperCase()} · ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`;
@@ -62,8 +31,6 @@ const Login: React.FC = () => {
   // exists) has somewhere to land without further UI work.
   const [loginFailed, setLoginFailed] = useState(false);
   const [now, setNow] = useState(() => new Date());
-  const [regionName] = useState(regionNameFromLocale);
-  const solicitationCount = useSolicitations((s) => s.solicitations.length);
   const navigate = useNavigate();
   const login = useAuth((s) => s.login);
   const backdropRef = useRef<HTMLElement>(null);
@@ -91,14 +58,7 @@ const Login: React.FC = () => {
       top: backdropRect.top + TOPBAR_H + CARD_MARGIN,
       left: backdropRect.left + Math.max(CARD_MARGIN, (backdropRect.width - CARD_MAX_WIDTH) / 2),
       width: Math.min(backdropRect.width - CARD_MARGIN * 2, CARD_MAX_WIDTH),
-      // The bottom of the card should land where the real .app-card ends,
-      // not stretch all the way to the bottom of the viewport — see
-      // estimateDashboardCardHeight above. Still capped at the space
-      // actually available, same as before, for very long lists.
-      height: Math.min(
-        backdropRect.height - TOPBAR_H - CARD_MARGIN * 2,
-        estimateDashboardCardHeight(solicitationCount),
-      ),
+      height: backdropRect.height - TOPBAR_H - CARD_MARGIN * 2,
     };
     if (dialog && bounds) {
       // Pin the dialog to its current on-screen rect now, before anything
@@ -210,7 +170,7 @@ const Login: React.FC = () => {
           </div>
 
           <div className="auth-dialog-bottom">
-            <span className="auth-status-region">{regionName}</span>
+            <span className="auth-status-copyright">© 2026 FORGE from Aetherware</span>
             <span>{formatStatusClock(now)}</span>
           </div>
         </div>

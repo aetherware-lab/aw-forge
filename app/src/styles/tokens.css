@@ -141,7 +141,7 @@
 
   /* Auth dialog's top/bottom bars — a minimal, faintly blue-grey status
    * chrome, distinct from --surface-2 (not blue-tinted in every theme). */
-  --auth-bar-bg: #e6e9ee;
+  --auth-bar-bg: #e9eaec;
 }
 
 /* -----------------------------------------------------------------
@@ -203,7 +203,7 @@
 
   --grid-line: rgba(237, 237, 237, 0.06);
 
-  --auth-bar-bg: #1a1e26;
+  --auth-bar-bg: #1e1f22;
 
   /* Elevation on dark surfaces reads better as a soft light halo + a
    * heavier drop than on light theme — a black shadow on a near-black
@@ -304,7 +304,7 @@
 
   --grid-line: rgba(11, 49, 98, 0.06);
 
-  --auth-bar-bg: #e6eaf1;
+  --auth-bar-bg: #e8e9eb;
 
   /* Elevation — navy-tinted so shadows feel like part of the brand rather
    * than a generic default. */
@@ -407,7 +407,7 @@
 
   --grid-line: rgba(0, 94, 162, 0.07);
 
-  --auth-bar-bg: #e6ebf1;
+  --auth-bar-bg: #e8e9eb;
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.08);
   --shadow-card-hover: 0 4px 10px rgba(0, 0, 0, 0.12);
@@ -503,7 +503,7 @@
 
   --grid-line: rgba(11, 49, 98, 0.07);
 
-  --auth-bar-bg: #e2e7ee;
+  --auth-bar-bg: #e5e6e8;
 
   /* Elevation — the bevel physics: a bright highlight along the top
    * inside edge, a soft navy-tinted shadow beneath, like a raised,
@@ -515,27 +515,23 @@
 }
 
 /* Buttons — the clearest "pressable key": a navy vertical gradient with
- * a glossy highlight pooled toward the left (not just a flat top-to-
- * bottom bevel), bright top inset highlight, soft drop shadow; pressing
- * flattens it. This left-pooled highlight is specifically the skeu
- * button treatment — cards/inputs/other skeu surfaces are untouched. */
+ * a thin (2px) bright inset line along the left edge — not a broad glow
+ * — plus the usual top inset highlight and soft drop shadow; pressing
+ * flattens it. This left-edge line is specifically the skeu button
+ * treatment — cards/inputs/other skeu surfaces are untouched. */
 [data-theme='skeu'] .btn {
-  background:
-    radial-gradient(120% 140% at 14% 22%, rgba(255, 255, 255, 0.45), transparent 55%),
-    linear-gradient(180deg, #2a5d95 0%, #0b3162 55%, #071e3d 100%);
+  background: linear-gradient(180deg, #2a5d95 0%, #0b3162 55%, #071e3d 100%);
   border-color: #071e3d;
   color: #ffffff;
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.4), var(--shadow-btn);
 }
 [data-theme='skeu'] .btn:hover {
-  background:
-    radial-gradient(120% 140% at 14% 22%, rgba(255, 255, 255, 0.5), transparent 55%),
-    linear-gradient(180deg, #3a6ea6 0%, #123f74 55%, #0a2850 100%);
+  background: linear-gradient(180deg, #3a6ea6 0%, #123f74 55%, #0a2850 100%);
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.45), var(--shadow-btn);
 }
 [data-theme='skeu'] .btn:active {
-  background:
-    radial-gradient(120% 140% at 14% 22%, rgba(255, 255, 255, 0.22), transparent 55%),
-    linear-gradient(180deg, #071e3d 0%, #0b3162 100%);
-  box-shadow: inset 0 2px 5px rgba(3, 12, 25, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, #071e3d 0%, #0b3162 100%);
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.15), inset 0 2px 5px rgba(3, 12, 25, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
   transform: translateY(1px);
 }
 [data-theme='skeu'] .btn.ghost {
@@ -583,11 +579,8 @@
  * so each bar reads as its own separate raised strip. */
 [data-theme='skeu'] .auth-dialog-top,
 [data-theme='skeu'] .auth-dialog-bottom {
-  background: linear-gradient(180deg, #6b7d95 0%, #46586f 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 rgba(7, 30, 61, 0.3);
-  color: #f2f5f9;
-}
-[data-theme='skeu'] .auth-dialog-top,
-[data-theme='skeu'] .auth-dialog-bottom {
-  border-bottom: 1px solid #2f3d52;
+  background: linear-gradient(180deg, #868c94 0%, #565a60 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(7, 30, 61, 0.25);
+  color: #f2f2f3;
+  border-bottom: 1px solid #3a3d42;
 }

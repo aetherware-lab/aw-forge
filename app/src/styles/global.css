@@ -225,6 +225,10 @@ input[type='checkbox'] {
 .auth-dialog {
   width: 100%;
   max-width: 452px;
+  /* Taller than it is wide, by design — a floor rather than a fixed
+   * height, since .auth-dialog--expand later sets a much larger inline
+   * height via JS and a min-height never fights that. */
+  min-height: 560px;
   border: 1.5px solid var(--box-line);
   border-radius: var(--radius-md);
   /* The frame itself is transparent — only the top/bottom bars and the
@@ -298,24 +302,24 @@ input[type='checkbox'] {
  * .auth-form-card below — always centers it, so it stays centered in the
  * middle of the screen once the frame expands, not pinned top-left. */
 .auth-dialog-body {
-  padding: 16px;
+  padding: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .auth-form-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 428px;
   background: var(--surface);
   border: 1.5px solid var(--box-line);
   border-radius: 0;
-  padding: 22px 22px 20px;
+  padding: 26px 26px 24px;
 }
 .auth-submit { margin-top: 14px; }
 
-/* Shrunk status strip — region + a live clock, in place of the old
- * Sign In button (now inside .auth-form-card). Monospace, like a system
- * status bar's digits. */
+/* Shrunk status strip — a copyright line + a live clock, in place of the
+ * old Sign In button (now inside .auth-form-card). Monospace, like a
+ * system status bar's digits. */
 .auth-dialog-bottom {
   padding: 5px 16px;
   border-top: 1px solid var(--box-line);
@@ -327,9 +331,8 @@ input[type='checkbox'] {
   font-family: var(--font-mono);
   color: var(--muted);
 }
-.auth-status-region {
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.auth-status-copyright {
+  letter-spacing: 0.01em;
 }
 
 /* Remember me / Forgot password row */
@@ -1189,17 +1192,30 @@ textarea:focus,
 .app-main {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto;
+  /* .app-card (not this) scrolls now — see below — so every route's card
+   * is the same size instead of only as tall as its own content. */
+  overflow: hidden;
   background: var(--bg);
   padding: 24px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* The routed screen floats on a card over the textured background rather
- * than sitting flush in the viewport. Login's expand animation grows the
- * sign-in card toward roughly this same shape/position (see
- * FLOAT_MARGIN/FLOAT_MAX_WIDTH in Login.tsx) before handing off, so the
- * transition reads as "the card becomes the workspace" rather than a cut. */
+ * than sitting flush in the viewport. Always fills the space available
+ * below the topbar (flex: 1 1 auto in a column .app-main) rather than
+ * sizing to its own content, so every screen's card is the same size —
+ * Extraction Runs' card matches Solicitations' exactly, for example —
+ * with a shorter screen just scrolling inside its own card. Login's
+ * expand animation grows the sign-in card toward this same rect (see
+ * TOPBAR_H/CARD_MARGIN/CARD_MAX_WIDTH in Login.tsx) before handing off,
+ * so the transition reads as "the card becomes the workspace" rather
+ * than a cut — and because this is a fixed rect rather than a per-screen
+ * content height, that target is exact, not an estimate. */
 .app-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   background: var(--surface);
@@ -1207,6 +1223,7 @@ textarea:focus,
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-modal);
   padding: 24px;
+  overflow-y: auto;
 }
 
 /* One-time fade-in when the topbar+main shell mounts right after login
@@ -1226,9 +1243,16 @@ textarea:focus,
  * Everything the old sidebar held now lives in the chrome bar: brand,
  * primary nav, and the user menu. Height is fixed (rather than padding-
  * driven) so Login.tsx can compute exactly where .app-card will end up
- * and expand the sign-in card to match — see TOPBAR_H in Login.tsx. */
+ * and expand the sign-in card to match — see TOPBAR_H in Login.tsx.
+ * flex-shrink: 0 + overflow: hidden make that height non-negotiable: as
+ * a flex item, this would otherwise default to min-height: auto, i.e.
+ * never shrink below its own content's needed height — so a longer
+ * label like "Extraction Runs" (vs "Solicitations") could round up to a
+ * taller intrinsic height on some routes and not others. */
 .chrome-bar.topbar {
   height: 48px;
+  flex-shrink: 0;
+  overflow: hidden;
   padding: 0 18px;
   color: var(--chrome-fg-muted);
   border-bottom: 1px solid var(--chrome-border);
