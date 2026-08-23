@@ -228,7 +228,7 @@ input[type='checkbox'] {
   /* Taller than it is wide, by design — a floor rather than a fixed
    * height, since .auth-dialog--expand later sets a much larger inline
    * height via JS and a min-height never fights that. */
-  min-height: 560px;
+  min-height: 476px;
   border: 1.5px solid var(--box-line);
   border-radius: var(--radius-md);
   /* The frame is transparent at rest — only the top/bottom bars and the
@@ -237,12 +237,8 @@ input[type='checkbox'] {
    * .auth-dialog--expand switches this to var(--surface) — .app-card's
    * own background — so the card visibly fills with the workspace's
    * color *during* the expand, before the real content underneath ever
-   * fades in (see AppShell.tsx / app-enter).
-   * Always a flex column (not just once expanded) — top/bottom bars stay
-   * flex: 0 0 auto and .auth-dialog-body stretches between them (see
-   * below), so the bars visibly stay pinned to the card's own top/bottom
-   * edge as the whole thing grows, rather than being part of what fades
-   * out and leaving the growing frame looking like a blank rectangle. */
+   * fades in (see AppShell.tsx / app-enter). Always a flex column so
+   * .auth-dialog-inner (below) can stretch to fill it. */
   display: flex;
   flex-direction: column;
   background: transparent;
@@ -266,6 +262,21 @@ input[type='checkbox'] {
   max-width: none;
   z-index: 1000;
 }
+/* Everything (top bar, body, bottom bar) fades out together on submit —
+ * see Login.tsx handleSubmit — before the frame itself expands, so what
+ * visibly grows is an empty card outline. */
+.auth-dialog-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  opacity: 1;
+  transition: opacity 160ms ease;
+}
+.auth-dialog-inner.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
 /* Both bars use a dedicated blue-grey — --auth-bar-bg (defined per theme
  * in tokens.css) — rather than --surface-2, since --surface-2 isn't
  * blue-tinted in every theme and these should read as a minimal, faintly
@@ -285,27 +296,23 @@ input[type='checkbox'] {
   letter-spacing: 0.01em;
 }
 /* The transparent "empty space" (see .auth-dialog) around the smaller
- * .auth-form-card below — always centers it, so it stays centered in the
- * middle of the screen once the frame expands, not pinned top-left.
- * flex: 1 1 auto (stretching between the top/bottom bars) + the opacity
- * transition live on the same element: this is what fades out first in
- * Login.tsx's handleSubmit, while the bars around it stay visible. */
+ * .auth-form-card below. align-items: stretch (not center) so the card
+ * grows to fill the available height too — matching its own tight
+ * padding on the sides — rather than leaving a big vertical gap around
+ * a vertically-centered, content-sized card. */
 .auth-dialog-body {
   flex: 1 1 auto;
   min-height: 0;
   padding: 10px;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   overflow-y: auto;
-  opacity: 1;
-  transition: opacity 160ms ease;
-}
-.auth-dialog-body.is-hidden {
-  opacity: 0;
-  pointer-events: none;
 }
 .auth-form-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: 100%;
   max-width: 428px;
   background: var(--surface);
@@ -553,7 +560,7 @@ input[type='checkbox'] {
   .modal-backdrop, .modal-card, .spin,
   .app-shell.app-enter .chrome-bar.topbar,
   .app-shell.app-enter .app-main { animation: none; }
-  .auth-dialog-body { transition: none; }
+  .auth-dialog-inner { transition: none; }
 }
 
 /* ----- Loading spinner ------------------------------------------------ */

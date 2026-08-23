@@ -67,16 +67,18 @@ const Login: React.FC = () => {
     const backdropRect = backdropRef.current?.getBoundingClientRect();
     let bounds: { top: number; left: number; width: number; height: number } | null = null;
     if (backdropRect) {
-      const width = Math.min(backdropRect.width - CARD_MARGIN * 2, CARD_MAX_WIDTH);
-      const left = backdropRect.left + Math.max(CARD_MARGIN, (backdropRect.width - CARD_MAX_WIDTH) / 2);
       const top = backdropRect.top + TOPBAR_H + CARD_MARGIN;
       const availableHeight = backdropRect.height - TOPBAR_H - CARD_MARGIN * 2;
 
       // Measure the hidden Dashboard clone inside an .app-main-shaped box
       // sized exactly like the real one, so wrapping/line-breaks (and any
-      // scrollbar-driven width narrowing) match and the height is real
-      // rather than guessed. Capped at the available space, same as
-      // before, for a solicitation list too long to fit regardless.
+      // scrollbar-driven width narrowing) match and both dimensions are
+      // real rather than guessed. Width in particular used to be a plain
+      // arithmetic Math.min — correct only when .app-main has no
+      // scrollbar; once one appears (content taller than the viewport)
+      // the real .app-card is actually narrower than that formula
+      // assumed, which is why width silently stopped matching too.
+      let width = Math.min(backdropRect.width - CARD_MARGIN * 2, CARD_MAX_WIDTH); // fallback if refs aren't ready
       let height = availableHeight;
       const measureMain = measureMainRef.current;
       const measureCard = measureCardRef.current;
@@ -84,9 +86,12 @@ const Login: React.FC = () => {
         measureMain.style.width = `${backdropRect.width}px`;
         measureMain.style.height = `${backdropRect.height - TOPBAR_H}px`;
         void measureMain.offsetHeight; // force layout before reading it back
-        height = Math.min(availableHeight, measureCard.getBoundingClientRect().height);
+        const measured = measureCard.getBoundingClientRect();
+        width = measured.width;
+        height = Math.min(availableHeight, measured.height);
       }
 
+      const left = backdropRect.left + Math.max(CARD_MARGIN, (backdropRect.width - width) / 2);
       bounds = { top, left, width, height };
     }
     if (dialog && bounds) {
@@ -135,75 +140,73 @@ const Login: React.FC = () => {
         onSubmit={handleSubmit}
         noValidate
       >
-        <div className="auth-dialog-top">
-          <span className="auth-dialog-brand">FORGE</span>
-        </div>
+        <div className={`auth-dialog-inner${detailsHidden ? ' is-hidden' : ''}`}>
+          <div className="auth-dialog-top">
+            <span className="auth-dialog-brand">FORGE</span>
+          </div>
 
-        {/* Only this fades out (see handleSubmit) — the top/bottom bars
-            above/below stay visible and pinned to the card's edges via
-            flex, so they visibly stretch apart as the frame grows rather
-            than disappearing into a featureless blank rectangle. */}
-        <div className={`auth-dialog-body${detailsHidden ? ' is-hidden' : ''}`}>
-          <div className="auth-form-card">
-            <label className="label" htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              className={loginFailed ? 'input-error' : undefined}
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setLoginFailed(false);
-              }}
-              placeholder="you@wsgc.us"
-              autoComplete="email"
-              autoFocus
-              disabled={detailsHidden}
-              aria-invalid={loginFailed}
-            />
+          <div className="auth-dialog-body">
+            <div className="auth-form-card">
+              <label className="label" htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                className={loginFailed ? 'input-error' : undefined}
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setLoginFailed(false);
+                }}
+                placeholder="you@wsgc.us"
+                autoComplete="email"
+                autoFocus
+                disabled={detailsHidden}
+                aria-invalid={loginFailed}
+              />
 
-            <label className="label" htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              className={loginFailed ? 'input-error' : undefined}
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setLoginFailed(false);
-              }}
-              placeholder="••••••••••"
-              autoComplete="current-password"
-              disabled={detailsHidden}
-              aria-invalid={loginFailed}
-            />
+              <label className="label" htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                className={loginFailed ? 'input-error' : undefined}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setLoginFailed(false);
+                }}
+                placeholder="••••••••••"
+                autoComplete="current-password"
+                disabled={detailsHidden}
+                aria-invalid={loginFailed}
+              />
 
-            <div className="auth-remember-row">
-              <label className="field-aside">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  disabled={detailsHidden}
-                />
-                Remember me
-              </label>
-              <button type="button" className="link-btn quiet" disabled={detailsHidden}>
-                Forgot Password?
+              <div className="auth-remember-row">
+                <label className="field-aside">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    disabled={detailsHidden}
+                  />
+                  Remember me
+                </label>
+                <button type="button" className="link-btn quiet" disabled={detailsHidden}>
+                  Forgot Password?
+                </button>
+              </div>
+
+              {loginFailed && <p className="error-text" role="alert">Invalid email or password</p>}
+
+              <button type="submit" className="btn full auth-submit" disabled={detailsHidden || !isValid}>
+                {expanding ? 'Signing in…' : 'Sign in'}
               </button>
             </div>
-
-            {loginFailed && <p className="error-text" role="alert">Invalid email or password</p>}
-
-            <button type="submit" className="btn full auth-submit" disabled={detailsHidden || !isValid}>
-              {expanding ? 'Signing in…' : 'Sign in'}
-            </button>
           </div>
-        </div>
 
-        <div className="auth-dialog-bottom">
-          <span className="auth-status-copyright">© 2026 FORGE from Aetherware</span>
-          <span>{formatStatusClock(now)}</span>
+          <div className="auth-dialog-bottom">
+            <span className="auth-status-copyright">© 2026 FORGE from Aetherware</span>
+            <span>{formatStatusClock(now)}</span>
+          </div>
         </div>
       </form>
 
