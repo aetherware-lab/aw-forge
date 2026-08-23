@@ -36,7 +36,13 @@ const AUTH_BACKDROP_PADDING = 24;
  * app-enter/topbar-drop-in in global.css) and an entry overlay grows
  * directly from where Login's small card was sitting onto the real
  * .app-card — see the effect below — in one continuous motion, rather
- * than Login expanding to some intermediate size first.
+ * than Login expanding to some intermediate size first. The real
+ * .app-card renders normally the whole time (that's what's being
+ * measured), but stays invisible (.is-entering, below) until the
+ * overlay reaches it and disappears — otherwise the real card, being
+ * far bigger than the overlay's small starting rect, would be visible
+ * around/behind it from the very first frame instead of only being
+ * revealed once the overlay has actually grown to cover it.
  *
  * Why measure the card here instead of predicting its size from Login:
  * earlier versions had Login estimate/measure a *clone* of the
@@ -140,7 +146,7 @@ const AppShell: React.FC = () => {
         </div>
       </div>
       <main className="app-main bg-grid">
-        <div className="app-card" ref={appCardRef}>
+        <div className={`app-card${showEntryOverlay ? ' is-entering' : ''}`} ref={appCardRef}>
           <Outlet />
         </div>
       </main>

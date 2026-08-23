@@ -1233,6 +1233,15 @@ textarea:focus,
 @media (prefers-reduced-motion: reduce) {
   .app-entry-overlay { transition: none; }
 }
+/* Invisible until .app-entry-overlay has grown to cover it and
+ * disappeared (see the useLayoutEffect in AppShell.tsx) — otherwise the
+ * real card, far bigger than the overlay's small starting rect, would
+ * be visible around/behind it from the very first frame. visibility
+ * (not opacity/display) so it still participates in layout — the
+ * overlay's grow target is this element's own getBoundingClientRect(). */
+.app-card.is-entering {
+  visibility: hidden;
+}
 
 @keyframes topbar-drop-in { from { transform: translateY(-100%); } to { transform: translateY(0); } }
 /* The topbar drops in from above (Login has none of its own — see
@@ -1245,12 +1254,11 @@ textarea:focus,
 /* ----- Topbar ---------------------------------------------------------
  * Everything the old sidebar held now lives in the chrome bar: brand,
  * primary nav, and the user menu. Height is fixed (rather than padding-
- * driven) so Login.tsx/AppShell.tsx can compute exactly where .app-card
- * starts — see TOPBAR_H in both. flex-shrink: 0 stops it from ever
- * shrinking below 48px (flex items default to min-height: auto, i.e.
- * never shrink below their own content's needed height — a longer label
- * like "Extraction Runs" vs "Solicitations" could otherwise round up to
- * a taller intrinsic height on some routes and not others).
+ * driven) so it can't vary between routes. flex-shrink: 0 stops it from
+ * ever shrinking below 48px (flex items default to min-height: auto,
+ * i.e. never shrink below their own content's needed height — a longer
+ * label like "Extraction Runs" vs "Solicitations" could otherwise round
+ * up to a taller intrinsic height on some routes and not others).
  * Deliberately no overflow: hidden here — .user-menu-panel (UserMenu.tsx)
  * is an absolutely-positioned child that extends below this bar's own
  * box, and overflow: hidden on an ancestor clips exactly that.
