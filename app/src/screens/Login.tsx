@@ -36,7 +36,16 @@ const Login: React.FC = () => {
   const login = useAuth((s) => s.login);
   const backdropRef = useRef<HTMLElement>(null);
   const dialogRef = useRef<HTMLFormElement>(null);
-  const measureRef = useRef<HTMLDivElement>(null);
+  // measureMainRef mimics .app-main's own box (including its
+  // overflow-y: auto) around measureCardRef's .app-card, so that if the
+  // real content is tall enough to need a scrollbar, this clone gets one
+  // too — a real vertical scrollbar narrows the content area by ~15px,
+  // which changes wrapping (tag pills, meta text) and therefore height.
+  // Measuring .app-card alone, unconstrained, undercounts exactly that
+  // case — which is why the previous version only mismatched once
+  // content was tall enough to actually need scrolling.
+  const measureMainRef = useRef<HTMLDivElement>(null);
+  const measureCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -63,16 +72,19 @@ const Login: React.FC = () => {
       const top = backdropRect.top + TOPBAR_H + CARD_MARGIN;
       const availableHeight = backdropRect.height - TOPBAR_H - CARD_MARGIN * 2;
 
-      // Measure the hidden Dashboard clone at the exact width the real
-      // .app-card will render at, so wrapping/line-breaks match and the
-      // height is real rather than guessed. Capped at the available
-      // space, same as before, for a solicitation list too long to fit.
+      // Measure the hidden Dashboard clone inside an .app-main-shaped box
+      // sized exactly like the real one, so wrapping/line-breaks (and any
+      // scrollbar-driven width narrowing) match and the height is real
+      // rather than guessed. Capped at the available space, same as
+      // before, for a solicitation list too long to fit regardless.
       let height = availableHeight;
-      const measureEl = measureRef.current;
-      if (measureEl) {
-        measureEl.style.width = `${width}px`;
-        void measureEl.offsetHeight; // force layout before reading it back
-        height = Math.min(availableHeight, measureEl.getBoundingClientRect().height);
+      const measureMain = measureMainRef.current;
+      const measureCard = measureCardRef.current;
+      if (measureMain && measureCard) {
+        measureMain.style.width = `${backdropRect.width}px`;
+        measureMain.style.height = `${backdropRect.height - TOPBAR_H}px`;
+        void measureMain.offsetHeight; // force layout before reading it back
+        height = Math.min(availableHeight, measureCard.getBoundingClientRect().height);
       }
 
       bounds = { top, left, width, height };
@@ -123,87 +135,91 @@ const Login: React.FC = () => {
         onSubmit={handleSubmit}
         noValidate
       >
-        <div className={`auth-dialog-inner${detailsHidden ? ' is-hidden' : ''}`}>
-          <div className="auth-dialog-top">
-            <span className="auth-dialog-brand">FORGE</span>
-          </div>
+        <div className="auth-dialog-top">
+          <span className="auth-dialog-brand">FORGE</span>
+        </div>
 
-          <div className="auth-dialog-body">
-            <div className="auth-form-card">
-              <label className="label" htmlFor="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                className={loginFailed ? 'input-error' : undefined}
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setLoginFailed(false);
-                }}
-                placeholder="you@wsgc.us"
-                autoComplete="email"
-                autoFocus
-                disabled={detailsHidden}
-                aria-invalid={loginFailed}
-              />
+        {/* Only this fades out (see handleSubmit) — the top/bottom bars
+            above/below stay visible and pinned to the card's edges via
+            flex, so they visibly stretch apart as the frame grows rather
+            than disappearing into a featureless blank rectangle. */}
+        <div className={`auth-dialog-body${detailsHidden ? ' is-hidden' : ''}`}>
+          <div className="auth-form-card">
+            <label className="label" htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              className={loginFailed ? 'input-error' : undefined}
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setLoginFailed(false);
+              }}
+              placeholder="you@wsgc.us"
+              autoComplete="email"
+              autoFocus
+              disabled={detailsHidden}
+              aria-invalid={loginFailed}
+            />
 
-              <label className="label" htmlFor="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                className={loginFailed ? 'input-error' : undefined}
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setLoginFailed(false);
-                }}
-                placeholder="••••••••••"
-                autoComplete="current-password"
-                disabled={detailsHidden}
-                aria-invalid={loginFailed}
-              />
+            <label className="label" htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              className={loginFailed ? 'input-error' : undefined}
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setLoginFailed(false);
+              }}
+              placeholder="••••••••••"
+              autoComplete="current-password"
+              disabled={detailsHidden}
+              aria-invalid={loginFailed}
+            />
 
-              <div className="auth-remember-row">
-                <label className="field-aside">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    disabled={detailsHidden}
-                  />
-                  Remember me
-                </label>
-                <button type="button" className="link-btn quiet" disabled={detailsHidden}>
-                  Forgot Password?
-                </button>
-              </div>
-
-              {loginFailed && <p className="error-text" role="alert">Invalid email or password</p>}
-
-              <button type="submit" className="btn full auth-submit" disabled={detailsHidden || !isValid}>
-                {expanding ? 'Signing in…' : 'Sign in'}
+            <div className="auth-remember-row">
+              <label className="field-aside">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  disabled={detailsHidden}
+                />
+                Remember me
+              </label>
+              <button type="button" className="link-btn quiet" disabled={detailsHidden}>
+                Forgot Password?
               </button>
             </div>
-          </div>
 
-          <div className="auth-dialog-bottom">
-            <span className="auth-status-copyright">© 2026 FORGE from Aetherware</span>
-            <span>{formatStatusClock(now)}</span>
+            {loginFailed && <p className="error-text" role="alert">Invalid email or password</p>}
+
+            <button type="submit" className="btn full auth-submit" disabled={detailsHidden || !isValid}>
+              {expanding ? 'Signing in…' : 'Sign in'}
+            </button>
           </div>
+        </div>
+
+        <div className="auth-dialog-bottom">
+          <span className="auth-status-copyright">© 2026 FORGE from Aetherware</span>
+          <span>{formatStatusClock(now)}</span>
         </div>
       </form>
 
       {/* Hidden off-screen clone of the real destination, used only to
           measure its actual rendered height (see handleSubmit) — never
-          shown. Rendering the actual Dashboard component (rather than a
-          hand-copied approximation of its markup) means this can't drift
-          out of sync with what Dashboard.tsx really renders. */}
+          shown. Rendering the actual Dashboard component inside the
+          actual .app-main/.app-card shapes (rather than a hand-copied
+          approximation) means this can't drift out of sync with what
+          those really render, dimensionally or structurally. */}
       <div
-        ref={measureRef}
+        ref={measureMainRef}
+        className="app-main"
         aria-hidden="true"
         style={{ position: 'fixed', top: -99999, left: 0, visibility: 'hidden', pointerEvents: 'none' }}
       >
-        <div className="app-card">
+        <div ref={measureCardRef} className="app-card">
           <Dashboard />
         </div>
       </div>

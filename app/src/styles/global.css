@@ -237,7 +237,14 @@ input[type='checkbox'] {
    * .auth-dialog--expand switches this to var(--surface) — .app-card's
    * own background — so the card visibly fills with the workspace's
    * color *during* the expand, before the real content underneath ever
-   * fades in (see AppShell.tsx / app-enter). */
+   * fades in (see AppShell.tsx / app-enter).
+   * Always a flex column (not just once expanded) — top/bottom bars stay
+   * flex: 0 0 auto and .auth-dialog-body stretches between them (see
+   * below), so the bars visibly stay pinned to the card's own top/bottom
+   * edge as the whole thing grows, rather than being part of what fades
+   * out and leaving the growing frame looking like a blank rectangle. */
+  display: flex;
+  flex-direction: column;
   background: transparent;
   box-shadow: var(--shadow-modal);
   overflow: hidden;
@@ -256,34 +263,8 @@ input[type='checkbox'] {
    * max-width: none is load-bearing — .auth-dialog caps at 360px, which
    * would otherwise silently clamp the inline `width` Login.tsx sets. */
   background: var(--surface);
-  display: flex;
-  flex-direction: column;
   max-width: none;
   z-index: 1000;
-}
-.auth-dialog--expand .auth-dialog-inner {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-}
-.auth-dialog--expand .auth-dialog-top,
-.auth-dialog--expand .auth-dialog-bottom {
-  flex: 0 0 auto;
-}
-.auth-dialog--expand .auth-dialog-body {
-  flex: 1 1 auto;
-  overflow-y: auto;
-}
-/* The card's details (fields, copy) fade out first, before the frame
- * itself expands to cover the backdrop — see Login.tsx handleSubmit. */
-.auth-dialog-inner {
-  opacity: 1;
-  transition: opacity 160ms ease;
-}
-.auth-dialog-inner.is-hidden {
-  opacity: 0;
-  pointer-events: none;
 }
 /* Both bars use a dedicated blue-grey — --auth-bar-bg (defined per theme
  * in tokens.css) — rather than --surface-2, since --surface-2 isn't
@@ -291,6 +272,7 @@ input[type='checkbox'] {
  * blue-grey status chrome rather than blend into (or clash with) the
  * theme's ordinary surfaces. */
 .auth-dialog-top {
+  flex: 0 0 auto;
   padding: 8px 16px;
   border-bottom: 1px solid var(--box-line);
   background: var(--auth-bar-bg);
@@ -304,12 +286,24 @@ input[type='checkbox'] {
 }
 /* The transparent "empty space" (see .auth-dialog) around the smaller
  * .auth-form-card below — always centers it, so it stays centered in the
- * middle of the screen once the frame expands, not pinned top-left. */
+ * middle of the screen once the frame expands, not pinned top-left.
+ * flex: 1 1 auto (stretching between the top/bottom bars) + the opacity
+ * transition live on the same element: this is what fades out first in
+ * Login.tsx's handleSubmit, while the bars around it stay visible. */
 .auth-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-y: auto;
+  opacity: 1;
+  transition: opacity 160ms ease;
+}
+.auth-dialog-body.is-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 .auth-form-card {
   width: 100%;
@@ -325,6 +319,7 @@ input[type='checkbox'] {
  * old Sign In button (now inside .auth-form-card). Monospace, like a
  * system status bar's digits. */
 .auth-dialog-bottom {
+  flex: 0 0 auto;
   padding: 5px 16px;
   border-top: 1px solid var(--box-line);
   background: var(--auth-bar-bg);
@@ -558,7 +553,7 @@ input[type='checkbox'] {
   .modal-backdrop, .modal-card, .spin,
   .app-shell.app-enter .chrome-bar.topbar,
   .app-shell.app-enter .app-main { animation: none; }
-  .auth-dialog-inner { transition: none; }
+  .auth-dialog-body { transition: none; }
 }
 
 /* ----- Loading spinner ------------------------------------------------ */
@@ -935,6 +930,10 @@ input[type='checkbox'] {
   color: var(--muted);
   margin-top: 4px;
   cursor: pointer;
+  /* A checkbox + its label reads as one clickable control, not text —
+   * click-dragging across it (e.g. "Remember me") shouldn't select it
+   * like a sentence would. */
+  user-select: none;
 }
 .field-aside input[type='checkbox'] { margin: 0; }
 
