@@ -239,17 +239,18 @@ input[type='checkbox'] {
     box-shadow 320ms ease;
 }
 .auth-dialog--expand {
-  /* Fills the whole screen (see Login.tsx) — flatten the card chrome so
-   * it reads as a full-bleed cover rather than an oversized card.
+  /* Grows to match .app-card's footprint (see TOPBAR_H/CARD_MARGIN/
+   * CARD_MAX_WIDTH in Login.tsx) rather than the whole screen, so it
+   * visibly becomes the workspace card once the topbar drops in over it.
+   * Border/radius/shadow are deliberately left alone here — .auth-dialog
+   * already uses the same var(--radius-md)/var(--shadow-modal)/1.5px
+   * var(--box-line) as .app-card, so keeping them (instead of flattening
+   * to a full-bleed cover) is what makes the two actually match.
    * max-width: none is load-bearing — .auth-dialog caps at 360px, which
-   * silently clamped the inline `width` Login.tsx sets via JS and made
-   * the "expand to fill the screen" animation invisible. */
+   * would otherwise silently clamp the inline `width` Login.tsx sets. */
   display: flex;
   flex-direction: column;
   max-width: none;
-  border-radius: 0;
-  border-color: transparent;
-  box-shadow: none;
   z-index: 1000;
 }
 .auth-dialog--expand .auth-dialog-inner {
@@ -1213,9 +1214,12 @@ textarea:focus,
 
 /* ----- Topbar ---------------------------------------------------------
  * Everything the old sidebar held now lives in the chrome bar: brand,
- * primary nav, and the user menu. */
+ * primary nav, and the user menu. Height is fixed (rather than padding-
+ * driven) so Login.tsx can compute exactly where .app-card will end up
+ * and expand the sign-in card to match — see TOPBAR_H in Login.tsx. */
 .chrome-bar.topbar {
-  padding: 8px 18px;
+  height: 48px;
+  padding: 0 18px;
   color: var(--chrome-fg-muted);
   border-bottom: 1px solid var(--chrome-border);
 }
@@ -1293,7 +1297,7 @@ textarea:focus,
 .user-menu-trigger {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   background: var(--chrome-hover);
   border: 1px solid var(--chrome-border);
   color: var(--chrome-fg);

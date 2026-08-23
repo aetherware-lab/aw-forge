@@ -148,14 +148,14 @@ const SolicitationPage: React.FC = () => {
       <div className="sol-layout">
         <section className="panel">
           <div className="panel-head">
-            <span>Documents</span>
+            <span>Documents ({docsForSol.length})</span>
             <div className="panel-head-actions">
               <button
                 type="button"
                 className="btn ghost xs"
                 onClick={() => setShowUploadModal(true)}
               >
-                + Upload Document
+                + Upload Document(s)
               </button>
               <button
                 type="button"

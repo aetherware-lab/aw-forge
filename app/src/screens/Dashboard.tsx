@@ -57,11 +57,7 @@ const Dashboard: React.FC = () => {
     <>
       <header className="page-header">
         <div>
-          <div className="page-title">Solicitations</div>
-          <div className="page-sub">
-            {solicitations.length} tracked · sorted by{' '}
-            {sort === 'due' ? 'response date' : sort === 'progress' ? 'progress' : 'title'}
-          </div>
+          <div className="page-title">Solicitations ({solicitations.length})</div>
         </div>
         <div>
           <button

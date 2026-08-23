@@ -63,7 +63,7 @@ const UploadDocumentModal: React.FC<Props> = ({ solicitationId, onClose }) => {
     <Modal
       open
       onClose={onClose}
-      title="Upload Document"
+      title="Upload Document(s)"
       subtitle={sol ? `to ${sol.title} · ${sol.number}` : undefined}
       maxWidth={480}
       footer={

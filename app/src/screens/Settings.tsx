@@ -27,9 +27,6 @@ const Settings: React.FC = () => {
         <section className="settings-card">
           <div className="settings-card-head">
             <div className="settings-card-title">Account</div>
-            <div className="settings-card-sub">
-              Stub auth — real account management lands with the backend.
-            </div>
           </div>
           <div className="settings-card-body">
             <div className="settings-row">
