@@ -138,3 +138,9 @@ class ExtractionRun(BaseModel):
     status: RunStatus = "pending"
     error: Optional[str] = None
     created_at: str
+    # Verbose progress, updated live by the pipeline (see pipeline.py) so the
+    # UI can show more than just "running" — which stage, and how far
+    # through it (e.g. "extracting requirements, chunk 7/23").
+    stage: Optional[str] = None
+    stage_current: int = 0
+    stage_total: int = 0

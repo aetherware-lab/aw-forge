@@ -142,6 +142,11 @@ def _run_response(run: dict) -> dict:
         "solicitationTitle": run["solicitation_title"],
         "solicitationAgency": run["solicitation_agency"],
         "requirementCount": run["requirement_count"],
+        # .get() with defaults: runs created before this field existed (or
+        # not yet touched by the pipeline) won't have these properties set.
+        "stage": run.get("stage"),
+        "stageCurrent": run.get("stage_current", 0),
+        "stageTotal": run.get("stage_total", 0),
     }
 
 

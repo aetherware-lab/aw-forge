@@ -185,6 +185,13 @@ export const IconInfo = createIcon(
   </>,
 );
 
+/** Spinner arc — pair with the `.spin` CSS class (global.css) for rotation.
+ * Used for in-progress states (e.g. an extraction run in flight). */
+export const IconLoader = createIcon(
+  'IconLoader',
+  <circle cx="12" cy="12" r="9" strokeDasharray="42 14" strokeLinecap="round" />,
+);
+
 /** Radio-style dot used by the export-format picker. Not a real
  * <input type="radio"> since the row itself is the click target. */
 export const IconRadio: React.FC<{ checked?: boolean; size?: number }> = ({

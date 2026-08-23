@@ -92,7 +92,12 @@ code, pre, .mono { font-family: var(--font-mono); }
   color: var(--muted);
   pointer-events: none;
 }
-.search-field input { padding-left: 30px; }
+/* Specificity note: the generic `input[type='search']` rule below (in the
+ * shared form-control block) has the same specificity as a bare
+ * `.search-field input` and comes later in the file, so it would win and
+ * silently drop this padding — hence targeting [type='search'] here too,
+ * which outranks it regardless of source order. */
+.search-field input[type='search'] { padding-left: 32px; }
 .search-field.w-sm { min-width: 200px; }
 .search-field.w-md { min-width: 240px; }
 .search-field.w-lg { min-width: 280px; }
@@ -227,11 +232,11 @@ input[type='checkbox'] {
     box-shadow 320ms ease;
 }
 .auth-dialog--expand {
+  /* Grows toward the floating .app-card's footprint (see Login.tsx), so it
+   * keeps card chrome — border/radius/shadow — rather than flattening to
+   * fill the screen edge-to-edge. */
   display: flex;
   flex-direction: column;
-  border-radius: 0;
-  border-color: transparent;
-  box-shadow: none;
   z-index: 1000;
 }
 .auth-dialog--expand .auth-dialog-inner {
@@ -468,8 +473,35 @@ input[type='checkbox'] {
   animation: modal-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 @media (prefers-reduced-motion: reduce) {
-  .modal-backdrop, .modal-card, .app-shell.app-enter { animation: none; }
+  .modal-backdrop, .modal-card, .app-shell.app-enter, .spin { animation: none; }
   .auth-dialog-inner { transition: none; }
+}
+
+/* ----- Loading spinner ------------------------------------------------ */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin {
+  animation: spin 900ms linear infinite;
+  transform-origin: center;
+}
+
+/* ----- Extraction-run progress ----------------------------------------
+ * Verbose in-flight status for CitationsTable: a spinner, the current
+ * pipeline stage, and — once the server reports a stage total — a live
+ * count and progress bar (see server/app/pipeline.py for what emits
+ * these). */
+.run-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 32px;
+}
+.run-progress-label {
+  font-size: 13px;
+  color: var(--ink);
+}
+.run-progress-bar {
+  width: 220px;
 }
 .modal-close {
   position: absolute;
@@ -1085,6 +1117,21 @@ textarea:focus,
   padding: 24px;
 }
 
+/* The routed screen floats on a card over the textured background rather
+ * than sitting flush in the viewport. Login's expand animation grows the
+ * sign-in card toward roughly this same shape/position (see
+ * FLOAT_MARGIN/FLOAT_MAX_WIDTH in Login.tsx) before handing off, so the
+ * transition reads as "the card becomes the workspace" rather than a cut. */
+.app-card {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1.5px solid var(--box-line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-modal);
+  padding: 24px;
+}
+
 /* One-time fade-in when the topbar+main shell mounts right after login
  * (Login.tsx sets the flag that triggers `app-enter`). */
 @keyframes app-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -1092,7 +1139,7 @@ textarea:focus,
 
 /* ----- Topbar ---------------------------------------------------------
  * Everything the old sidebar held now lives in the chrome bar: brand,
- * workspace label, primary nav, + New Solicitation, and the user menu. */
+ * primary nav, and the user menu. */
 .chrome-bar.topbar {
   padding: 8px 18px;
   color: var(--chrome-fg-muted);
@@ -1134,13 +1181,6 @@ textarea:focus,
   font-weight: 700;
   color: var(--chrome-fg);
   letter-spacing: -0.01em;
-}
-.topbar-workspace {
-  font-size: 11px;
-  color: var(--chrome-fg-muted);
-  padding-left: 12px;
-  border-left: 1px solid var(--chrome-border);
-  flex-shrink: 0;
 }
 .topbar-nav {
   display: flex;
@@ -1315,10 +1355,9 @@ textarea:focus,
 }
 
 /* Mobile / narrow window — topbar wraps to a second row instead of
- * clipping the nav or the workspace label. */
+ * clipping the nav. */
 @media (max-width: 760px) {
   .chrome-bar.topbar { flex-wrap: wrap; row-gap: 8px; }
   .topbar-left { flex-wrap: wrap; }
-  .topbar-workspace { display: none; }
 }
 

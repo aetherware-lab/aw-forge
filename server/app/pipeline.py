@@ -33,10 +33,14 @@ class PipelineState(TypedDict):
 
 
 def parse_documents(state: PipelineState) -> PipelineState:
+    run_id = state["run_id"]
+    total = len(state["sources"])
     chunks: list[DocumentChunk] = []
-    for source in state["sources"]:
-        chunks.extend(parse_source_file(source, state["run_id"]))
-    logger.info("parsed %d chunk(s) from %d document(s)", len(chunks), len(state["sources"]))
+    neo4j_client.set_run_progress(run_id, "parsing", 0, total)
+    for i, source in enumerate(state["sources"], start=1):
+        chunks.extend(parse_source_file(source, run_id))
+        neo4j_client.set_run_progress(run_id, "parsing", i, total)
+    logger.info("parsed %d chunk(s) from %d document(s)", len(chunks), total)
     return {**state, "chunks": chunks}
 
 
@@ -49,28 +53,36 @@ def extract(state: PipelineState) -> PipelineState:
     Failed chunks are logged and skipped; the run still completes with
     whatever it could extract.
     """
+    run_id = state["run_id"]
+    total = len(state["chunks"])
     requirements: list[Requirement] = []
     citations: list[Citation] = []
     failed_chunk_ids: list[str] = []
-    for chunk in state["chunks"]:
+    neo4j_client.set_run_progress(run_id, "extracting", 0, total)
+    for i, chunk in enumerate(state["chunks"], start=1):
         try:
             chunk_reqs, chunk_cites = extract_from_chunk(chunk)
         except Exception:
             logger.exception("extraction failed for chunk %s — skipping it", chunk.id)
             failed_chunk_ids.append(chunk.id)
             continue
+        finally:
+            neo4j_client.set_run_progress(run_id, "extracting", i, total)
         requirements.extend(chunk_reqs)
         citations.extend(chunk_cites)
     if failed_chunk_ids:
         logger.warning(
             "extraction failed for %d/%d chunk(s): %s",
-            len(failed_chunk_ids), len(state["chunks"]), ", ".join(failed_chunk_ids),
+            len(failed_chunk_ids), total, ", ".join(failed_chunk_ids),
         )
     logger.info("extracted %d requirement(s), %d citation(s)", len(requirements), len(citations))
     return {**state, "requirements": requirements, "citations": citations}
 
 
 def write_graph(state: PipelineState) -> PipelineState:
+    run_id = state["run_id"]
+    neo4j_client.set_run_progress(run_id, "writing", 0, 1)
+
     neo4j_client.write_chunks(state["chunks"])
     neo4j_client.write_citations(state["citations"])
 
@@ -82,6 +94,7 @@ def write_graph(state: PipelineState) -> PipelineState:
         logger.warning("dropped %d requirement(s) with no citation", dropped)
     neo4j_client.write_requirements(sourced)
 
+    neo4j_client.set_run_progress(run_id, "writing", 1, 1)
     return {**state, "requirements": sourced}
 
 

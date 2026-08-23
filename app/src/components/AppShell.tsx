@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import UserMenu from './UserMenu';
-import { IconClipboard, IconLayers, IconPlus } from '@/components/Icon';
+import { IconClipboard, IconLayers } from '@/components/Icon';
 
 interface NavItem {
   to: string;
@@ -18,16 +18,17 @@ const JUST_LOGGED_IN_KEY = 'forge-just-logged-in';
 
 /**
  * Outer chrome that wraps every authenticated route: a single topbar
- * (brand, primary nav, + New Solicitation, user menu) over the routed
- * screen. There is no sidebar — everything lives in this one bar.
+ * (brand + primary nav + user menu) over a floating content card. There
+ * is no sidebar — everything lives in this one bar.
  *
  * If Login just navigated here, `app-enter` plays a one-time fade-in of
  * the whole shell (see Login.tsx for the fade-out/expand half of the
- * transition). The sessionStorage flag is consumed immediately so back
- * navigation or a refresh never replays it.
+ * transition — it expands the sign-in card into roughly this same
+ * floating-card shape, see `.app-card` in global.css). The sessionStorage
+ * flag is consumed immediately so back navigation or a refresh never
+ * replays it.
  */
 const AppShell: React.FC = () => {
-  const navigate = useNavigate();
   const [justEntered] = useState(() => {
     try {
       if (sessionStorage.getItem(JUST_LOGGED_IN_KEY)) {
@@ -48,7 +49,6 @@ const AppShell: React.FC = () => {
             <span className="topbar-brand-mark" aria-hidden="true">F</span>
             <span className="topbar-brand-name">FORGE</span>
           </div>
-          <span className="topbar-workspace">WSGC Workspace</span>
           <nav className="topbar-nav" aria-label="Primary">
             {NAV_ITEMS.map((item) => (
               <NavLink
@@ -65,14 +65,13 @@ const AppShell: React.FC = () => {
           </nav>
         </div>
         <div className="topbar-right chrome-right">
-          <button type="button" className="btn small" onClick={() => navigate('/solicitations/new')}>
-            <IconPlus size={13} /> New Solicitation
-          </button>
           <UserMenu />
         </div>
       </div>
       <main className="app-main bg-grid">
-        <Outlet />
+        <div className="app-card">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

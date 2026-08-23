@@ -320,8 +320,7 @@
 [data-theme='gca'] .sol-header-title { font-size: 26px; letter-spacing: 0.05em; }
 
 /* Topbar nav links use the UI font in GCA */
-[data-theme='gca'] .topbar-link,
-[data-theme='gca'] .topbar-workspace {
+[data-theme='gca'] .topbar-link {
   font-family: var(--font-ui);
 }
 

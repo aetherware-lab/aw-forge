@@ -6,6 +6,16 @@ const DETAIL_FADE_MS = 160;
 const EXPAND_MS = 320;
 const JUST_LOGGED_IN_KEY = 'forge-just-logged-in';
 
+// Matches .app-card in global.css (max-width: 1200px) — the FLIP target
+// approximates that floating card's footprint (not the full screen) so
+// the sign-in card visibly grows *into* the workspace card rather than
+// flattening to fill the viewport. The workspace card's real height is
+// content-based and unknowable in advance, so this height is just "most
+// of the space below the topbar" — close enough that the app-enter fade
+// on the other side of the navigate() hides the final size mismatch.
+const CARD_MAX_WIDTH = 1200;
+const CARD_MARGIN = 24;
+
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,10 +35,16 @@ const Login: React.FC = () => {
     setDetailsHidden(true);
 
     const dialog = dialogRef.current;
-    const bounds = backdropRef.current?.getBoundingClientRect();
+    const backdropRect = backdropRef.current?.getBoundingClientRect();
+    const bounds = backdropRect && {
+      top: backdropRect.top + CARD_MARGIN,
+      left: backdropRect.left + Math.max(CARD_MARGIN, (backdropRect.width - CARD_MAX_WIDTH) / 2),
+      width: Math.min(backdropRect.width - CARD_MARGIN * 2, CARD_MAX_WIDTH),
+      height: backdropRect.height - CARD_MARGIN * 2,
+    };
     if (dialog && bounds) {
       // Pin the dialog to its current on-screen rect now, before anything
-      // moves, so step 2 can FLIP it out to cover the backdrop.
+      // moves, so step 2 can FLIP it out toward the workspace card's shape.
       const rect = dialog.getBoundingClientRect();
       dialog.style.position = 'fixed';
       dialog.style.margin = '0';
@@ -40,7 +56,8 @@ const Login: React.FC = () => {
       void dialog.offsetHeight;
 
       window.setTimeout(() => {
-        // Step 2: expand the (now detail-less) card to fill the backdrop.
+        // Step 2: expand the (now detail-less) card toward the workspace
+        // card's footprint.
         setExpanding(true);
         dialog.style.top = `${bounds.top}px`;
         dialog.style.left = `${bounds.left}px`;
@@ -49,8 +66,8 @@ const Login: React.FC = () => {
       }, DETAIL_FADE_MS);
     }
 
-    // Step 3: once the card fills the screen, hand off to the app shell,
-    // which fades its own screen in (see AppShell.tsx / app-enter).
+    // Step 3: once the card's expanded, hand off to the app shell, which
+    // fades the real workspace card in (see AppShell.tsx / app-enter).
     window.setTimeout(() => {
       try {
         sessionStorage.setItem(JUST_LOGGED_IN_KEY, '1');

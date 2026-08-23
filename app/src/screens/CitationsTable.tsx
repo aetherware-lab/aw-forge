@@ -12,6 +12,7 @@ import {
   IconAlertCircle,
   IconAlertTriangle,
   IconInfo,
+  IconLoader,
   IconSearch,
 } from '@/components/Icon';
 import type {
@@ -37,6 +38,13 @@ const FLAG_ICON: Record<FlagSeverity, React.FC<{ size?: number }>> = {
   critical: IconAlertTriangle,
   important: IconAlertCircle,
   minor: IconInfo,
+};
+
+/** Pipeline stages, as reported by server/app/pipeline.py's set_run_progress calls. */
+const STAGE_LABELS: Record<string, string> = {
+  parsing: 'Parsing documents',
+  extracting: 'Extracting requirements',
+  writing: 'Writing to the knowledge graph',
 };
 
 const formatGenerated = (iso: string): string => {
@@ -150,11 +158,22 @@ const CitationsTable: React.FC = () => {
 
   const runName = runInfo?.name ?? runDoc?.name ?? 'Extraction Run';
 
+  // Verbose stage line, e.g. "Extracting requirements… (7 / 23)" — falls
+  // back to a generic phase label until the server's first progress update
+  // for this run comes in (see server/app/pipeline.py).
+  const stageLine = (): string | null => {
+    if (!runInfo?.stage) return null;
+    const label = STAGE_LABELS[runInfo.stage] ?? runInfo.stage;
+    return runInfo.stageTotal > 0
+      ? `${label}… (${runInfo.stageCurrent} / ${runInfo.stageTotal})`
+      : `${label}…`;
+  };
+
   const statusLine = (): string => {
     if (phase === 'loading') return 'Checking run status…';
-    if (phase === 'pending') return 'Queued — waiting for the server to pick this up…';
-    if (phase === 'running') return 'Extracting requirements…';
     if (phase === 'error') return `Extraction failed: ${errorMessage}`;
+    if (phase === 'pending') return stageLine() ?? 'Queued — waiting for the server to pick this up…';
+    if (phase === 'running') return stageLine() ?? 'Extracting requirements…';
     const generated = runInfo ? formatGenerated(runInfo.createdAt) : '';
     return `Generated ${generated} · ${requirements.length} requirements`;
   };
@@ -198,8 +217,19 @@ const CitationsTable: React.FC = () => {
       </header>
 
       {phase !== 'complete' && phase !== 'error' && (
-        <div className="empty">
-          {phase === 'loading' ? 'Checking run status…' : statusLine()}
+        <div className="empty run-progress">
+          <IconLoader size={22} className="spin" />
+          <div className="run-progress-label">
+            {phase === 'loading' ? 'Checking run status…' : statusLine()}
+          </div>
+          {runInfo?.stage && runInfo.stageTotal > 0 && (
+            <div className="progress-shell run-progress-bar">
+              <div
+                className="progress-fill"
+                style={{ width: `${Math.round((runInfo.stageCurrent / runInfo.stageTotal) * 100)}%` }}
+              />
+            </div>
+          )}
         </div>
       )}
 

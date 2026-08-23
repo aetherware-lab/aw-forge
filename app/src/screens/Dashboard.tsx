@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SolicitationCard from '@/components/SolicitationCard';
+import NewSolicitationModal from '@/components/NewSolicitationModal';
 import { useSolicitations } from '@/store/solicitations';
 import { IconPlus, IconSearch } from '@/components/Icon';
 
@@ -15,6 +16,7 @@ const Dashboard: React.FC = () => {
   const [agency, setAgency] = useState<string>('all');
   const [tag, setTag] = useState<string>('all');
   const [sort, setSort] = useState<SortMode>('due');
+  const [showNewModal, setShowNewModal] = useState(false);
 
   const agencies = useMemo(() => {
     const set = new Set(solicitations.map((s) => s.agency));
@@ -65,7 +67,7 @@ const Dashboard: React.FC = () => {
           <button
             type="button"
             className="btn"
-            onClick={() => navigate('/solicitations/new')}
+            onClick={() => setShowNewModal(true)}
           >
             <IconPlus size={14} /> New Solicitation
           </button>
@@ -118,6 +120,8 @@ const Dashboard: React.FC = () => {
           />
         ))
       )}
+
+      {showNewModal && <NewSolicitationModal onClose={() => setShowNewModal(false)} />}
     </>
   );
 };

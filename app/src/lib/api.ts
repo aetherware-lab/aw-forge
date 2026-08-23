@@ -26,6 +26,11 @@ export interface ExtractionRunStatus {
   solicitationTitle: string;
   solicitationAgency: string;
   requirementCount: number;
+  /** Live pipeline progress — see server/app/pipeline.py. `stage` is one of
+   * 'parsing' | 'extracting' | 'writing'; null before the pipeline starts. */
+  stage: string | null;
+  stageCurrent: number;
+  stageTotal: number;
 }
 
 class ApiError extends Error {}

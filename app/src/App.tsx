@@ -4,7 +4,6 @@ import AppShell from '@/components/AppShell';
 import RequireAuth from '@/components/RequireAuth';
 import Login from '@/screens/Login';
 import Solicitations from '@/screens/Dashboard';      // dashboard repurposed as the tracked-solicitations index
-import NewSolicitation from '@/screens/NewSolicitation';
 import EditSolicitation from '@/screens/EditSolicitation';
 import SolicitationPage from '@/screens/SolicitationPage';
 import CitationsTable from '@/screens/CitationsTable';
@@ -26,8 +25,9 @@ const App: React.FC = () => {
         {/* Workspace */}
         <Route path="/solicitations" element={<Solicitations />} />
 
-        {/* Solicitation detail flow */}
-        <Route path="/solicitations/new" element={<NewSolicitation />} />
+        {/* Solicitation detail flow — "New Solicitation" is a modal (see
+            Dashboard.tsx), not a route; redirect back for old deep-links. */}
+        <Route path="/solicitations/new" element={<Navigate to="/solicitations" replace />} />
         <Route path="/solicitations/:id" element={<SolicitationPage />} />
         <Route path="/solicitations/:id/edit" element={<EditSolicitation />} />
         <Route path="/extraction/:runId/citations" element={<CitationsTable />} />

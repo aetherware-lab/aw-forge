@@ -1,25 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TagInput from '@/components/TagInput';
-import FileDropZone, { DroppedFile } from '@/components/FileDropZone';
-import { uploadDocuments } from '@/lib/api';
-import { inferDocType } from '@/lib/docType';
-import {
-  newId,
-  useSolicitations,
-} from '@/store/solicitations';
-import type {
-  NoticeType,
-  Solicitation,
-  SolicitationDocument,
-  TagKey,
-} from '@/types';
+import { useSolicitations } from '@/store/solicitations';
+import type { NoticeType, Solicitation, TagKey } from '@/types';
 
 interface Props {
-  /** When set, the form edits this solicitation in place. Otherwise it creates a new one. */
-  existing?: Solicitation;
-  /** Initial set of files attached. Only meaningful for "new". */
-  initialFiles?: DroppedFile[];
+  /** The solicitation being edited. "New Solicitation" is a modal — see
+   * NewSolicitationModal.tsx — so this screen only ever edits. */
+  existing: Solicitation;
 }
 
 const NOTICE_TYPES: NoticeType[] = [
@@ -31,35 +19,23 @@ const NOTICE_TYPES: NoticeType[] = [
   'Award Notice',
 ];
 
-const isoToday = (): string => new Date().toISOString().slice(0, 10);
-
-const SolicitationForm: React.FC<Props> = ({ existing, initialFiles = [] }) => {
+const SolicitationForm: React.FC<Props> = ({ existing }) => {
   const navigate = useNavigate();
-  // Subscribe to individual actions — Zustand returns stable references for
-  // these so it doesn't trigger re-renders the way reading the whole store
-  // object would.
-  const add = useSolicitations((s) => s.add);
   const update = useSolicitations((s) => s.update);
 
-  const isEdit = !!existing;
-
-  const [title, setTitle] = useState(existing?.title ?? '');
-  const [samUrl, setSamUrl] = useState(existing?.samUrl ?? '');
-  const [number, setNumber] = useState(existing?.number ?? '');
-  const [agency, setAgency] = useState(existing?.agency ?? '');
-  const [noticeType, setNoticeType] = useState<NoticeType>(
-    existing?.noticeType ?? 'Solicitation',
-  );
+  const [title, setTitle] = useState(existing.title);
+  const [samUrl, setSamUrl] = useState(existing.samUrl ?? '');
+  const [number, setNumber] = useState(existing.number);
+  const [agency, setAgency] = useState(existing.agency);
+  const [noticeType, setNoticeType] = useState<NoticeType>(existing.noticeType);
   const [responseDue, setResponseDue] = useState(
-    existing && existing.responseDue !== 'TBD' ? existing.responseDue : '',
+    existing.responseDue !== 'TBD' ? existing.responseDue : '',
   );
-  const [tbd, setTbd] = useState(existing?.responseDue === 'TBD');
-  const [tags, setTags] = useState<TagKey[]>(existing?.tags ?? []);
-  const [files, setFiles] = useState<DroppedFile[]>(initialFiles);
+  const [tbd, setTbd] = useState(existing.responseDue === 'TBD');
+  const [tags, setTags] = useState<TagKey[]>(existing.tags);
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       setError('Title is required.');
@@ -67,86 +43,29 @@ const SolicitationForm: React.FC<Props> = ({ existing, initialFiles = [] }) => {
     }
     setError(null);
 
-    if (isEdit && existing) {
-      update(existing.id, {
-        title: title.trim(),
-        number: number.trim(),
-        agency: agency.trim(),
-        noticeType,
-        responseDue: tbd ? 'TBD' : (responseDue || 'TBD'),
-        tags,
-        samUrl: samUrl.trim() || undefined,
-      });
-      navigate(`/solicitations/${existing.id}`);
-      return;
-    }
-
-    const id = newId('sol');
-    let docs: SolicitationDocument[] = [];
-
-    if (files.length > 0) {
-      setSubmitting(true);
-      try {
-        const uploaded = await uploadDocuments(files.map((f) => f.file));
-        docs = uploaded.map((u, i) => ({
-          id: u.docId,
-          solicitationId: id,
-          name: u.filename,
-          type: inferDocType(u.filename),
-          sub: `${new Date().toLocaleDateString('en-US', {
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric',
-          })} · ${files[i]?.size ?? ''} · Khoo`,
-          dateAdded: isoToday(),
-          pinned: false,
-          size: files[i]?.size,
-        }));
-      } catch (err) {
-        setSubmitting(false);
-        setError(
-          err instanceof Error
-            ? err.message
-            : 'Could not reach the FORGE server. Is it running?',
-        );
-        return;
-      }
-      setSubmitting(false);
-    }
-
-    const sol: Solicitation = {
-      id,
+    update(existing.id, {
       title: title.trim(),
-      number: number.trim() || '—',
-      agency: agency.trim() || 'Unknown',
+      number: number.trim(),
+      agency: agency.trim(),
       noticeType,
       responseDue: tbd ? 'TBD' : (responseDue || 'TBD'),
       tags,
-      stage: 'Solicitation imported',
-      progress: 4,
       samUrl: samUrl.trim() || undefined,
-      createdAt: isoToday(),
-    };
-
-    add(sol, docs);
-    navigate(`/solicitations/${id}`);
+    });
+    navigate(`/solicitations/${existing.id}`);
   };
 
   return (
     <>
       <header className="page-header">
         <div>
-          <div className="page-title">
-            {isEdit ? 'Edit Solicitation' : '+ New Solicitation'}
-          </div>
-          <div className="page-sub">
-            {isEdit ? existing?.number : 'Register a new opportunity for tracking'}
-          </div>
+          <div className="page-title">Edit Solicitation</div>
+          <div className="page-sub">{existing.number}</div>
         </div>
         <button
           type="button"
           className="btn ghost small"
-          onClick={() => navigate(isEdit && existing ? `/solicitations/${existing.id}` : '/solicitations')}
+          onClick={() => navigate(`/solicitations/${existing.id}`)}
         >
           Cancel
         </button>
@@ -243,24 +162,14 @@ const SolicitationForm: React.FC<Props> = ({ existing, initialFiles = [] }) => {
         </label>
         <TagInput value={tags} onChange={setTags} />
 
-        {!isEdit && (
-          <>
-            <label className="label">Solicitation Documents</label>
-            <FileDropZone files={files} onChange={setFiles} />
-          </>
-        )}
-
         {error && <div className="form-error">{error}</div>}
 
         <div className="form-actions">
-          <button type="submit" className="btn" disabled={submitting}>
-            {submitting ? 'Uploading…' : isEdit ? 'Save Changes' : 'Create Solicitation'}
-          </button>
+          <button type="submit" className="btn">Save Changes</button>
           <button
             type="button"
             className="btn ghost"
-            onClick={() => navigate(isEdit && existing ? `/solicitations/${existing.id}` : '/solicitations')}
-            disabled={submitting}
+            onClick={() => navigate(`/solicitations/${existing.id}`)}
           >
             Cancel
           </button>

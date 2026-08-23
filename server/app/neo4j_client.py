@@ -40,7 +40,10 @@ def create_run(run: ExtractionRun) -> None:
               SET run.name = $name,
                   run.status = $status,
                   run.error = null,
-                  run.created_at = $created_at
+                  run.created_at = $created_at,
+                  run.stage = null,
+                  run.stage_current = 0,
+                  run.stage_total = 0
             MERGE (s)-[:HAS_RUN]->(run)
             """,
             id=run.id,
@@ -60,6 +63,24 @@ def set_run_status(run_id: str, status: str, error: str | None = None) -> None:
             id=run_id,
             status=status,
             error=error,
+        )
+
+
+def set_run_progress(run_id: str, stage: str, current: int, total: int) -> None:
+    """Live progress within the current stage — called from inside the
+    pipeline's per-source/per-chunk loops (see pipeline.py), not just once
+    per node, so the UI can show real "N / total" counts rather than a
+    single static "running" label."""
+    with get_driver().session() as session:
+        session.run(
+            """
+            MATCH (run:ExtractionRun {id: $id})
+            SET run.stage = $stage, run.stage_current = $current, run.stage_total = $total
+            """,
+            id=run_id,
+            stage=stage,
+            current=current,
+            total=total,
         )
 
 
