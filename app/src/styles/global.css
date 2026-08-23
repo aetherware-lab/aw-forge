@@ -241,6 +241,7 @@ input[type='checkbox'] {
    * stretch to fill it. */
   display: flex;
   flex-direction: column;
+  position: relative;
   background: transparent;
   box-shadow: var(--shadow-modal);
   overflow: hidden;
@@ -248,6 +249,34 @@ input[type='checkbox'] {
 }
 .auth-dialog--expand {
   background: var(--surface);
+}
+/* Success tick — fades/pops in over the same span the fields fade out
+ * (see .is-visible, driven by detailsHidden in Login.tsx), filling the
+ * otherwise-empty pause between submitting and the workspace card
+ * growing in, so that pause reads as "signed in", not as a stall. */
+.auth-success-check {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--conf-high);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.8);
+  transition: opacity 200ms ease, transform 200ms ease;
+  pointer-events: none;
+}
+.auth-success-check.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-success-check { transition: opacity 200ms ease; transform: translate(-50%, -50%); }
 }
 /* Everything (top bar, body, bottom bar) fades out together on submit —
  * see Login.tsx handleSubmit — leaving an empty, var(--surface)-filled

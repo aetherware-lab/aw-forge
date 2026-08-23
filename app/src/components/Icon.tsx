@@ -185,6 +185,13 @@ export const IconInfo = createIcon(
   </>,
 );
 
+/** Plain checkmark — e.g. the success tick shown on Login while it pauses
+ * after a successful sign-in, before the workspace card grows in. */
+export const IconCheck = createIcon(
+  'IconCheck',
+  <polyline points="20 6 9 17 4 12" />,
+);
+
 /** Spinner arc — pair with the `.spin` CSS class (global.css) for rotation.
  * Used for in-progress states (e.g. an extraction run in flight). */
 export const IconLoader = createIcon(

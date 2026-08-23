@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
+import { IconCheck } from '@/components/Icon';
 
 const DETAIL_FADE_MS = 160;
 const FILL_MS = 320;
@@ -134,6 +135,10 @@ const Login: React.FC = () => {
             <span className="auth-status-copyright">© 2026 FORGE from Aetherware</span>
             <span>{formatStatusClock(now)}</span>
           </div>
+        </div>
+
+        <div className={`auth-success-check${detailsHidden ? ' is-visible' : ''}`} aria-hidden="true">
+          <IconCheck size={28} />
         </div>
       </form>
     </main>
