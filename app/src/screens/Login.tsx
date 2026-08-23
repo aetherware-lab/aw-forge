@@ -1,20 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
-import Dashboard from '@/screens/Dashboard';
 
 const DETAIL_FADE_MS = 160;
 const EXPAND_MS = 320;
 const JUST_LOGGED_IN_KEY = 'forge-just-logged-in';
 
-// Matches AppShell's layout exactly (see global.css): a 48px topbar, then
-// .app-main's 24px padding around a max-1200px-wide .app-card. .app-card
-// is sized to its own content (not a fixed rect), so top/left/width here
-// are exact geometry but height is measured, not assumed — see the
-// hidden Dashboard clone below and its use in handleSubmit.
+// Matches .chrome-bar.topbar's height in global.css, and AppShell.tsx's
+// own copy of the same constant. This half of the transition only needs
+// to reach the *screen area* below where the topbar will be — simple,
+// exact geometry, nothing to estimate. Matching the real .app-card's
+// actual size is AppShell's job once it mounts (it measures the real,
+// already-rendered element — see the comment there for why that's more
+// reliable than anything predicted from here beforehand).
 const TOPBAR_H = 48;
-const CARD_MARGIN = 24;
-const CARD_MAX_WIDTH = 1200;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -36,16 +35,6 @@ const Login: React.FC = () => {
   const login = useAuth((s) => s.login);
   const backdropRef = useRef<HTMLElement>(null);
   const dialogRef = useRef<HTMLFormElement>(null);
-  // measureMainRef mimics .app-main's own box (including its
-  // overflow-y: auto) around measureCardRef's .app-card, so that if the
-  // real content is tall enough to need a scrollbar, this clone gets one
-  // too — a real vertical scrollbar narrows the content area by ~15px,
-  // which changes wrapping (tag pills, meta text) and therefore height.
-  // Measuring .app-card alone, unconstrained, undercounts exactly that
-  // case — which is why the previous version only mismatched once
-  // content was tall enough to actually need scrolling.
-  const measureMainRef = useRef<HTMLDivElement>(null);
-  const measureCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -65,38 +54,18 @@ const Login: React.FC = () => {
 
     const dialog = dialogRef.current;
     const backdropRect = backdropRef.current?.getBoundingClientRect();
-    let bounds: { top: number; left: number; width: number; height: number } | null = null;
-    if (backdropRect) {
-      const top = backdropRect.top + TOPBAR_H + CARD_MARGIN;
-      const availableHeight = backdropRect.height - TOPBAR_H - CARD_MARGIN * 2;
-
-      // Measure the hidden Dashboard clone inside an .app-main-shaped box
-      // sized exactly like the real one, so wrapping/line-breaks (and any
-      // scrollbar-driven width narrowing) match and both dimensions are
-      // real rather than guessed. Width in particular used to be a plain
-      // arithmetic Math.min — correct only when .app-main has no
-      // scrollbar; once one appears (content taller than the viewport)
-      // the real .app-card is actually narrower than that formula
-      // assumed, which is why width silently stopped matching too.
-      let width = Math.min(backdropRect.width - CARD_MARGIN * 2, CARD_MAX_WIDTH); // fallback if refs aren't ready
-      let height = availableHeight;
-      const measureMain = measureMainRef.current;
-      const measureCard = measureCardRef.current;
-      if (measureMain && measureCard) {
-        measureMain.style.width = `${backdropRect.width}px`;
-        measureMain.style.height = `${backdropRect.height - TOPBAR_H}px`;
-        void measureMain.offsetHeight; // force layout before reading it back
-        const measured = measureCard.getBoundingClientRect();
-        width = measured.width;
-        height = Math.min(availableHeight, measured.height);
-      }
-
-      const left = backdropRect.left + Math.max(CARD_MARGIN, (backdropRect.width - width) / 2);
-      bounds = { top, left, width, height };
-    }
+    // Fill the screen area below where the topbar will be — the exact
+    // rect AppShell's entry overlay starts from (see AppShell.tsx), so
+    // there's no visible jump at the handoff.
+    const bounds = backdropRect && {
+      top: backdropRect.top + TOPBAR_H,
+      left: backdropRect.left,
+      width: backdropRect.width,
+      height: backdropRect.height - TOPBAR_H,
+    };
     if (dialog && bounds) {
       // Pin the dialog to its current on-screen rect now, before anything
-      // moves, so step 2 can FLIP it out toward the workspace card's shape.
+      // moves, so step 2 can FLIP it out to fill the screen below the topbar.
       const rect = dialog.getBoundingClientRect();
       dialog.style.position = 'fixed';
       dialog.style.margin = '0';
@@ -108,8 +77,8 @@ const Login: React.FC = () => {
       void dialog.offsetHeight;
 
       window.setTimeout(() => {
-        // Step 2: expand the (now detail-less) card toward the workspace
-        // card's footprint.
+        // Step 2: expand the (now detail-less) card to fill the screen
+        // below the topbar.
         setExpanding(true);
         dialog.style.top = `${bounds.top}px`;
         dialog.style.left = `${bounds.left}px`;
@@ -118,9 +87,9 @@ const Login: React.FC = () => {
       }, DETAIL_FADE_MS);
     }
 
-    // Step 3: once the card's reached the workspace card's footprint, hand
-    // off to the app shell, whose topbar drops in from above over the
-    // fading-in workspace (see AppShell.tsx / app-enter).
+    // Step 3: once the card's filled that space, hand off to the app
+    // shell, whose topbar drops in from above while an entry overlay
+    // shrinks down onto the real, measured .app-card (see AppShell.tsx).
     window.setTimeout(() => {
       try {
         sessionStorage.setItem(JUST_LOGGED_IN_KEY, '1');
@@ -209,23 +178,6 @@ const Login: React.FC = () => {
           </div>
         </div>
       </form>
-
-      {/* Hidden off-screen clone of the real destination, used only to
-          measure its actual rendered height (see handleSubmit) — never
-          shown. Rendering the actual Dashboard component inside the
-          actual .app-main/.app-card shapes (rather than a hand-copied
-          approximation) means this can't drift out of sync with what
-          those really render, dimensionally or structurally. */}
-      <div
-        ref={measureMainRef}
-        className="app-main"
-        aria-hidden="true"
-        style={{ position: 'fixed', top: -99999, left: 0, visibility: 'hidden', pointerEvents: 'none' }}
-      >
-        <div ref={measureCardRef} className="app-card">
-          <Dashboard />
-        </div>
-      </div>
     </main>
   );
 };

@@ -249,13 +249,14 @@ input[type='checkbox'] {
     box-shadow 320ms ease, background-color 320ms ease;
 }
 .auth-dialog--expand {
-  /* Grows to match .app-card's measured footprint (see Login.tsx's
-   * hidden Dashboard clone) rather than the whole screen, so it visibly
-   * becomes the workspace card once the topbar drops in over it.
-   * Border/radius/shadow are deliberately left alone here — .auth-dialog
-   * already uses the same var(--radius-md)/var(--shadow-modal)/1.5px
-   * var(--box-line) as .app-card, so keeping them (instead of flattening
-   * to a full-bleed cover) is what makes the two actually match.
+  /* Grows to fill the screen below the topbar (see TOPBAR_H in
+   * Login.tsx) — AppShell's .app-entry-overlay picks up from exactly
+   * this rect and shrinks onto the real, measured .app-card once it
+   * mounts (see AppShell.tsx). Border/radius/shadow are deliberately
+   * left alone here — .auth-dialog already uses the same
+   * var(--radius-md)/var(--shadow-modal)/1.5px var(--box-line) as both
+   * .app-card and .app-entry-overlay, so there's no visible seam at
+   * either handoff.
    * max-width: none is load-bearing — .auth-dialog caps at 360px, which
    * would otherwise silently clamp the inline `width` Login.tsx sets. */
   background: var(--surface);
@@ -558,8 +559,7 @@ input[type='checkbox'] {
 }
 @media (prefers-reduced-motion: reduce) {
   .modal-backdrop, .modal-card, .spin,
-  .app-shell.app-enter .chrome-bar.topbar,
-  .app-shell.app-enter .app-main { animation: none; }
+  .app-shell.app-enter .chrome-bar.topbar { animation: none; }
   .auth-dialog-inner { transition: none; }
 }
 
@@ -1212,9 +1212,10 @@ textarea:focus,
  * short screen (Settings) is a short card, a long list scrolls the page
  * like normal — rather than every route being forced to the same fixed
  * height. Login's expand animation targets this card's *actual*
- * measured height (see Login.tsx's hidden Dashboard clone) rather than
- * assuming a fixed rect, precisely because this height varies by route
- * and by content. */
+ * measured height, not assumed — it's sized to its own content, and
+ * AppShell.tsx measures it directly (real element, not an estimate) to
+ * animate the post-login entry overlay onto it. See .app-entry-overlay
+ * below. */
 .app-card {
   max-width: 1200px;
   margin: 0 auto;
@@ -1225,34 +1226,54 @@ textarea:focus,
   padding: 24px;
 }
 
-/* One-time fade-in when the topbar+main shell mounts right after login
- * (Login.tsx sets the flag that triggers `app-enter`). */
-@keyframes app-fade-in { from { opacity: 0; } to { opacity: 1; } }
+/* Post-login entry: covers the screen below the topbar (exactly where
+ * Login's own expand left off — see TOPBAR_H in both Login.tsx and
+ * AppShell.tsx) and shrinks onto the real, already-rendered .app-card
+ * (measured in AppShell.tsx, not guessed), then unmounts — see the
+ * useLayoutEffect in AppShell.tsx. Same tokens as .auth-dialog so there's
+ * no visible seam at the handoff. */
+.app-entry-overlay {
+  position: fixed;
+  z-index: 5;
+  background: var(--surface);
+  border: 1.5px solid var(--box-line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-modal);
+  overflow: hidden;
+  pointer-events: none;
+  transition: top 320ms ease, left 320ms ease, width 320ms ease, height 320ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-entry-overlay { transition: none; }
+}
+
 @keyframes topbar-drop-in { from { transform: translateY(-100%); } to { transform: translateY(0); } }
 /* The topbar drops in from above (Login has none of its own — see
- * .auth-backdrop) while the workspace card fades in beneath it. */
+ * .auth-backdrop) while .app-entry-overlay (above) handles revealing
+ * the workspace card underneath. */
 .app-shell.app-enter .chrome-bar.topbar {
   animation: topbar-drop-in 380ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.app-shell.app-enter .app-main {
-  animation: app-fade-in 420ms ease-out;
 }
 
 /* ----- Topbar ---------------------------------------------------------
  * Everything the old sidebar held now lives in the chrome bar: brand,
  * primary nav, and the user menu. Height is fixed (rather than padding-
- * driven) so Login.tsx can compute exactly where .app-card starts — see
- * TOPBAR_H in Login.tsx. flex-shrink: 0 stops it from ever shrinking
- * below 48px (flex items default to min-height: auto, i.e. never
- * shrink below their own content's needed height — a longer label like
- * "Extraction Runs" vs "Solicitations" could otherwise round up to a
- * taller intrinsic height on some routes and not others).
+ * driven) so Login.tsx/AppShell.tsx can compute exactly where .app-card
+ * starts — see TOPBAR_H in both. flex-shrink: 0 stops it from ever
+ * shrinking below 48px (flex items default to min-height: auto, i.e.
+ * never shrink below their own content's needed height — a longer label
+ * like "Extraction Runs" vs "Solicitations" could otherwise round up to
+ * a taller intrinsic height on some routes and not others).
  * Deliberately no overflow: hidden here — .user-menu-panel (UserMenu.tsx)
  * is an absolutely-positioned child that extends below this bar's own
- * box, and overflow: hidden on an ancestor clips exactly that. */
+ * box, and overflow: hidden on an ancestor clips exactly that.
+ * z-index: a flex item can stack above position: fixed siblings without
+ * needing its own position value — keeps this above .app-entry-overlay
+ * so the drop-in is visible on top of it, not hidden behind it. */
 .chrome-bar.topbar {
   height: 48px;
   flex-shrink: 0;
+  z-index: 10;
   padding: 0 18px;
   color: var(--chrome-fg-muted);
   border-bottom: 1px solid var(--chrome-border);
