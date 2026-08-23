@@ -1,19 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
 
 const DETAIL_FADE_MS = 160;
-const EXPAND_MS = 320;
+const FILL_MS = 320;
 const JUST_LOGGED_IN_KEY = 'forge-just-logged-in';
-
-// Matches .chrome-bar.topbar's height in global.css, and AppShell.tsx's
-// own copy of the same constant. This half of the transition only needs
-// to reach the *screen area* below where the topbar will be — simple,
-// exact geometry, nothing to estimate. Matching the real .app-card's
-// actual size is AppShell's job once it mounts (it measures the real,
-// already-rendered element — see the comment there for why that's more
-// reliable than anything predicted from here beforehand).
-const TOPBAR_H = 48;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -33,8 +24,6 @@ const Login: React.FC = () => {
   const [now, setNow] = useState(() => new Date());
   const navigate = useNavigate();
   const login = useAuth((s) => s.login);
-  const backdropRef = useRef<HTMLElement>(null);
-  const dialogRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -48,48 +37,18 @@ const Login: React.FC = () => {
     if (!isValid || detailsHidden) return;
     setLoginFailed(false);
 
-    // Step 1: fade out the card's own details (fields, copy) first, so the
-    // card frame itself is what visibly grows in step 2.
+    // Step 1: fade out the card's own details (fields, copy)...
     setDetailsHidden(true);
+    // ...and fill the card's background with var(--surface) — .app-card's
+    // own background — so the small card sitting here becomes a plain
+    // colored box (no resize; AppShell's entry overlay is what actually
+    // grows to the real .app-card's size, starting from this exact same
+    // small centered rect — see AppShell.tsx). That way there's a single
+    // continuous grow once AppShell mounts, not a fade-then-a-separate-
+    // expand-then-another-shrink.
+    setExpanding(true);
 
-    const dialog = dialogRef.current;
-    const backdropRect = backdropRef.current?.getBoundingClientRect();
-    // Fill the screen area below where the topbar will be — the exact
-    // rect AppShell's entry overlay starts from (see AppShell.tsx), so
-    // there's no visible jump at the handoff.
-    const bounds = backdropRect && {
-      top: backdropRect.top + TOPBAR_H,
-      left: backdropRect.left,
-      width: backdropRect.width,
-      height: backdropRect.height - TOPBAR_H,
-    };
-    if (dialog && bounds) {
-      // Pin the dialog to its current on-screen rect now, before anything
-      // moves, so step 2 can FLIP it out to fill the screen below the topbar.
-      const rect = dialog.getBoundingClientRect();
-      dialog.style.position = 'fixed';
-      dialog.style.margin = '0';
-      dialog.style.top = `${rect.top}px`;
-      dialog.style.left = `${rect.left}px`;
-      dialog.style.width = `${rect.width}px`;
-      dialog.style.height = `${rect.height}px`;
-      // Force layout so the pinned rect is committed before animating.
-      void dialog.offsetHeight;
-
-      window.setTimeout(() => {
-        // Step 2: expand the (now detail-less) card to fill the screen
-        // below the topbar.
-        setExpanding(true);
-        dialog.style.top = `${bounds.top}px`;
-        dialog.style.left = `${bounds.left}px`;
-        dialog.style.width = `${bounds.width}px`;
-        dialog.style.height = `${bounds.height}px`;
-      }, DETAIL_FADE_MS);
-    }
-
-    // Step 3: once the card's filled that space, hand off to the app
-    // shell, whose topbar drops in from above while an entry overlay
-    // shrinks down onto the real, measured .app-card (see AppShell.tsx).
+    // Step 2: once both of those finish, hand off to the app shell.
     window.setTimeout(() => {
       try {
         sessionStorage.setItem(JUST_LOGGED_IN_KEY, '1');
@@ -98,14 +57,13 @@ const Login: React.FC = () => {
       }
       login(email.trim());
       navigate('/solicitations', { replace: true });
-    }, dialog && bounds ? DETAIL_FADE_MS + EXPAND_MS : 0);
+    }, Math.max(DETAIL_FADE_MS, FILL_MS));
   };
 
   return (
-    <main className="auth-backdrop bg-grid" ref={backdropRef}>
+    <main className="auth-backdrop bg-grid">
       <form
         className={`auth-dialog${expanding ? ' auth-dialog--expand' : ''}`}
-        ref={dialogRef}
         onSubmit={handleSubmit}
         noValidate
       >

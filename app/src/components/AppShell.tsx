@@ -15,10 +15,17 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const JUST_LOGGED_IN_KEY = 'forge-just-logged-in';
-// Matches .chrome-bar.topbar's height in global.css, and Login.tsx's own
-// copy of the same constant.
-const TOPBAR_H = 48;
-const SHRINK_MS = 320;
+const GROW_MS = 320;
+// Matches .auth-dialog's own max-width/min-height and .auth-backdrop's
+// padding in global.css — the small, centered rect Login's card is
+// sitting at (filled in with var(--surface), not resized — see
+// Login.tsx) right before it hands off here. Recomputed independently
+// rather than measured from Login (which has already unmounted by the
+// time this runs) — it's simple, deterministic centering math against
+// the current viewport, not something that can drift.
+const AUTH_DIALOG_MAX_WIDTH = 452;
+const AUTH_DIALOG_MIN_HEIGHT = 476;
+const AUTH_BACKDROP_PADDING = 24;
 
 /**
  * Outer chrome that wraps every authenticated route: a single topbar
@@ -26,19 +33,18 @@ const SHRINK_MS = 320;
  * is no sidebar — everything lives in this one bar.
  *
  * If Login just navigated here, the topbar drops in from above (see
- * app-enter/topbar-drop-in in global.css) and an entry overlay shrinks
- * down onto the real .app-card — see the effect below. Login's own half
- * of the transition (fade out the sign-in fields, then expand the card
- * to fill the screen below where the topbar will be) hands off to this
- * one at the exact same rect, so there's no visible jump at the seam.
+ * app-enter/topbar-drop-in in global.css) and an entry overlay grows
+ * directly from where Login's small card was sitting onto the real
+ * .app-card — see the effect below — in one continuous motion, rather
+ * than Login expanding to some intermediate size first.
  *
- * Why measure here instead of predicting the size from Login: earlier
- * versions had Login estimate/measure a *clone* of the destination
- * before navigating, which kept quietly drifting from reality (content
- * height, scrollbar-driven width, font load timing — any difference
- * between the clone and the real thing showed up as a mismatch). This
- * measures the actual, already-rendered .app-card after it mounts, so
- * there's nothing left to predict.
+ * Why measure the card here instead of predicting its size from Login:
+ * earlier versions had Login estimate/measure a *clone* of the
+ * destination before navigating, which kept quietly drifting from
+ * reality (content height, scrollbar-driven width, font load timing —
+ * any difference between the clone and the real thing showed up as a
+ * mismatch). This measures the actual, already-rendered .app-card after
+ * it mounts, so there's nothing left to predict.
  */
 const AppShell: React.FC = () => {
   // The lazy useState initializer must stay pure — StrictMode
@@ -75,12 +81,14 @@ const AppShell: React.FC = () => {
     // The real .app-card's actual rendered rect — not an estimate.
     const cardRect = card.getBoundingClientRect();
 
-    // Start exactly where Login's expand left off: the full viewport
-    // below the topbar, edge to edge.
-    overlay.style.top = `${TOPBAR_H}px`;
-    overlay.style.left = '0px';
-    overlay.style.width = '100vw';
-    overlay.style.height = `calc(100vh - ${TOPBAR_H}px)`;
+    // Start exactly where Login's small card was sitting: centered in
+    // the viewport, same as .auth-backdrop's flex centering + padding.
+    const startWidth = Math.min(window.innerWidth - AUTH_BACKDROP_PADDING * 2, AUTH_DIALOG_MAX_WIDTH);
+    const startHeight = Math.min(window.innerHeight - AUTH_BACKDROP_PADDING * 2, AUTH_DIALOG_MIN_HEIGHT);
+    overlay.style.top = `${(window.innerHeight - startHeight) / 2}px`;
+    overlay.style.left = `${(window.innerWidth - startWidth) / 2}px`;
+    overlay.style.width = `${startWidth}px`;
+    overlay.style.height = `${startHeight}px`;
     // Commit that starting rect before animating — same technique as
     // Login.tsx's own FLIP (force a synchronous reflow, then change the
     // target styles from a setTimeout rather than requestAnimationFrame,
@@ -88,16 +96,16 @@ const AppShell: React.FC = () => {
     // and never actually get painted as a separate "before" state).
     void overlay.offsetHeight;
 
-    const shrink = window.setTimeout(() => {
+    const grow = window.setTimeout(() => {
       overlay.style.top = `${cardRect.top}px`;
       overlay.style.left = `${cardRect.left}px`;
       overlay.style.width = `${cardRect.width}px`;
       overlay.style.height = `${cardRect.height}px`;
     }, 20);
 
-    const hide = window.setTimeout(() => setShowEntryOverlay(false), 20 + SHRINK_MS);
+    const hide = window.setTimeout(() => setShowEntryOverlay(false), 20 + GROW_MS);
     return () => {
-      window.clearTimeout(shrink);
+      window.clearTimeout(grow);
       window.clearTimeout(hide);
     };
     // Deliberately runs once on mount only — this is a one-shot entrance,

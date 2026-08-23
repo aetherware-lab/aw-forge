@@ -225,9 +225,7 @@ input[type='checkbox'] {
 .auth-dialog {
   width: 100%;
   max-width: 452px;
-  /* Taller than it is wide, by design — a floor rather than a fixed
-   * height, since .auth-dialog--expand later sets a much larger inline
-   * height via JS and a min-height never fights that. */
+  /* Taller than it is wide, by design. */
   min-height: 476px;
   border: 1.5px solid var(--box-line);
   border-radius: var(--radius-md);
@@ -235,37 +233,26 @@ input[type='checkbox'] {
    * inner .auth-form-card (below) paint a surface, so the space around
    * the smaller inner card shows the page's bg-grid texture through it.
    * .auth-dialog--expand switches this to var(--surface) — .app-card's
-   * own background — so the card visibly fills with the workspace's
-   * color *during* the expand, before the real content underneath ever
-   * fades in (see AppShell.tsx / app-enter). Always a flex column so
-   * .auth-dialog-inner (below) can stretch to fill it. */
+   * own background — once signed in, so the small card becomes a plain
+   * colored box (no resize here) that AppShell's entry overlay then
+   * grows *from*, at this exact rect, directly onto the real .app-card —
+   * one continuous grow, not a resize here followed by a separate one
+   * there. Always a flex column so .auth-dialog-inner (below) can
+   * stretch to fill it. */
   display: flex;
   flex-direction: column;
   background: transparent;
   box-shadow: var(--shadow-modal);
   overflow: hidden;
-  transition: top 320ms ease, left 320ms ease, width 320ms ease,
-    height 320ms ease, border-radius 320ms ease, border-color 320ms ease,
-    box-shadow 320ms ease, background-color 320ms ease;
+  transition: background-color 320ms ease;
 }
 .auth-dialog--expand {
-  /* Grows to fill the screen below the topbar (see TOPBAR_H in
-   * Login.tsx) — AppShell's .app-entry-overlay picks up from exactly
-   * this rect and shrinks onto the real, measured .app-card once it
-   * mounts (see AppShell.tsx). Border/radius/shadow are deliberately
-   * left alone here — .auth-dialog already uses the same
-   * var(--radius-md)/var(--shadow-modal)/1.5px var(--box-line) as both
-   * .app-card and .app-entry-overlay, so there's no visible seam at
-   * either handoff.
-   * max-width: none is load-bearing — .auth-dialog caps at 360px, which
-   * would otherwise silently clamp the inline `width` Login.tsx sets. */
   background: var(--surface);
-  max-width: none;
-  z-index: 1000;
 }
 /* Everything (top bar, body, bottom bar) fades out together on submit —
- * see Login.tsx handleSubmit — before the frame itself expands, so what
- * visibly grows is an empty card outline. */
+ * see Login.tsx handleSubmit — leaving an empty, var(--surface)-filled
+ * card outline (.auth-dialog--expand, above) for AppShell's entry
+ * overlay to grow from once it mounts. */
 .auth-dialog-inner {
   display: flex;
   flex-direction: column;
