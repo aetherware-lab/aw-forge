@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
 
@@ -7,6 +7,21 @@ const EXPAND_MS = 320;
 const JUST_LOGGED_IN_KEY = 'forge-just-logged-in';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Best-effort region name from the OS locale, for the status bar — falls
+ * back to "United States" (this is a US-based GCA tool) if unavailable. */
+const regionNameFromLocale = (): string => {
+  try {
+    const code = navigator.language.split('-')[1];
+    if (!code) return 'United States';
+    return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) ?? 'United States';
+  } catch {
+    return 'United States';
+  }
+};
+
+const formatStatusClock = (d: Date): string =>
+  `${d.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: '2-digit' }).toUpperCase()} · ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`;
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -18,10 +33,17 @@ const Login: React.FC = () => {
   // actually flip true. It's wired up so a rejected login (once real auth
   // exists) has somewhere to land without further UI work.
   const [loginFailed, setLoginFailed] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+  const [regionName] = useState(regionNameFromLocale);
   const navigate = useNavigate();
   const login = useAuth((s) => s.login);
   const backdropRef = useRef<HTMLElement>(null);
   const dialogRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const isValid = EMAIL_RE.test(email.trim()) && password.length > 0;
 
@@ -87,61 +109,66 @@ const Login: React.FC = () => {
           </div>
 
           <div className="auth-dialog-body">
-            <label className="label" htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              className={loginFailed ? 'input-error' : undefined}
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setLoginFailed(false);
-              }}
-              placeholder="you@wsgc.us"
-              autoComplete="email"
-              autoFocus
-              disabled={detailsHidden}
-              aria-invalid={loginFailed}
-            />
+            <div className="auth-form-card">
+              <label className="label" htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                className={loginFailed ? 'input-error' : undefined}
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setLoginFailed(false);
+                }}
+                placeholder="you@wsgc.us"
+                autoComplete="email"
+                autoFocus
+                disabled={detailsHidden}
+                aria-invalid={loginFailed}
+              />
 
-            <label className="label" htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              className={loginFailed ? 'input-error' : undefined}
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setLoginFailed(false);
-              }}
-              placeholder="••••••••••"
-              autoComplete="current-password"
-              disabled={detailsHidden}
-              aria-invalid={loginFailed}
-            />
+              <label className="label" htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                className={loginFailed ? 'input-error' : undefined}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setLoginFailed(false);
+                }}
+                placeholder="••••••••••"
+                autoComplete="current-password"
+                disabled={detailsHidden}
+                aria-invalid={loginFailed}
+              />
 
-            <div className="auth-remember-row">
-              <label className="field-aside">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  disabled={detailsHidden}
-                />
-                Remember me
-              </label>
-              <button type="button" className="link-btn" disabled={detailsHidden}>
-                Forgot Password?
+              <div className="auth-remember-row">
+                <label className="field-aside">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    disabled={detailsHidden}
+                  />
+                  Remember me
+                </label>
+                <button type="button" className="link-btn quiet" disabled={detailsHidden}>
+                  Forgot Password?
+                </button>
+              </div>
+
+              {loginFailed && <p className="error-text" role="alert">Invalid email or password</p>}
+
+              <button type="submit" className="btn full auth-submit" disabled={detailsHidden || !isValid}>
+                {expanding ? 'Signing in…' : 'Sign in'}
               </button>
             </div>
-
-            {loginFailed && <p className="error-text" role="alert">Invalid email or password</p>}
           </div>
 
           <div className="auth-dialog-bottom">
-            <button type="submit" className="btn full" disabled={detailsHidden || !isValid}>
-              {expanding ? 'Signing in…' : 'Sign in'}
-            </button>
+            <span>{regionName}</span>
+            <span className="mono">{formatStatusClock(now)}</span>
           </div>
         </div>
       </form>

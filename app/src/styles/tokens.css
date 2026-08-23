@@ -428,89 +428,93 @@
  * geometry (bright inset highlight on top, soft shadow below) and a
  * gradient on pressable surfaces so buttons read as physical keys,
  * refined with soft, generous shadows rather than the hard 1px pixel
- * borders of literal '90s chrome.
+ * borders of literal '90s chrome. Recolored onto GCA's brand palette —
+ * navy #0B3162 / red #D12936 / gold #C5A44A — so the tactile structure
+ * reads as GCA-branded metal rather than generic steel.
  * ----------------------------------------------------------------- */
 [data-theme='skeu'] {
   --radius-sm: 8px;
   --radius-md: 12px;
 
-  /* Surfaces — brushed-steel neutrals */
-  --bg: #dfe3e8;
-  --surface: #f3f4f6;
-  --surface-2: #e9ebee;
-  --surface-3: #dde1e6;
-  --chrome: linear-gradient(180deg, #565f6b, #2f3540);
-  --hover: rgba(0, 0, 0, 0.04);
+  /* Surfaces — navy-tinted brushed metal */
+  --bg: #dde4ec;
+  --surface: #f4f6f9;
+  --surface-2: #e8ecf2;
+  --surface-3: #dbe1e9;
+  --chrome: linear-gradient(180deg, #3465a0, #0b3162 55%, #071e3d 100%);
+  --hover: rgba(11, 49, 98, 0.05);
 
-  --ink: #1a1d21;
-  --muted: #6b7280;
-  --accent: #333941;
-  --on-ink: #f5f6f7;
+  --ink: #16212f;
+  --muted: #5f6b7d;
+  --accent: #0b3162;
+  --on-ink: #ffffff;
 
-  --line: #8a95a3;
-  --box-line: #b6bfc9;
-  --divider: #d5dae0;
+  --line: #7d92ab;
+  --box-line: #aebccb;
+  --divider: #cdd8e3;
 
-  /* Action — a dark, pressable key */
-  --action: #262b32;
-  --action-hover: #323841;
-  --action-ink: #f5f6f7;
-  --link: #2563eb;
-  --link-hover: #1d4ed8;
+  /* Action — a navy, pressable key */
+  --action: #0b3162;
+  --action-hover: #071e3d;
+  --action-ink: #ffffff;
+  --link: #19649c;
+  --link-hover: #0b3162;
 
-  --note: #b45309;
-  --note-bg: #fef3c7;
-  --note-fg: #78350f;
-  --crit: #b91c1c;
-  --crit-bg: #fee2e2;
-  --crit-fg: #7f1d1d;
-  --imp: #b45309;
-  --imp-bg: #fef3c7;
-  --imp-fg: #78350f;
-  --minor: #4b5563;
-  --minor-bg: #e5e7eb;
-  --minor-fg: #1f2937;
+  /* Notes/flags — GCA gold + red */
+  --note: #c5a44a;
+  --note-bg: #fbf5e0;
+  --note-fg: #8b7730;
+  --crit: #d12936;
+  --crit-bg: #fde4e6;
+  --crit-fg: #a81f2b;
+  --imp: #c5a44a;
+  --imp-bg: #fbf5e0;
+  --imp-fg: #8b7730;
+  --minor: #5f6b7d;
+  --minor-bg: #dbe1e9;
+  --minor-fg: #16212f;
 
-  --conf-high: #059669;
+  --conf-high: #2e7d32;
   --conf-good: #65a30d;
-  --conf-med: #d97706;
-  --conf-low: #ea580c;
-  --conf-vlow: #b91c1c;
+  --conf-med: #c5a44a;
+  --conf-low: #d12936;
+  --conf-vlow: #a81f2b;
 
-  --th-bg: #e2e5e9;
+  --th-bg: #dbe1e9;
 
-  --backdrop: rgba(20, 22, 26, 0.45);
-  --focus-ring: rgba(38, 43, 50, 0.25);
+  --backdrop: rgba(7, 30, 61, 0.45);
+  --focus-ring: rgba(11, 49, 98, 0.25);
 
-  --chrome-fg: #f5f6f7;
-  --chrome-fg-muted: rgba(245, 246, 247, 0.68);
+  --chrome-fg: #ffffff;
+  --chrome-fg-muted: rgba(255, 255, 255, 0.68);
   --chrome-hover: rgba(255, 255, 255, 0.1);
   --chrome-active-bg: rgba(255, 255, 255, 0.16);
-  --chrome-border: #14161a;
+  --chrome-border: #071e3d;
 
-  --grid-line: rgba(20, 22, 26, 0.06);
+  --grid-line: rgba(11, 49, 98, 0.07);
 
   /* Elevation — the bevel physics: a bright highlight along the top
-   * inside edge, a soft shadow beneath, like a raised, pressable key. */
-  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 3px 8px rgba(20, 22, 26, 0.14), 0 1px 2px rgba(20, 22, 26, 0.08);
-  --shadow-card-hover: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 8px 18px rgba(20, 22, 26, 0.18), 0 2px 4px rgba(20, 22, 26, 0.1);
-  --shadow-modal: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 24px 48px rgba(20, 22, 26, 0.38), 0 4px 12px rgba(20, 22, 26, 0.18);
-  --shadow-btn: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.35), 0 2px 4px rgba(20, 22, 26, 0.35), 0 1px 1px rgba(20, 22, 26, 0.2);
+   * inside edge, a soft navy-tinted shadow beneath, like a raised,
+   * pressable key. */
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 3px 8px rgba(7, 30, 61, 0.14), 0 1px 2px rgba(7, 30, 61, 0.08);
+  --shadow-card-hover: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 8px 18px rgba(7, 30, 61, 0.18), 0 2px 4px rgba(7, 30, 61, 0.1);
+  --shadow-modal: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 24px 48px rgba(7, 30, 61, 0.38), 0 4px 12px rgba(7, 30, 61, 0.18);
+  --shadow-btn: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(7, 30, 61, 0.35), 0 2px 4px rgba(7, 30, 61, 0.35), 0 1px 1px rgba(7, 30, 61, 0.2);
 }
 
-/* Buttons — the clearest "pressable key": light-to-dark gradient, bright
- * top inset highlight, soft drop shadow; pressing flattens/inverts it. */
+/* Buttons — the clearest "pressable key": light-to-dark navy gradient,
+ * bright top inset highlight, soft drop shadow; pressing flattens it. */
 [data-theme='skeu'] .btn {
-  background: linear-gradient(180deg, #3f4650 0%, #262b32 55%, #1a1e24 100%);
-  border-color: #14161a;
-  color: #f5f6f7;
+  background: linear-gradient(180deg, #2a5d95 0%, #0b3162 55%, #071e3d 100%);
+  border-color: #071e3d;
+  color: #ffffff;
 }
 [data-theme='skeu'] .btn:hover {
-  background: linear-gradient(180deg, #4a525d 0%, #2d333b 55%, #1f242b 100%);
+  background: linear-gradient(180deg, #3a6ea6 0%, #123f74 55%, #0a2850 100%);
 }
 [data-theme='skeu'] .btn:active {
-  background: linear-gradient(180deg, #1a1e24 0%, #262b32 100%);
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, #071e3d 0%, #0b3162 100%);
+  box-shadow: inset 0 2px 5px rgba(3, 12, 25, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
   transform: translateY(1px);
 }
 [data-theme='skeu'] .btn.ghost {
@@ -525,34 +529,37 @@
 [data-theme='skeu'] input,
 [data-theme='skeu'] select,
 [data-theme='skeu'] textarea {
-  background: linear-gradient(180deg, #eef0f2, #ffffff 45%);
-  box-shadow: inset 0 1px 3px rgba(20, 22, 26, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border-color: #b6bfc9;
+  background: linear-gradient(180deg, #eef1f5, #ffffff 45%);
+  box-shadow: inset 0 1px 3px rgba(7, 30, 61, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-color: #aebccb;
 }
 [data-theme='skeu'] input:focus,
 [data-theme='skeu'] select:focus,
 [data-theme='skeu'] textarea:focus {
-  box-shadow: inset 0 1px 3px rgba(20, 22, 26, 0.16), 0 0 0 3px var(--focus-ring);
+  box-shadow: inset 0 1px 3px rgba(7, 30, 61, 0.16), 0 0 0 3px var(--focus-ring);
 }
 
-/* Cards/panels/modals — a raised, brushed-metal surface */
+/* Cards/panels/modals — a raised, brushed-metal surface. .auth-dialog is
+ * deliberately excluded — its "empty space" is transparent by design
+ * (see the shared .auth-dialog rule in global.css) — .auth-form-card
+ * (the smaller card inside it) gets the raised treatment instead. */
 [data-theme='skeu'] .sol-card,
 [data-theme='skeu'] .panel,
 [data-theme='skeu'] .modal-card,
 [data-theme='skeu'] .settings-card,
 [data-theme='skeu'] .table-wrap,
-[data-theme='skeu'] .auth-dialog,
+[data-theme='skeu'] .auth-form-card,
 [data-theme='skeu'] .drawer {
-  background: linear-gradient(180deg, #fbfbfc, #eef0f2);
+  background: linear-gradient(180deg, #fbfcfe, #eef1f6);
 }
 
-/* Auth dialog top/bottom get the metallic steel gradient treatment. Scoped
+/* Auth dialog top/bottom get the metallic navy gradient treatment. Scoped
  * to the (self-contained) auth dialog rather than panel/settings headers,
  * whose children hard-code var(--ink)/var(--muted) for a light head and
  * would go invisible against a dark one. */
 [data-theme='skeu'] .auth-dialog-top,
 [data-theme='skeu'] .auth-dialog-bottom {
-  background: linear-gradient(180deg, #565f6b, #333940);
-  color: #e7e9eb;
-  border-color: #14161a;
+  background: linear-gradient(180deg, #3465a0, #0b3162 55%, #071e3d 100%);
+  color: #ffffff;
+  border-color: #071e3d;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import UserMenu from './UserMenu';
 import { IconClipboard, IconLayers } from '@/components/Icon';
@@ -21,25 +21,31 @@ const JUST_LOGGED_IN_KEY = 'forge-just-logged-in';
  * (brand + primary nav + user menu) over a floating content card. There
  * is no sidebar — everything lives in this one bar.
  *
- * If Login just navigated here, `app-enter` plays a one-time fade-in of
- * the whole shell (see Login.tsx for the fade-out/expand half of the
- * transition — it expands the sign-in card into roughly this same
- * floating-card shape, see `.app-card` in global.css). The sessionStorage
- * flag is consumed immediately so back navigation or a refresh never
- * replays it.
+ * If Login just navigated here, `app-enter` plays a one-time drop-in of
+ * the topbar + fade-in of the workspace card (see Login.tsx for the
+ * fade-out/expand half of the transition).
  */
 const AppShell: React.FC = () => {
+  // The lazy useState initializer must stay pure — StrictMode
+  // double-invokes it in dev, and an earlier version that removed the
+  // sessionStorage flag *inside* the initializer had the first (discarded)
+  // call consume the flag, so the second call always saw it already gone
+  // and the animation never played. Read here, remove in the effect below.
   const [justEntered] = useState(() => {
     try {
-      if (sessionStorage.getItem(JUST_LOGGED_IN_KEY)) {
-        sessionStorage.removeItem(JUST_LOGGED_IN_KEY);
-        return true;
-      }
+      return sessionStorage.getItem(JUST_LOGGED_IN_KEY) === '1';
     } catch {
-      /* sessionStorage unavailable — skip the entrance animation */
+      return false;
     }
-    return false;
   });
+
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem(JUST_LOGGED_IN_KEY);
+    } catch {
+      /* sessionStorage unavailable — nothing to clean up */
+    }
+  }, []);
 
   return (
     <div className={`app-shell${justEntered ? ' app-enter' : ''}`}>

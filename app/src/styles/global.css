@@ -227,7 +227,11 @@ input[type='checkbox'] {
   max-width: 360px;
   border: 1.5px solid var(--box-line);
   border-radius: var(--radius-md);
-  background: var(--surface);
+  /* The frame itself is transparent — only the top/bottom bars and the
+   * inner .auth-form-card (below) paint a surface. That keeps the border
+   * + shadow (the frame's presence) visible while the space around the
+   * smaller inner card shows the page's bg-grid texture through it. */
+  background: transparent;
   box-shadow: var(--shadow-modal);
   overflow: hidden;
   transition: top 320ms ease, left 320ms ease, width 320ms ease,
@@ -236,9 +240,13 @@ input[type='checkbox'] {
 }
 .auth-dialog--expand {
   /* Fills the whole screen (see Login.tsx) — flatten the card chrome so
-   * it reads as a full-bleed cover rather than an oversized card. */
+   * it reads as a full-bleed cover rather than an oversized card.
+   * max-width: none is load-bearing — .auth-dialog caps at 360px, which
+   * silently clamped the inline `width` Login.tsx sets via JS and made
+   * the "expand to fill the screen" animation invisible. */
   display: flex;
   flex-direction: column;
+  max-width: none;
   border-radius: 0;
   border-color: transparent;
   box-shadow: none;
@@ -269,10 +277,10 @@ input[type='checkbox'] {
   pointer-events: none;
 }
 .auth-dialog-top {
-  padding: 10px 20px;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--box-line);
   background: var(--surface-2);
-  text-align: center;
+  text-align: left;
 }
 .auth-dialog-brand {
   display: block;
@@ -280,14 +288,38 @@ input[type='checkbox'] {
   font-size: 14px;
   letter-spacing: 0.01em;
 }
-.auth-dialog-body { padding: 20px; }
+/* The transparent "empty space" (see .auth-dialog) around the smaller
+ * .auth-form-card below — always centers it, so it stays centered in the
+ * middle of the screen once the frame expands, not pinned top-left. */
+.auth-dialog-body {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-form-card {
+  width: 100%;
+  max-width: 300px;
+  background: var(--surface);
+  border: 1.5px solid var(--box-line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 18px 18px 16px;
+}
+.auth-submit { margin-top: 14px; }
+
+/* Shrunk status strip — region + a live clock, in place of the old
+ * Sign In button (now inside .auth-form-card). */
 .auth-dialog-bottom {
-  padding: 10px 20px;
+  padding: 5px 16px;
   border-top: 1px solid var(--box-line);
   background: var(--surface-2);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--muted);
 }
-.auth-dialog-bottom .btn { margin: 0; }
 
 /* Remember me / Forgot password row */
 .auth-remember-row {
@@ -470,6 +502,10 @@ input[type='checkbox'] {
 }
 .link-btn:hover { color: var(--link-hover); }
 .link-btn:disabled { color: var(--muted); cursor: not-allowed; text-decoration: none; }
+/* Quiet variant — grey rather than the link color, for de-emphasized
+ * secondary actions (e.g. "Forgot Password?" next to Remember me). */
+.link-btn.quiet { color: var(--muted); }
+.link-btn.quiet:hover { color: var(--ink); }
 
 /* ----- Modal --------------------------------------------------------- */
 @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
