@@ -231,27 +231,31 @@ input[type='checkbox'] {
   min-height: 560px;
   border: 1.5px solid var(--box-line);
   border-radius: var(--radius-md);
-  /* The frame itself is transparent — only the top/bottom bars and the
-   * inner .auth-form-card (below) paint a surface. That keeps the border
-   * + shadow (the frame's presence) visible while the space around the
-   * smaller inner card shows the page's bg-grid texture through it. */
+  /* The frame is transparent at rest — only the top/bottom bars and the
+   * inner .auth-form-card (below) paint a surface, so the space around
+   * the smaller inner card shows the page's bg-grid texture through it.
+   * .auth-dialog--expand switches this to var(--surface) — .app-card's
+   * own background — so the card visibly fills with the workspace's
+   * color *during* the expand, before the real content underneath ever
+   * fades in (see AppShell.tsx / app-enter). */
   background: transparent;
   box-shadow: var(--shadow-modal);
   overflow: hidden;
   transition: top 320ms ease, left 320ms ease, width 320ms ease,
     height 320ms ease, border-radius 320ms ease, border-color 320ms ease,
-    box-shadow 320ms ease;
+    box-shadow 320ms ease, background-color 320ms ease;
 }
 .auth-dialog--expand {
-  /* Grows to match .app-card's footprint (see TOPBAR_H/CARD_MARGIN/
-   * CARD_MAX_WIDTH in Login.tsx) rather than the whole screen, so it
-   * visibly becomes the workspace card once the topbar drops in over it.
+  /* Grows to match .app-card's measured footprint (see Login.tsx's
+   * hidden Dashboard clone) rather than the whole screen, so it visibly
+   * becomes the workspace card once the topbar drops in over it.
    * Border/radius/shadow are deliberately left alone here — .auth-dialog
    * already uses the same var(--radius-md)/var(--shadow-modal)/1.5px
    * var(--box-line) as .app-card, so keeping them (instead of flattening
    * to a full-bleed cover) is what makes the two actually match.
    * max-width: none is load-bearing — .auth-dialog caps at 360px, which
    * would otherwise silently clamp the inline `width` Login.tsx sets. */
+  background: var(--surface);
   display: flex;
   flex-direction: column;
   max-width: none;
@@ -1192,30 +1196,20 @@ textarea:focus,
 .app-main {
   flex: 1 1 auto;
   min-height: 0;
-  /* .app-card (not this) scrolls now — see below — so every route's card
-   * is the same size instead of only as tall as its own content. */
-  overflow: hidden;
+  overflow-y: auto;
   background: var(--bg);
   padding: 24px;
-  display: flex;
-  flex-direction: column;
 }
 
 /* The routed screen floats on a card over the textured background rather
- * than sitting flush in the viewport. Always fills the space available
- * below the topbar (flex: 1 1 auto in a column .app-main) rather than
- * sizing to its own content, so every screen's card is the same size —
- * Extraction Runs' card matches Solicitations' exactly, for example —
- * with a shorter screen just scrolling inside its own card. Login's
- * expand animation grows the sign-in card toward this same rect (see
- * TOPBAR_H/CARD_MARGIN/CARD_MAX_WIDTH in Login.tsx) before handing off,
- * so the transition reads as "the card becomes the workspace" rather
- * than a cut — and because this is a fixed rect rather than a per-screen
- * content height, that target is exact, not an estimate. */
+ * than sitting flush in the viewport. Sized to its own content — a
+ * short screen (Settings) is a short card, a long list scrolls the page
+ * like normal — rather than every route being forced to the same fixed
+ * height. Login's expand animation targets this card's *actual*
+ * measured height (see Login.tsx's hidden Dashboard clone) rather than
+ * assuming a fixed rect, precisely because this height varies by route
+ * and by content. */
 .app-card {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   background: var(--surface);
@@ -1223,7 +1217,6 @@ textarea:focus,
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-modal);
   padding: 24px;
-  overflow-y: auto;
 }
 
 /* One-time fade-in when the topbar+main shell mounts right after login
@@ -1242,17 +1235,18 @@ textarea:focus,
 /* ----- Topbar ---------------------------------------------------------
  * Everything the old sidebar held now lives in the chrome bar: brand,
  * primary nav, and the user menu. Height is fixed (rather than padding-
- * driven) so Login.tsx can compute exactly where .app-card will end up
- * and expand the sign-in card to match — see TOPBAR_H in Login.tsx.
- * flex-shrink: 0 + overflow: hidden make that height non-negotiable: as
- * a flex item, this would otherwise default to min-height: auto, i.e.
- * never shrink below its own content's needed height — so a longer
- * label like "Extraction Runs" (vs "Solicitations") could round up to a
- * taller intrinsic height on some routes and not others. */
+ * driven) so Login.tsx can compute exactly where .app-card starts — see
+ * TOPBAR_H in Login.tsx. flex-shrink: 0 stops it from ever shrinking
+ * below 48px (flex items default to min-height: auto, i.e. never
+ * shrink below their own content's needed height — a longer label like
+ * "Extraction Runs" vs "Solicitations" could otherwise round up to a
+ * taller intrinsic height on some routes and not others).
+ * Deliberately no overflow: hidden here — .user-menu-panel (UserMenu.tsx)
+ * is an absolutely-positioned child that extends below this bar's own
+ * box, and overflow: hidden on an ancestor clips exactly that. */
 .chrome-bar.topbar {
   height: 48px;
   flex-shrink: 0;
-  overflow: hidden;
   padding: 0 18px;
   color: var(--chrome-fg-muted);
   border-bottom: 1px solid var(--chrome-border);

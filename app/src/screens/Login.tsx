@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
+import Dashboard from '@/screens/Dashboard';
 
 const DETAIL_FADE_MS = 160;
 const EXPAND_MS = 320;
@@ -8,9 +9,9 @@ const JUST_LOGGED_IN_KEY = 'forge-just-logged-in';
 
 // Matches AppShell's layout exactly (see global.css): a 48px topbar, then
 // .app-main's 24px padding around a max-1200px-wide .app-card. .app-card
-// always fills that space (flex: 1 1 auto, scrolling its own overflow)
-// rather than sizing to its own content, so this rect is exact — not an
-// estimate — for every route, not just Dashboard.
+// is sized to its own content (not a fixed rect), so top/left/width here
+// are exact geometry but height is measured, not assumed — see the
+// hidden Dashboard clone below and its use in handleSubmit.
 const TOPBAR_H = 48;
 const CARD_MARGIN = 24;
 const CARD_MAX_WIDTH = 1200;
@@ -35,6 +36,7 @@ const Login: React.FC = () => {
   const login = useAuth((s) => s.login);
   const backdropRef = useRef<HTMLElement>(null);
   const dialogRef = useRef<HTMLFormElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -54,12 +56,27 @@ const Login: React.FC = () => {
 
     const dialog = dialogRef.current;
     const backdropRect = backdropRef.current?.getBoundingClientRect();
-    const bounds = backdropRect && {
-      top: backdropRect.top + TOPBAR_H + CARD_MARGIN,
-      left: backdropRect.left + Math.max(CARD_MARGIN, (backdropRect.width - CARD_MAX_WIDTH) / 2),
-      width: Math.min(backdropRect.width - CARD_MARGIN * 2, CARD_MAX_WIDTH),
-      height: backdropRect.height - TOPBAR_H - CARD_MARGIN * 2,
-    };
+    let bounds: { top: number; left: number; width: number; height: number } | null = null;
+    if (backdropRect) {
+      const width = Math.min(backdropRect.width - CARD_MARGIN * 2, CARD_MAX_WIDTH);
+      const left = backdropRect.left + Math.max(CARD_MARGIN, (backdropRect.width - CARD_MAX_WIDTH) / 2);
+      const top = backdropRect.top + TOPBAR_H + CARD_MARGIN;
+      const availableHeight = backdropRect.height - TOPBAR_H - CARD_MARGIN * 2;
+
+      // Measure the hidden Dashboard clone at the exact width the real
+      // .app-card will render at, so wrapping/line-breaks match and the
+      // height is real rather than guessed. Capped at the available
+      // space, same as before, for a solicitation list too long to fit.
+      let height = availableHeight;
+      const measureEl = measureRef.current;
+      if (measureEl) {
+        measureEl.style.width = `${width}px`;
+        void measureEl.offsetHeight; // force layout before reading it back
+        height = Math.min(availableHeight, measureEl.getBoundingClientRect().height);
+      }
+
+      bounds = { top, left, width, height };
+    }
     if (dialog && bounds) {
       // Pin the dialog to its current on-screen rect now, before anything
       // moves, so step 2 can FLIP it out toward the workspace card's shape.
@@ -175,6 +192,21 @@ const Login: React.FC = () => {
           </div>
         </div>
       </form>
+
+      {/* Hidden off-screen clone of the real destination, used only to
+          measure its actual rendered height (see handleSubmit) — never
+          shown. Rendering the actual Dashboard component (rather than a
+          hand-copied approximation of its markup) means this can't drift
+          out of sync with what Dashboard.tsx really renders. */}
+      <div
+        ref={measureRef}
+        aria-hidden="true"
+        style={{ position: 'fixed', top: -99999, left: 0, visibility: 'hidden', pointerEvents: 'none' }}
+      >
+        <div className="app-card">
+          <Dashboard />
+        </div>
+      </div>
     </main>
   );
 };

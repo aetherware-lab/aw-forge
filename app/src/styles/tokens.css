@@ -515,23 +515,26 @@
 }
 
 /* Buttons — the clearest "pressable key": a navy vertical gradient with
- * a thin (2px) bright inset line along the left edge — not a broad glow
- * — plus the usual top inset highlight and soft drop shadow; pressing
- * flattens it. This left-edge line is specifically the skeu button
- * treatment — cards/inputs/other skeu surfaces are untouched. */
+ * a thin bright inset line along the left edge — matching the exact
+ * size/depth (1px, 0.22 alpha) of --shadow-btn's own top highlight,
+ * just rotated 90° — plus the usual top inset highlight and soft drop
+ * shadow; pressing flattens it. This left-edge line is specifically the
+ * skeu button treatment — cards/inputs/other skeu surfaces untouched. */
 [data-theme='skeu'] .btn {
   background: linear-gradient(180deg, #2a5d95 0%, #0b3162 55%, #071e3d 100%);
   border-color: #071e3d;
   color: #ffffff;
-  box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.4), var(--shadow-btn);
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.22), var(--shadow-btn);
 }
 [data-theme='skeu'] .btn:hover {
   background: linear-gradient(180deg, #3a6ea6 0%, #123f74 55%, #0a2850 100%);
-  box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.45), var(--shadow-btn);
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.22), var(--shadow-btn);
 }
 [data-theme='skeu'] .btn:active {
+  /* No left-edge line here either, same as --shadow-btn has no top
+   * highlight while pressed — a flattened key has neither raised edge. */
   background: linear-gradient(180deg, #071e3d 0%, #0b3162 100%);
-  box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.15), inset 0 2px 5px rgba(3, 12, 25, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 2px 5px rgba(3, 12, 25, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
   transform: translateY(1px);
 }
 [data-theme='skeu'] .btn.ghost {
