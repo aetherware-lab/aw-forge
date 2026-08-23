@@ -1,6 +1,6 @@
 # FORGE — Desktop Frontend
 
-**FORGE** (Federal Opportunity Requirement GEnerator) — GraphRAG requirement-extraction review UI, built on Electron Forge + Vite + React + TypeScript. No backend yet — screens read from `src/fixtures/` and persist nothing beyond `localStorage`. See `../260807 forge-design-document.md` for the target architecture and product scope.
+**FORGE** (Federal Opportunity Requirement GEnerator) — GraphRAG requirement-extraction review UI, built on Electron Forge + Vite + React + TypeScript. It's a thin client: solicitation/document metadata lives in `localStorage` (via Zustand `persist`), but document content, extraction runs, and citations are all served by the FORGE server (`../server/`) over HTTP. See `../260807 forge-design-document.md` for the target architecture and product scope, and `../server/README.md` to run the server this app depends on.
 
 ## Run it
 
@@ -16,14 +16,14 @@ The first install pulls Electron (~100 MB). Subsequent starts are fast.
 
 - **Login** (`/login`) — stub auth; any email signs in. Session persists via `localStorage`.
 - **Solicitations** (`/solicitations`) — tracked solicitations as cards, with search, agency/tag filters, and sort.
-- **New / Edit Solicitation** — form with SAM.gov URL field, tags, drag-drop document upload (UI only).
-- **Solicitation Page** — document library (source docs + extraction runs) and a SAM.gov news panel; **New Extraction Run** overlay.
-- **Citations Table** — one row per extracted requirement: type pill, confidence bar, tiered review flags, citation links. This is FORGE's terminal screen — see the design document, §2 and §6.7, for why there's no further generation step downstream of it.
+- **New / Edit Solicitation** — form with SAM.gov URL field, tags, drag-drop document upload — files are uploaded to the FORGE server (`POST /documents`) and stored for reuse across extraction runs.
+- **Solicitation Page** — document library (source docs + extraction runs) and a SAM.gov news panel; **+ Upload Document** to add more source docs later, **+ New Extraction Run** to run the pipeline against selected library docs and/or freshly dropped files.
+- **Citations Table** — one row per extracted requirement: type pill, confidence bar, tiered review flags, citation links. Polls the server for run status and renders real requirements/citations once a run completes. This is FORGE's terminal screen — see the design document, §2 and §6.7, for why there's no further generation step downstream of it.
 - **Citation Drawer** — source snippet + Open-in-PDF stub, opened from a citation link.
 - **Export Modal** — format + field selection; downloads a JSON preview of the payload for now.
 - **Settings** — theme switcher.
 
-No backend: all of the above reads from `src/fixtures/` and writes only to `localStorage` (via Zustand `persist`).
+Solicitation/document *metadata* lives in `localStorage` (via Zustand `persist`); document *content*, extraction runs, and citations live on the FORGE server and are fetched over HTTP (`src/lib/api.ts`).
 
 ## Layout
 
@@ -63,7 +63,7 @@ src/
 
 ## What's next
 
-The biggest gap is that none of this talks to a real backend. Per the design document, that means a Python cloud server (docling-serve + LangGraph + Neo4j) that the Electron app calls over HTTP — no local Python, no local database. See the design document's Open Questions (§12) for the decisions that need to be made before that server can be built.
+The FORGE server (`../server/`) — docling-serve + LangGraph + Neo4j, called over HTTP with no local Python or database in Electron — is built and wired up for real extraction runs. Remaining gaps: SAM.gov sync is UI-only (no backend), export is a JSON-preview stub rather than real xlsx/csv/docx, and "Open in PDF" in the Citation Drawer is a stub. See the design document's Open Questions (§12) for what's still undecided about export scope.
 
 ## Note on the `renderer.ts` stub
 

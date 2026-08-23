@@ -17,8 +17,8 @@ const Placeholder: React.FC<Props> = ({ title, screen }) => {
           <div className="page-title">{title}</div>
           {screen && <div className="page-sub">{screen} · not yet built</div>}
         </div>
-        <Link to="/dashboard" className="btn ghost small" style={{ textDecoration: 'none' }}>
-          ← Back to Dashboard
+        <Link to="/solicitations" className="btn ghost small link-reset">
+          ← Back to Solicitations
         </Link>
       </header>
 

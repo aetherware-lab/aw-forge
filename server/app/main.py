@@ -17,7 +17,7 @@ from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile, F
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import neo4j_client
-from app.config import STORAGE_DIR
+from app.config import DOCUMENTS_DIR, STORAGE_DIR
 from app.models import ExtractionRun, SourceFile
 from app.pipeline import run_pipeline
 
@@ -41,32 +41,78 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+@app.post("/documents")
+async def upload_documents(files: list[UploadFile] = File(...)) -> list[dict]:
+    """Persist source documents independent of any extraction run, so they
+    can be reused across runs instead of re-uploaded every time."""
+    if not files:
+        raise HTTPException(status_code=400, detail="No files were uploaded.")
+
+    results = []
+    for upload in files:
+        doc_id = f"doc-{uuid.uuid4().hex[:12]}"
+        doc_dir = DOCUMENTS_DIR / doc_id
+        doc_dir.mkdir(parents=True, exist_ok=True)
+        content = await upload.read()
+        (doc_dir / upload.filename).write_bytes(content)
+        results.append({"docId": doc_id, "filename": upload.filename, "sizeBytes": len(content)})
+    return results
+
+
+def _resolve_stored_document(doc_id: str) -> tuple[str, bytes] | None:
+    doc_dir = DOCUMENTS_DIR / doc_id
+    if not doc_dir.is_dir():
+        return None
+    for path in doc_dir.iterdir():
+        if path.is_file():
+            return path.name, path.read_bytes()
+    return None
+
+
 @app.post("/extraction-runs")
 async def create_extraction_run(
     background_tasks: BackgroundTasks,
     metadata: str = Form(..., description="JSON: {solicitation, name, docs}"),
-    files: list[UploadFile] = File(...),
+    files: list[UploadFile] = File(default=[]),
 ) -> dict:
     try:
         meta = json.loads(metadata)
     except json.JSONDecodeError as exc:
         raise HTTPException(status_code=400, detail=f"metadata is not valid JSON: {exc}") from exc
 
-    docs_by_filename = {d["filename"]: d["docId"] for d in meta.get("docs", [])}
+    docs = meta.get("docs", [])
+    if not docs:
+        raise HTTPException(status_code=400, detail="No documents were specified for this run.")
+
+    uploads_by_filename = {upload.filename: upload for upload in files}
 
     run_id = f"run-{uuid.uuid4().hex[:12]}"
     run_dir = STORAGE_DIR / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
     sources: list[SourceFile] = []
-    for upload in files:
-        doc_id = docs_by_filename.get(upload.filename, upload.filename)
-        dest = run_dir / upload.filename
-        dest.write_bytes(await upload.read())
-        sources.append(SourceFile(doc_id=doc_id, filename=upload.filename, path=str(dest)))
+    for doc in docs:
+        doc_id, filename = doc["docId"], doc["filename"]
+        dest = run_dir / filename
+
+        upload = uploads_by_filename.get(filename)
+        if upload is not None:
+            dest.write_bytes(await upload.read())
+        else:
+            stored = _resolve_stored_document(doc_id)
+            if stored is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Document '{filename}' was not uploaded with this request "
+                    "and isn't a previously stored document.",
+                )
+            _, content = stored
+            dest.write_bytes(content)
+
+        sources.append(SourceFile(doc_id=doc_id, filename=filename, path=str(dest)))
 
     if not sources:
-        raise HTTPException(status_code=400, detail="No files were uploaded.")
+        raise HTTPException(status_code=400, detail="No documents were resolved for this run.")
 
     sol = meta.get("solicitation", {})
     run = ExtractionRun(

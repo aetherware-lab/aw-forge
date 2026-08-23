@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import Modal from './Modal';
+import { IconRadio } from '@/components/Icon';
 import { useSolicitations } from '@/store/solicitations';
 import type { Requirement } from '@/types';
 
@@ -100,7 +101,7 @@ const ExportModal: React.FC<Props> = ({ runId, requirements, onClose }) => {
         </>
       }
     >
-      <div className="label" style={{ marginTop: 4 }}>Format</div>
+      <div className="label">Format</div>
       <div className="export-format-row">
         {(['xlsx', 'csv', 'docx'] as Format[]).map((f) => (
           <button
@@ -109,14 +110,14 @@ const ExportModal: React.FC<Props> = ({ runId, requirements, onClose }) => {
             className={`export-format-opt ${format === f ? 'selected' : ''}`}
             onClick={() => setFormat(f)}
           >
-            {format === f ? '●' : '○'} .{f}
+            <IconRadio checked={format === f} /> .{f}
           </button>
         ))}
       </div>
 
       <div className="label">Include</div>
       <label className="checkbox-row">
-        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+        <span className="checkbox-label">
           <input
             type="checkbox"
             checked={include.citations}
@@ -126,7 +127,7 @@ const ExportModal: React.FC<Props> = ({ runId, requirements, onClose }) => {
         </span>
       </label>
       <label className="checkbox-row">
-        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+        <span className="checkbox-label">
           <input
             type="checkbox"
             checked={include.confidence}
@@ -136,7 +137,7 @@ const ExportModal: React.FC<Props> = ({ runId, requirements, onClose }) => {
         </span>
       </label>
       <label className="checkbox-row">
-        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+        <span className="checkbox-label">
           <input
             type="checkbox"
             checked={include.colors}
@@ -146,7 +147,7 @@ const ExportModal: React.FC<Props> = ({ runId, requirements, onClose }) => {
         </span>
       </label>
 
-      <p className="muted" style={{ fontSize: 11, marginTop: 12 }}>
+      <p className="muted modal-note">
         Prototype build: Download saves a JSON preview of the payload. Real
         .xlsx / .csv / .docx output lands when the main-process export pipeline
         is wired up.

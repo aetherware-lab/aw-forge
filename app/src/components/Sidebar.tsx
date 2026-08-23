@@ -2,11 +2,20 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
 import { useUi } from '@/store/ui';
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconClipboard,
+  IconLayers,
+  IconLogOut,
+  IconPlus,
+  IconSettings,
+} from '@/components/Icon';
 
 interface NavItem {
   to: string;
   label: string;
-  icon: string;
+  icon: React.FC<{ size?: number }>;
 }
 
 interface NavSection {
@@ -25,8 +34,8 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Workspace',
     items: [
-      { to: '/solicitations', label: 'Solicitations', icon: '📋' },
-      { to: '/extraction-runs', label: 'Extraction Runs', icon: '⚙️' },
+      { to: '/solicitations', label: 'Solicitations', icon: IconClipboard },
+      { to: '/extraction-runs', label: 'Extraction Runs', icon: IconLayers },
     ],
   },
 ];
@@ -61,7 +70,7 @@ const Sidebar: React.FC = () => {
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {collapsed ? '›' : '‹'}
+          {collapsed ? <IconChevronRight size={13} /> : <IconChevronLeft size={13} />}
         </button>
       </div>
 
@@ -78,7 +87,9 @@ const Sidebar: React.FC = () => {
                 }
                 title={collapsed ? item.label : undefined}
               >
-                <span className="sidebar-link-icon" aria-hidden="true">{item.icon}</span>
+                <span className="sidebar-link-icon" aria-hidden="true">
+                  <item.icon size={16} />
+                </span>
                 <span className="sidebar-link-label">{item.label}</span>
               </NavLink>
             ))}
@@ -93,7 +104,9 @@ const Sidebar: React.FC = () => {
           onClick={() => navigate('/solicitations/new')}
           title={collapsed ? '+ New Solicitation' : undefined}
         >
-          <span className="sidebar-link-icon" aria-hidden="true">＋</span>
+          <span className="sidebar-link-icon" aria-hidden="true">
+            <IconPlus size={15} />
+          </span>
           <span className="sidebar-link-label">New Solicitation</span>
         </button>
       </div>
@@ -113,7 +126,9 @@ const Sidebar: React.FC = () => {
           }
           title={collapsed ? 'Settings' : undefined}
         >
-          <span className="sidebar-link-icon" aria-hidden="true">⚙️</span>
+          <span className="sidebar-link-icon" aria-hidden="true">
+            <IconSettings size={16} />
+          </span>
           <span className="sidebar-link-label">Settings</span>
         </NavLink>
         <button
@@ -122,7 +137,9 @@ const Sidebar: React.FC = () => {
           onClick={handleLogout}
           title={collapsed ? 'Log out' : undefined}
         >
-          <span className="sidebar-link-icon" aria-hidden="true">⎋</span>
+          <span className="sidebar-link-icon" aria-hidden="true">
+            <IconLogOut size={16} />
+          </span>
           <span className="sidebar-link-label">Log out</span>
         </button>
       </div>

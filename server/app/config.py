@@ -14,3 +14,6 @@ NEO4J_PASSWORD = os.environ.get("NEO4J_PASSWORD", "forge-dev-password")
 
 STORAGE_DIR = Path(os.environ.get("FORGE_STORAGE_DIR", "./storage")).resolve()
 STORAGE_DIR.mkdir(parents=True, exist_ok=True)
+
+DOCUMENTS_DIR = STORAGE_DIR / "documents"
+DOCUMENTS_DIR.mkdir(parents=True, exist_ok=True)

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ExtractionRunStatus, listExtractionRuns } from '@/lib/api';
+import { IconRefresh } from '@/components/Icon';
 
 const STATUS_LABELS: Record<ExtractionRunStatus['status'], string> = {
   pending: 'Pending',
@@ -53,7 +54,7 @@ const ExtractionRuns: React.FC = () => {
         </div>
         <div>
           <button type="button" className="btn ghost small" onClick={load}>
-            ↻ Refresh
+            <IconRefresh size={12} /> Refresh
           </button>
         </div>
       </header>
@@ -61,9 +62,7 @@ const ExtractionRuns: React.FC = () => {
       {loading && <div className="empty">Loading…</div>}
 
       {!loading && error && (
-        <div className="empty" style={{ color: 'var(--crit)' }}>
-          {error}
-        </div>
+        <div className="empty error">{error}</div>
       )}
 
       {!loading && !error && runs.length === 0 && (
@@ -91,7 +90,7 @@ const ExtractionRuns: React.FC = () => {
                 >
                   <td>
                     <div>{run.solicitationTitle}</div>
-                    <div className="muted" style={{ fontSize: 11 }}>
+                    <div className="meta-line sm">
                       {run.solicitationNumber}
                       {run.solicitationAgency ? ` · ${run.solicitationAgency}` : ''}
                     </div>

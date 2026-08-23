@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useSolicitations } from '@/store/solicitations';
 import NewExtractionRunModal from '@/components/NewExtractionRunModal';
+import UploadDocumentModal from '@/components/UploadDocumentModal';
+import { IconFlag, IconRefresh, IconSearch, IconStar, IconStarFilled } from '@/components/Icon';
 import type { DocumentType, SolicitationDocument } from '@/types';
 
 const TAG_LABELS: Record<string, string> = {
@@ -70,6 +72,7 @@ const SolicitationPage: React.FC = () => {
   const [docQuery, setDocQuery] = useState('');
   const [docType, setDocType] = useState<DocumentType | 'All'>('All');
   const [showNewRunModal, setShowNewRunModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const filteredDocs = useMemo(() => {
     const q = docQuery.trim().toLowerCase();
@@ -85,19 +88,19 @@ const SolicitationPage: React.FC = () => {
     [filteredDocs],
   );
 
-  if (!sol) return <Navigate to="/dashboard" replace />;
+  if (!sol) return <Navigate to="/solicitations" replace />;
 
   return (
     <>
       <button
         type="button"
         className="back-link"
-        onClick={() => navigate('/dashboard')}
+        onClick={() => navigate('/solicitations')}
       >
         ← Back to Solicitations
       </button>
 
-      <div className="sol-header" style={{ marginTop: 8 }}>
+      <div className="sol-header">
         <div>
           <div className="sol-header-title">{sol.title}</div>
           <div className="sol-header-meta">
@@ -106,7 +109,7 @@ const SolicitationPage: React.FC = () => {
             <span>Response due {formatDate(sol.responseDue)}</span>
             <span>Created {formatDate(sol.createdAt)}</span>
           </div>
-          <div style={{ marginTop: 8 }}>
+          <div className="sol-tags">
             {sol.tags.map((t) => (
               <span key={t} className={`tag-pill ${t}`}>
                 {TAG_LABELS[t] ?? t}
@@ -146,28 +149,37 @@ const SolicitationPage: React.FC = () => {
         <section className="panel">
           <div className="panel-head">
             <span>Documents</span>
-            <button
-              type="button"
-              className="btn small"
-              style={{ padding: '5px 10px', fontSize: 11 }}
-              onClick={() => setShowNewRunModal(true)}
-            >
-              + New ▼
-            </button>
+            <div className="panel-head-actions">
+              <button
+                type="button"
+                className="btn ghost xs"
+                onClick={() => setShowUploadModal(true)}
+              >
+                + Upload Document
+              </button>
+              <button
+                type="button"
+                className="btn xs"
+                onClick={() => setShowNewRunModal(true)}
+              >
+                + New Extraction Run
+              </button>
+            </div>
           </div>
           <div className="panel-body">
-            <div className="row tight" style={{ marginBottom: 10 }}>
-              <input
-                type="search"
-                placeholder="🔍 Search documents…"
-                value={docQuery}
-                onChange={(e) => setDocQuery(e.target.value)}
-                style={{ minWidth: 200, fontSize: 12, padding: '7px 10px' }}
-              />
+            <div className="row tight toolbar-row compact panel-toolbar">
+              <div className="search-field w-sm">
+                <IconSearch size={13} />
+                <input
+                  type="search"
+                  placeholder="Search documents…"
+                  value={docQuery}
+                  onChange={(e) => setDocQuery(e.target.value)}
+                />
+              </div>
               <select
                 value={docType}
                 onChange={(e) => setDocType(e.target.value as DocumentType | 'All')}
-                style={{ fontSize: 12, padding: '7px 10px' }}
               >
                 <option value="All">Type: All</option>
                 {(['RFP','PWS','Attachment','Amendment','OPR','Extraction Run','Proposal'] as DocumentType[]).map((t) => (
@@ -182,7 +194,9 @@ const SolicitationPage: React.FC = () => {
               <>
                 {pinnedDocs.length > 0 && (
                   <>
-                    <div className="doc-section-head">⚑ Pinned</div>
+                    <div className="doc-section-head">
+                      <IconFlag size={11} /> Pinned
+                    </div>
                     {pinnedDocs.map((d) => (
                       <DocumentRow
                         key={d.id}
@@ -219,7 +233,9 @@ const SolicitationPage: React.FC = () => {
         <section className="panel">
           <div className="panel-head">
             <span>News from SAM.gov</span>
-            <button type="button" className="panel-link">Sync now</button>
+            <button type="button" className="panel-link">
+              <IconRefresh size={11} /> Sync now
+            </button>
           </div>
           <div className="panel-body">
             {newsForSol.length === 0 ? (
@@ -236,7 +252,7 @@ const SolicitationPage: React.FC = () => {
                     </span>
                     <strong>{n.title}</strong>
                   </div>
-                  <div style={{ marginTop: 4 }}>{n.body}</div>
+                  <div className="news-item-body">{n.body}</div>
                   <div className="news-date">{formatNewsDate(n.postedAt)}</div>
                 </div>
               ))
@@ -249,6 +265,13 @@ const SolicitationPage: React.FC = () => {
         <NewExtractionRunModal
           solicitationId={sol.id}
           onClose={() => setShowNewRunModal(false)}
+        />
+      )}
+
+      {showUploadModal && (
+        <UploadDocumentModal
+          solicitationId={sol.id}
+          onClose={() => setShowUploadModal(false)}
         />
       )}
     </>
@@ -271,7 +294,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({ doc, onTogglePin }) => {
         onClick={onTogglePin}
         aria-label={doc.pinned ? 'Unpin' : 'Pin'}
       >
-        {doc.pinned ? '★' : '☆'}
+        {doc.pinned ? <IconStarFilled size={14} /> : <IconStar size={14} />}
       </button>
       <div>
         <div className="doc-name">{doc.name}</div>

@@ -8,6 +8,12 @@ import {
 } from '@/lib/api';
 import CitationDrawer from '@/components/CitationDrawer';
 import ExportModal from '@/components/ExportModal';
+import {
+  IconAlertCircle,
+  IconAlertTriangle,
+  IconInfo,
+  IconSearch,
+} from '@/components/Icon';
 import type {
   Citation,
   FlagSeverity,
@@ -25,6 +31,12 @@ const confidenceClass = (c: number): string => {
   if (c >= 60) return 'med';
   if (c >= 40) return 'low';
   return 'vlow';
+};
+
+const FLAG_ICON: Record<FlagSeverity, React.FC<{ size?: number }>> = {
+  critical: IconAlertTriangle,
+  important: IconAlertCircle,
+  minor: IconInfo,
 };
 
 const formatGenerated = (iso: string): string => {
@@ -134,7 +146,7 @@ const CitationsTable: React.FC = () => {
     });
   }, [requirements, query, typeFilter, sectionFilter, reviewFilter]);
 
-  if (!runId) return <Navigate to="/dashboard" replace />;
+  if (!runId) return <Navigate to="/solicitations" replace />;
 
   const runName = runInfo?.name ?? runDoc?.name ?? 'Extraction Run';
 
@@ -161,15 +173,15 @@ const CitationsTable: React.FC = () => {
         {runDoc ? '← Back to Solicitation' : '← Back to Extraction Runs'}
       </button>
 
-      <header className="page-header" style={{ marginTop: 8 }}>
+      <header className="page-header">
         <div>
           <div className="run-title">{runName}</div>
           {runInfo && (
-            <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
+            <div className="meta-line">
               {runInfo.solicitationTitle} · {runInfo.solicitationNumber}
             </div>
           )}
-          <div className="run-sub" style={phase === 'error' ? { color: 'var(--crit)' } : undefined}>
+          <div className={`run-sub${phase === 'error' ? ' error' : ''}`}>
             {statusLine()}
           </div>
         </div>
@@ -186,27 +198,29 @@ const CitationsTable: React.FC = () => {
       </header>
 
       {phase !== 'complete' && phase !== 'error' && (
-        <div className="empty" style={{ padding: 32 }}>
+        <div className="empty">
           {phase === 'loading' ? 'Checking run status…' : statusLine()}
         </div>
       )}
 
       {phase === 'error' && (
-        <div className="empty" style={{ padding: 32, color: 'var(--crit)' }}>
+        <div className="empty error">
           {errorMessage}
         </div>
       )}
 
       {phase === 'complete' && (
         <>
-          <div className="row tight" style={{ marginBottom: 12 }}>
-            <input
-              type="search"
-              placeholder="🔍 Search requirements…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              style={{ minWidth: 240 }}
-            />
+          <div className="row tight toolbar-row">
+            <div className="search-field w-md">
+              <IconSearch size={14} />
+              <input
+                type="search"
+                placeholder="Search requirements…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as RequirementType | 'All')}
@@ -246,14 +260,14 @@ const CitationsTable: React.FC = () => {
                   <th style={{ width: 100 }}>Section</th>
                   <th>Requirement</th>
                   <th style={{ width: 80 }}>Type</th>
-                  <th style={{ width: 130 }}>Confidence</th>
+                  <th style={{ width: 140 }}>Confidence</th>
                   <th style={{ width: 160 }}>Citations</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', color: 'var(--muted)', padding: 24 }}>
+                    <td colSpan={6} className="table-empty-cell">
                       {requirements.length === 0
                         ? 'No requirements were extracted from this run.'
                         : 'No requirements match those filters.'}
@@ -268,6 +282,10 @@ const CitationsTable: React.FC = () => {
                         {r.text}
                         {r.flag && (
                           <div className={`flag ${r.flag.severity}`}>
+                            {(() => {
+                              const FlagIcon = FLAG_ICON[r.flag.severity];
+                              return <FlagIcon size={12} />;
+                            })()}
                             <span className="flag-sev">{r.flag.severity}</span>
                             {r.flag.note}
                           </div>
@@ -278,7 +296,7 @@ const CitationsTable: React.FC = () => {
                       </td>
                       <td>
                         <div className="confidence">
-                          <span>{r.confidence}%</span>
+                          <span className="confidence-pct">{r.confidence}%</span>
                           <div className="conf-bar">
                             <div
                               className={`conf-fill ${confidenceClass(r.confidence)}`}

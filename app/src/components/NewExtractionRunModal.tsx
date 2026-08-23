@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from './Modal';
 import FileDropZone, { DroppedFile } from './FileDropZone';
+import { IconFileText } from '@/components/Icon';
 import { createExtractionRun } from '@/lib/api';
 import { useSolicitations } from '@/store/solicitations';
 import type { SolicitationDocument } from '@/types';
@@ -15,10 +16,10 @@ interface Props {
  * Overlay A — New Extraction Run.
  * Sits over the Solicitation Page.
  *
- * MVP note: previously-tracked library documents (RFP/PWS/etc.) are fixture
- * metadata only — there's no stored file content behind them yet. Real
- * extraction can only run against files dropped in this modal, which is why
- * they're shown read-only below rather than as selectable checkboxes.
+ * Library documents (RFP/PWS/etc.) are already stored server-side once
+ * uploaded — see UploadDocumentModal and SolicitationForm — so they can be
+ * selected directly instead of re-dropped here. Freshly dropped files are
+ * uploaded as part of this request and included in the run alongside them.
  */
 const NewExtractionRunModal: React.FC<Props> = ({ solicitationId, onClose }) => {
   const navigate = useNavigate();
@@ -46,20 +47,39 @@ const NewExtractionRunModal: React.FC<Props> = ({ solicitationId, onClose }) => 
   const [name, setName] = useState(
     sol ? `${sol.title} — Extraction Run 1` : 'New Extraction Run',
   );
+  const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(
+    () => new Set(sourceDocs.map((d) => d.id)),
+  );
   const [files, setFiles] = useState<DroppedFile[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const toggleDoc = (docId: string) => {
+    setSelectedDocIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(docId)) next.delete(docId);
+      else next.add(docId);
+      return next;
+    });
+  };
+
+  const totalSources = selectedDocIds.size + files.length;
+
   const onGenerate = async () => {
-    if (!name.trim() || files.length === 0 || !sol) return;
+    if (!name.trim() || totalSources === 0 || !sol) return;
 
     setSubmitting(true);
     setError(null);
     try {
+      const libraryDocs = sourceDocs
+        .filter((d) => selectedDocIds.has(d.id))
+        .map((d) => ({ docId: d.id, filename: d.name }));
+      const freshDocs = files.map((f) => ({ docId: f.id, filename: f.name }));
+
       const { id: runId } = await createExtractionRun({
         solicitation: { number: sol.number, title: sol.title, agency: sol.agency },
         name: name.trim(),
-        docs: files.map((f) => ({ docId: f.id, filename: f.name })),
+        docs: [...libraryDocs, ...freshDocs],
         files: files.map((f) => f.file),
       });
 
@@ -105,7 +125,7 @@ const NewExtractionRunModal: React.FC<Props> = ({ solicitationId, onClose }) => 
             type="button"
             className="btn"
             onClick={onGenerate}
-            disabled={!name.trim() || files.length === 0 || submitting}
+            disabled={!name.trim() || totalSources === 0 || submitting}
           >
             {submitting ? 'Starting…' : 'Run Extraction'}
           </button>
@@ -113,7 +133,7 @@ const NewExtractionRunModal: React.FC<Props> = ({ solicitationId, onClose }) => 
       }
     >
       <label className="label" htmlFor="run-name">
-        Run Title <span style={{ color: 'var(--note)' }}>*</span>
+        Run Title <span className="required-mark">*</span>
       </label>
       <input
         id="run-name"
@@ -126,23 +146,26 @@ const NewExtractionRunModal: React.FC<Props> = ({ solicitationId, onClose }) => 
 
       {sourceDocs.length > 0 && (
         <>
-          <label className="label">
-            Library Documents{' '}
-            <span className="muted" style={{ textTransform: 'none', letterSpacing: 0 }}>
-              (metadata only — drop the actual files below to extract from them)
-            </span>
-          </label>
+          <label className="label">Library Documents</label>
           {sourceDocs.map((d) => (
-            <div key={d.id} className="checkbox-row" style={{ opacity: 0.6 }}>
-              <span>📄 {d.name}</span>
-              <span className="muted" style={{ fontSize: 11 }}>{d.size ?? d.type}</span>
-            </div>
+            <label key={d.id} className="checkbox-row">
+              <span className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={selectedDocIds.has(d.id)}
+                  onChange={() => toggleDoc(d.id)}
+                />
+                <IconFileText size={13} /> {d.name}
+              </span>
+              <span className="muted doc-size">{d.size ?? d.type}</span>
+            </label>
           ))}
         </>
       )}
 
       <label className="label">
-        Files to Extract <span style={{ color: 'var(--note)' }}>*</span>
+        {sourceDocs.length > 0 ? 'Additional Files' : 'Files to Extract'}{' '}
+        {sourceDocs.length === 0 && <span className="required-mark">*</span>}
       </label>
       <FileDropZone
         files={files}
@@ -151,9 +174,7 @@ const NewExtractionRunModal: React.FC<Props> = ({ solicitationId, onClose }) => 
         hint="PDF · or click to browse"
       />
 
-      {error && (
-        <p style={{ color: 'var(--crit)', fontSize: 12, marginTop: 10 }}>{error}</p>
-      )}
+      {error && <p className="error-text">{error}</p>}
     </Modal>
   );
 };

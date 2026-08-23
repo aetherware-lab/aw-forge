@@ -1,4 +1,5 @@
 import React, { useRef, useState, DragEvent, ChangeEvent } from 'react';
+import { IconFileText, IconUpload } from '@/components/Icon';
 
 export interface DroppedFile {
   /** Unique id for list management — stable across renders */
@@ -86,7 +87,7 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
         }}
       >
         <div className="dropzone-prompt">
-          ⬆ Drag &amp; drop files here
+          <IconUpload size={14} /> Drag &amp; drop files here
         </div>
         <div className="dropzone-hint muted">
           or click to browse · {hint}
@@ -105,7 +106,7 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
         <div className="dropzone-files">
           {files.map((f) => (
             <div key={f.id} className="dropzone-file">
-              <span>📄 {f.name}</span>
+              <span><IconFileText size={13} /> {f.name}</span>
               <span className="muted dropzone-size">{f.size}</span>
               <button
                 type="button"

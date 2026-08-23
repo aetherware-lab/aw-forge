@@ -10,7 +10,7 @@ const EditSolicitation: React.FC = () => {
     () => (id ? solicitations.find((s) => s.id === id) : undefined),
     [solicitations, id],
   );
-  if (!sol) return <Navigate to="/dashboard" replace />;
+  if (!sol) return <Navigate to="/solicitations" replace />;
   return <SolicitationForm existing={sol} />;
 };
 

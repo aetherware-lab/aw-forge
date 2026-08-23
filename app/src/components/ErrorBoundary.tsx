@@ -50,7 +50,7 @@ export default class ErrorBoundary extends React.Component<
           style={{
             border: '2px solid var(--crit)',
             background: 'var(--crit-bg)',
-            color: '#7f1d1d',
+            color: 'var(--crit-fg)',
             padding: 20,
             borderRadius: 4,
             maxWidth: 760,

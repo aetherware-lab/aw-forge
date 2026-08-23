@@ -2,7 +2,7 @@
   "name": "forge",
   "productName": "FORGE",
   "version": "0.1.0",
-  "description": "FORGE (Federal Opportunity Requirement GEnerator) desktop frontend (no backend yet)",
+  "description": "FORGE (Federal Opportunity Requirement GEnerator) desktop frontend",
   "main": ".vite/build/main.js",
   "private": true,
   "scripts": {

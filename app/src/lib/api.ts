@@ -54,6 +54,26 @@ export async function createExtractionRun(
   return res.json();
 }
 
+export interface UploadedDocument {
+  docId: string;
+  filename: string;
+  sizeBytes: number;
+}
+
+/**
+ * Persists documents to the FORGE server independent of any extraction run,
+ * so they can be reused across runs (and re-runs) instead of re-uploaded
+ * every time.
+ */
+export async function uploadDocuments(files: File[]): Promise<UploadedDocument[]> {
+  const form = new FormData();
+  files.forEach((file) => form.append('files', file, file.name));
+
+  const res = await fetch(`${BASE_URL}/documents`, { method: 'POST', body: form });
+  if (!res.ok) throw new ApiError(await parseErrorDetail(res));
+  return res.json();
+}
+
 export async function getExtractionRunStatus(runId: string): Promise<ExtractionRunStatus> {
   const res = await fetch(`${BASE_URL}/extraction-runs/${runId}`);
   if (!res.ok) throw new ApiError(await parseErrorDetail(res));

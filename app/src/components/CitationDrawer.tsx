@@ -1,6 +1,13 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import type { Citation, Requirement } from '@/types';
+import { IconAlertCircle, IconAlertTriangle, IconFileText, IconInfo, IconX } from '@/components/Icon';
+import type { Citation, FlagSeverity, Requirement } from '@/types';
+
+const FLAG_ICON: Record<FlagSeverity, React.FC<{ size?: number }>> = {
+  critical: IconAlertTriangle,
+  important: IconAlertCircle,
+  minor: IconInfo,
+};
 
 interface Props {
   requirement: Requirement;
@@ -28,6 +35,7 @@ const CitationDrawer: React.FC<Props> = ({ requirement, citation, onClose }) => 
 
   // Best-effort title from the citation label
   const title = `${citation.label} · ${requirement.section}`;
+  const FlagIcon = requirement.flag ? FLAG_ICON[requirement.flag.severity] : null;
 
   return createPortal(
     <>
@@ -40,7 +48,7 @@ const CitationDrawer: React.FC<Props> = ({ requirement, citation, onClose }) => 
             onClick={onClose}
             aria-label="Close drawer"
           >
-            ✕
+            <IconX size={14} />
           </button>
 
           <div className="drawer-eyebrow">Citation</div>
@@ -48,21 +56,22 @@ const CitationDrawer: React.FC<Props> = ({ requirement, citation, onClose }) => 
 
           <div className="label">For Requirement</div>
           <div className="drawer-block">
-            <strong className="mono" style={{ fontSize: 11, marginRight: 6 }}>
+            <strong className="mono drawer-req-id">
               {requirement.id}:
             </strong>
             {requirement.text}
           </div>
 
-          {requirement.flag && (
+          {requirement.flag && FlagIcon && (
             <div className={`flag ${requirement.flag.severity}`}>
+              <FlagIcon size={12} />
               <span className="flag-sev">{requirement.flag.severity}</span>
               {requirement.flag.note}
             </div>
           )}
 
           <div className="label">Source Snippet</div>
-          <div className="drawer-block solid" style={{ minHeight: 100 }}>
+          <div className="drawer-block solid snippet">
             {citation.verbatimText ? (
               <>&ldquo;{citation.verbatimText}&rdquo;</>
             ) : (
@@ -71,7 +80,7 @@ const CitationDrawer: React.FC<Props> = ({ requirement, citation, onClose }) => 
           </div>
 
           <div className="label">Source</div>
-          <div className="drawer-block" style={{ marginBottom: 12 }}>
+          <div className="drawer-block source">
             {citation.label}
             {citation.page ? ` · p. ${citation.page}` : ''}
           </div>
@@ -99,7 +108,7 @@ const CitationDrawer: React.FC<Props> = ({ requirement, citation, onClose }) => 
               console.log('Open in PDF:', citation);
             }}
           >
-            📄 Open in PDF
+            <IconFileText size={14} /> Open in PDF
           </button>
         </div>
       </aside>

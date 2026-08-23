@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SolicitationCard from '@/components/SolicitationCard';
 import { useSolicitations } from '@/store/solicitations';
+import { IconPlus, IconSearch } from '@/components/Icon';
 
 type SortMode = 'due' | 'progress' | 'title';
 
@@ -66,19 +67,21 @@ const Dashboard: React.FC = () => {
             className="btn"
             onClick={() => navigate('/solicitations/new')}
           >
-            + New Solicitation
+            <IconPlus size={14} /> New Solicitation
           </button>
         </div>
       </header>
 
-      <div className="row tight" style={{ marginBottom: 16 }}>
-        <input
-          type="search"
-          placeholder="🔍  Search solicitations…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          style={{ minWidth: 280 }}
-        />
+      <div className="row tight toolbar-row">
+        <div className="search-field w-lg">
+          <IconSearch size={14} />
+          <input
+            type="search"
+            placeholder="Search solicitations…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
         <select value={tag} onChange={(e) => setTag(e.target.value)}>
           {tags.map((t) => (
             <option key={t} value={t}>

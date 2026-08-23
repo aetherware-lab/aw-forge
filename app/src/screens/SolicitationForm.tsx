@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TagInput from '@/components/TagInput';
 import FileDropZone, { DroppedFile } from '@/components/FileDropZone';
+import { uploadDocuments } from '@/lib/api';
+import { inferDocType } from '@/lib/docType';
 import {
   newId,
   useSolicitations,
@@ -55,8 +57,9 @@ const SolicitationForm: React.FC<Props> = ({ existing, initialFiles = [] }) => {
   const [tags, setTags] = useState<TagKey[]>(existing?.tags ?? []);
   const [files, setFiles] = useState<DroppedFile[]>(initialFiles);
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       setError('Title is required.');
@@ -79,6 +82,38 @@ const SolicitationForm: React.FC<Props> = ({ existing, initialFiles = [] }) => {
     }
 
     const id = newId('sol');
+    let docs: SolicitationDocument[] = [];
+
+    if (files.length > 0) {
+      setSubmitting(true);
+      try {
+        const uploaded = await uploadDocuments(files.map((f) => f.file));
+        docs = uploaded.map((u, i) => ({
+          id: u.docId,
+          solicitationId: id,
+          name: u.filename,
+          type: inferDocType(u.filename),
+          sub: `${new Date().toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+          })} · ${files[i]?.size ?? ''} · Khoo`,
+          dateAdded: isoToday(),
+          pinned: false,
+          size: files[i]?.size,
+        }));
+      } catch (err) {
+        setSubmitting(false);
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Could not reach the FORGE server. Is it running?',
+        );
+        return;
+      }
+      setSubmitting(false);
+    }
+
     const sol: Solicitation = {
       id,
       title: title.trim(),
@@ -92,27 +127,6 @@ const SolicitationForm: React.FC<Props> = ({ existing, initialFiles = [] }) => {
       samUrl: samUrl.trim() || undefined,
       createdAt: isoToday(),
     };
-
-    const docs: SolicitationDocument[] = files.map((f) => ({
-      id: newId('doc'),
-      solicitationId: id,
-      name: f.name,
-      type: /pws/i.test(f.name)
-        ? 'PWS'
-        : /amend/i.test(f.name)
-        ? 'Amendment'
-        : /rfp|w\d{6}/i.test(f.name)
-        ? 'RFP'
-        : 'Attachment',
-      sub: `${new Date().toLocaleDateString('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-      })} · ${f.size} · Khoo`,
-      dateAdded: isoToday(),
-      pinned: false,
-      size: f.size,
-    }));
 
     add(sol, docs);
     navigate(`/solicitations/${id}`);
@@ -132,15 +146,15 @@ const SolicitationForm: React.FC<Props> = ({ existing, initialFiles = [] }) => {
         <button
           type="button"
           className="btn ghost small"
-          onClick={() => navigate(isEdit && existing ? `/solicitations/${existing.id}` : '/dashboard')}
+          onClick={() => navigate(isEdit && existing ? `/solicitations/${existing.id}` : '/solicitations')}
         >
           Cancel
         </button>
       </header>
 
-      <form onSubmit={onSubmit} style={{ maxWidth: 760 }}>
+      <form onSubmit={onSubmit} className="form-narrow">
         <label className="label" htmlFor="title">
-          Solicitation Title <span style={{ color: 'var(--note)' }}>*</span>
+          Solicitation Title <span className="required-mark">*</span>
         </label>
         <input
           id="title"
@@ -153,7 +167,7 @@ const SolicitationForm: React.FC<Props> = ({ existing, initialFiles = [] }) => {
 
         <label className="label" htmlFor="samUrl">
           SAM.gov Solicitation URL{' '}
-          <span className="muted" style={{ textTransform: 'none', letterSpacing: 0 }}>
+          <span className="muted label-note">
             (auto-extracts metadata below)
           </span>
         </label>
@@ -210,22 +224,11 @@ const SolicitationForm: React.FC<Props> = ({ existing, initialFiles = [] }) => {
               disabled={tbd}
               onChange={(e) => setResponseDue(e.target.value)}
             />
-            <label
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                fontSize: 11,
-                color: 'var(--muted)',
-                marginTop: 4,
-                cursor: 'pointer',
-              }}
-            >
+            <label className="field-aside">
               <input
                 type="checkbox"
                 checked={tbd}
                 onChange={(e) => setTbd(e.target.checked)}
-                style={{ width: 'auto', margin: 0 }}
               />
               Mark as TBD
             </label>
@@ -234,7 +237,7 @@ const SolicitationForm: React.FC<Props> = ({ existing, initialFiles = [] }) => {
 
         <label className="label">
           Tags{' '}
-          <span className="muted" style={{ textTransform: 'none', letterSpacing: 0 }}>
+          <span className="muted label-note">
             (custom — use any label that helps you sort and filter)
           </span>
         </label>
@@ -247,30 +250,17 @@ const SolicitationForm: React.FC<Props> = ({ existing, initialFiles = [] }) => {
           </>
         )}
 
-        {error && (
-          <div
-            style={{
-              marginTop: 12,
-              padding: '8px 12px',
-              background: 'var(--crit-bg)',
-              color: '#7f1d1d',
-              border: '1px solid var(--crit)',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: 12,
-            }}
-          >
-            {error}
-          </div>
-        )}
+        {error && <div className="form-error">{error}</div>}
 
-        <div style={{ marginTop: 20, display: 'flex', gap: 8 }}>
-          <button type="submit" className="btn">
-            {isEdit ? 'Save Changes' : 'Create Solicitation'}
+        <div className="form-actions">
+          <button type="submit" className="btn" disabled={submitting}>
+            {submitting ? 'Uploading…' : isEdit ? 'Save Changes' : 'Create Solicitation'}
           </button>
           <button
             type="button"
             className="btn ghost"
-            onClick={() => navigate(isEdit && existing ? `/solicitations/${existing.id}` : '/dashboard')}
+            onClick={() => navigate(isEdit && existing ? `/solicitations/${existing.id}` : '/solicitations')}
+            disabled={submitting}
           >
             Cancel
           </button>

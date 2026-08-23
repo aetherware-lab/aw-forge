@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { IconX } from '@/components/Icon';
 
 interface ModalProps {
   open: boolean;
@@ -63,7 +64,7 @@ const Modal: React.FC<ModalProps> = ({
           onClick={onClose}
           aria-label="Close"
         >
-          ✕
+          <IconX size={14} />
         </button>
         {title && <div className="modal-title">{title}</div>}
         {subtitle && <div className="modal-subtitle">{subtitle}</div>}

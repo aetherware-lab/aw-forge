@@ -51,6 +51,61 @@ code, pre, .mono { font-family: var(--font-mono); }
 .row.tight > * { flex: 0 1 auto; }
 .row.center { align-items: center; }
 
+/* Toolbar rows (search + filters above a list/table). One standard
+ * bottom margin instead of every screen picking its own. */
+.toolbar-row { margin-bottom: var(--space-4); }
+.toolbar-row.compact { margin-bottom: var(--space-3); }
+
+/* A back-link is always immediately followed by a page header — give that
+ * pairing one consistent gap instead of an inline marginTop on the header. */
+.back-link + .page-header,
+.back-link + .sol-header { margin-top: var(--space-2); }
+
+/* Required-field asterisk and de-emphasized inline label hints. */
+.required-mark { color: var(--note); }
+.label-note { text-transform: none; letter-spacing: 0; }
+
+/* Plain-text field/network error (as opposed to the boxed .form-error). */
+.error-text { color: var(--crit); font-size: 12px; margin-top: var(--space-3); }
+
+/* Empty/status panel variants */
+.empty.error { color: var(--crit); }
+.run-sub.error { color: var(--crit); }
+.table-empty-cell { text-align: center; color: var(--muted); padding: var(--space-6); }
+
+/* Small muted meta line under a page/run title */
+.meta-line { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.meta-line.sm { font-size: 11px; }
+
+/* Action row inside a panel header (e.g. Upload + New Run buttons) */
+.panel-head-actions { display: flex; gap: var(--space-2); }
+
+/* Search input with a leading icon */
+.search-field { position: relative; }
+.search-field svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+.search-field input { padding-left: 30px; }
+.search-field.w-sm { min-width: 200px; }
+.search-field.w-md { min-width: 240px; }
+.search-field.w-lg { min-width: 280px; }
+.panel-toolbar select,
+.panel-toolbar input { font-size: 12px; padding: 7px 10px; }
+
+/* Checkbox + its own label text, inline (distinct from .checkbox-row,
+ * which lays a checkbox+label out against a trailing value with
+ * space-between). */
+.checkbox-label { display: inline-flex; align-items: center; }
+
+/* Form layout */
+.form-narrow { max-width: 760px; }
+.form-actions { margin-top: var(--space-5); display: flex; gap: var(--space-2); }
+
 /* Forms */
 .label {
   display: block;
@@ -123,21 +178,95 @@ input[type='checkbox'] {
   cursor: pointer;
   font-family: inherit;
   letter-spacing: -0.01em;
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  box-shadow: var(--shadow-btn);
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease,
+    box-shadow 120ms ease, transform 120ms ease;
 }
 .btn:hover { background: var(--action-hover); border-color: var(--action-hover); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:active { transform: translateY(1px); box-shadow: none; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 .btn.ghost {
   background: transparent;
   color: var(--ink);
   border-style: dashed;
+  box-shadow: none;
 }
 .btn.ghost:hover { background: var(--hover); }
 .btn.small { font-size: 12px; padding: 6px 12px; }
+.btn.xs { font-size: 11px; padding: 5px 10px; }
 .btn.full { width: 100%; }
 
-/* Centered single-column form (login) */
-.centered-form { max-width: 360px; margin: 60px auto; }
+/* Icons inside buttons/links — size + baseline handled once here instead
+ * of per-usage inline styles. */
+.btn svg,
+.sidebar-link svg,
+.panel-link svg,
+.back-link svg,
+.cite-link svg { flex-shrink: 0; }
+
+/* ----- Auth dialog (login) ------------------------------------------- */
+.auth-backdrop {
+  min-height: calc(100vh - 41px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.auth-dialog {
+  width: 100%;
+  max-width: 360px;
+  border: 1.5px solid var(--box-line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-modal);
+  overflow: hidden;
+  transition: top 320ms ease, left 320ms ease, width 320ms ease,
+    height 320ms ease, border-radius 320ms ease, border-color 320ms ease,
+    box-shadow 320ms ease;
+}
+.auth-dialog--expand {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  border-color: transparent;
+  box-shadow: none;
+  z-index: 1000;
+}
+.auth-dialog--expand .auth-dialog-top,
+.auth-dialog--expand .auth-dialog-bottom {
+  flex: 0 0 auto;
+}
+.auth-dialog--expand .auth-dialog-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+.auth-dialog-top {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--box-line);
+  background: var(--surface-2);
+  text-align: center;
+}
+.auth-dialog-brand {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+.auth-dialog-sub {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.auth-dialog-body { padding: 20px; }
+.auth-dialog-bottom {
+  padding: 14px 20px;
+  border-top: 1px solid var(--box-line);
+  background: var(--surface-2);
+  text-align: center;
+}
+.auth-dialog-bottom .btn { margin-bottom: 10px; }
+.auth-dialog-bottom p { margin: 0; font-size: 11px; }
 
 /* Solicitation cards */
 .sol-card {
@@ -151,6 +280,12 @@ input[type='checkbox'] {
   gap: 16px;
   align-items: start;
   box-shadow: var(--shadow-card);
+  transition: box-shadow 160ms ease, transform 160ms ease, border-color 160ms ease;
+}
+.sol-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+  border-color: var(--accent);
 }
 .sol-title {
   font-size: 14px;
@@ -283,8 +418,14 @@ input[type='checkbox'] {
 
 .muted { color: var(--muted); }
 .spacer { height: 12px; }
+.link-reset { text-decoration: none; }
 
 /* ----- Modal --------------------------------------------------------- */
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -295,6 +436,7 @@ input[type='checkbox'] {
   justify-content: center;
   padding: 56px 16px 16px;
   overflow-y: auto;
+  animation: backdrop-in 140ms ease-out;
 }
 .modal-card {
   position: relative;
@@ -305,19 +447,27 @@ input[type='checkbox'] {
   padding: 20px;
   width: 100%;
   box-shadow: var(--shadow-modal);
+  animation: modal-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop, .modal-card { animation: none; }
 }
 .modal-close {
   position: absolute;
   top: 10px;
   right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  font-size: 14px;
   color: var(--muted);
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  transition: color 100ms ease, background 100ms ease;
 }
-.modal-close:hover { color: var(--ink); }
+.modal-close:hover { color: var(--ink); background: var(--hover); }
 .modal-title { font-size: 15px; font-weight: 600; margin-right: 24px; }
 .modal-subtitle { font-size: 11px; color: var(--muted); margin-top: 2px; margin-bottom: 12px; }
 .modal-body { font-size: 13px; }
@@ -403,7 +553,13 @@ input[type='checkbox'] {
   border-color: var(--ink);
 }
 .dropzone.compact { padding: 16px; }
-.dropzone-prompt { font-size: 13px; color: var(--accent); }
+.dropzone-prompt {
+  font-size: 13px;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
 .dropzone-hint { font-size: 11px; margin-top: 4px; }
 .dropzone-files { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
 .dropzone-file {
@@ -419,6 +575,9 @@ input[type='checkbox'] {
   align-items: center;
 }
 .dropzone-file > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -512,6 +671,9 @@ input[type='checkbox'] {
 }
 .panel-body { padding: 12px 14px; }
 .panel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   color: var(--link);
   text-decoration: underline;
@@ -526,6 +688,9 @@ input[type='checkbox'] {
 
 /* Document rows */
 .doc-section-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 11px;
   color: var(--muted);
   text-transform: uppercase;
@@ -546,16 +711,19 @@ input[type='checkbox'] {
 }
 .doc-row:last-child { border-bottom: none; }
 .doc-row .pin {
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--muted);
   cursor: pointer;
   background: none;
   border: none;
   width: 22px;
-  text-align: center;
   padding: 0;
 }
 .doc-row .pin.active { color: var(--note); }
+.doc-row .pin:hover { color: var(--ink); }
+.doc-row .pin.active:hover { color: var(--note); }
 .doc-row .doc-name { font-weight: 500; }
 .doc-row .doc-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
 .doc-row .doc-type {
@@ -584,6 +752,7 @@ input[type='checkbox'] {
   font-size: 12.5px;
 }
 .news-item:last-child { border-bottom: none; }
+.news-item-body { margin-top: var(--space-1); }
 .news-badge {
   display: inline-block;
   padding: 2px 7px;
@@ -603,6 +772,8 @@ input[type='checkbox'] {
 [data-theme='dark']  .news-badge.qa     { background: #0e2150; color: #bfdbfe; }
 [data-theme='dark']  .news-badge.attach { background: #1f1f23; color: #d4d4d8; }
 .news-date { color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+.doc-size { font-size: 11px; }
 
 /* Inline checkbox row (modals) */
 .checkbox-row {
@@ -630,6 +801,7 @@ input[type='checkbox'] {
   margin-top: 4px;
   cursor: pointer;
 }
+.field-aside input[type='checkbox'] { margin: 0; }
 
 /* Label spacing tweak */
 .label + input,
@@ -668,15 +840,17 @@ textarea:focus,
   border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--surface);
+  box-shadow: var(--shadow-card);
 }
 .table-wrap table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .table-wrap th,
 .table-wrap td {
-  padding: 10px 12px;
+  padding: 12px 14px;
   text-align: left;
   border-bottom: 1px solid var(--box-line);
   vertical-align: top;
   color: var(--ink);
+  line-height: 1.5;
 }
 .table-wrap th {
   background: var(--th-bg);
@@ -700,14 +874,25 @@ textarea:focus,
   font-size: 11px;
   color: var(--accent);
 }
+.confidence-pct {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  min-width: 30px;
+}
 .conf-bar {
-  width: 50px;
-  height: 6px;
+  width: 64px;
+  height: 8px;
   background: var(--surface-3);
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
 }
-.conf-fill { height: 100%; background: var(--conf-high); }
+.conf-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--conf-high);
+  transition: width 200ms ease;
+}
 .conf-fill.good { background: var(--conf-good); }
 .conf-fill.med  { background: var(--conf-med); }
 .conf-fill.low  { background: var(--conf-low); }
@@ -731,13 +916,14 @@ textarea:focus,
   align-items: center;
   gap: 6px;
   margin-top: 8px;
-  padding: 4px 10px;
+  padding: 5px 10px;
   border-left: 3px solid var(--note);
   font-size: 11px;
-  border-radius: 2px;
+  border-radius: 4px;
   background: var(--note-bg);
   color: var(--note-fg);
 }
+.flag svg { flex-shrink: 0; }
 .flag.critical  { background: var(--crit-bg);  border-left-color: var(--crit);  color: var(--crit-fg); }
 .flag.important { background: var(--imp-bg);   border-left-color: var(--imp);   color: var(--imp-fg); }
 .flag.minor     { background: var(--minor-bg); border-left-color: var(--minor); color: var(--minor-fg); }
@@ -801,6 +987,9 @@ textarea:focus,
   border-radius: var(--radius-sm);
 }
 .drawer-block.solid { background: var(--surface); }
+.drawer-block.snippet { min-height: 100px; }
+.drawer-block.source { margin-bottom: var(--space-3); }
+.drawer-req-id { font-size: 11px; margin-right: var(--space-2); }
 
 /* ----- Export modal ------------------------------------------------- */
 .export-format-row {
@@ -828,6 +1017,7 @@ textarea:focus,
   color: var(--action-ink);
   border-color: var(--action);
 }
+.modal-note { font-size: 11px; margin-top: var(--space-3); }
 
 /* ----- Theme switcher ----------------------------------------------- */
 .theme-switcher {
@@ -951,10 +1141,17 @@ textarea:focus,
 }
 .sidebar-link-icon {
   width: 18px;
-  text-align: center;
-  font-size: 13px;
-  line-height: 1;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: color 100ms ease;
 }
+.sidebar-link:hover .sidebar-link-icon,
+.sidebar-link.active .sidebar-link-icon { color: var(--ink); }
+.sidebar-cta .sidebar-link-icon { color: var(--action-ink); }
 .sidebar-link-quiet {
   color: var(--muted);
   font-size: 12.5px;
@@ -1154,8 +1351,8 @@ textarea:focus,
   padding: 8px 0;
 }
 .sidebar.collapsed .sidebar-link-icon {
-  width: auto;
-  font-size: 15px;
+  width: 18px;
+  height: 18px;
 }
 .sidebar.collapsed .sidebar-cta .btn {
   padding: 8px 0;
