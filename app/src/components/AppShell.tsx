@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import UserMenu from './UserMenu';
+import WindowControls from './WindowControls';
 import { IconClipboard, IconLayers } from '@/components/Icon';
 
 interface NavItem {
@@ -143,6 +144,7 @@ const AppShell: React.FC = () => {
         </div>
         <div className="topbar-right chrome-right">
           <UserMenu />
+          <WindowControls />
         </div>
       </div>
       <main className="app-main bg-grid">

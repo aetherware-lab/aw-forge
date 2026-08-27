@@ -2,6 +2,21 @@ import type { Requirement } from '@/types';
 
 const BASE_URL = 'http://localhost:8000';
 
+class ApiError extends Error {}
+
+/** fetch() throws a bare `TypeError: Failed to fetch` when the server is
+ * unreachable — that raw message was leaking straight into the UI (see
+ * every screen's `err instanceof Error ? err.message : ...` fallback,
+ * which never triggers for it since TypeError IS an Error). Route every
+ * call through here so that case gets a message someone can act on. */
+async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(input, init);
+  } catch {
+    throw new ApiError(`Could not reach the FORGE server at ${BASE_URL} — is it running?`);
+  }
+}
+
 export interface RunDoc {
   docId: string;
   filename: string;
@@ -33,8 +48,6 @@ export interface ExtractionRunStatus {
   stageTotal: number;
 }
 
-class ApiError extends Error {}
-
 async function parseErrorDetail(res: Response): Promise<string> {
   try {
     const body = await res.json();
@@ -54,7 +67,7 @@ export async function createExtractionRun(
   );
   payload.files.forEach((file) => form.append('files', file, file.name));
 
-  const res = await fetch(`${BASE_URL}/extraction-runs`, { method: 'POST', body: form });
+  const res = await apiFetch(`${BASE_URL}/extraction-runs`, { method: 'POST', body: form });
   if (!res.ok) throw new ApiError(await parseErrorDetail(res));
   return res.json();
 }
@@ -74,13 +87,13 @@ export async function uploadDocuments(files: File[]): Promise<UploadedDocument[]
   const form = new FormData();
   files.forEach((file) => form.append('files', file, file.name));
 
-  const res = await fetch(`${BASE_URL}/documents`, { method: 'POST', body: form });
+  const res = await apiFetch(`${BASE_URL}/documents`, { method: 'POST', body: form });
   if (!res.ok) throw new ApiError(await parseErrorDetail(res));
   return res.json();
 }
 
 export async function getExtractionRunStatus(runId: string): Promise<ExtractionRunStatus> {
-  const res = await fetch(`${BASE_URL}/extraction-runs/${runId}`);
+  const res = await apiFetch(`${BASE_URL}/extraction-runs/${runId}`);
   if (!res.ok) throw new ApiError(await parseErrorDetail(res));
   return res.json();
 }
@@ -91,13 +104,13 @@ export async function getExtractionRunStatus(runId: string): Promise<ExtractionR
  * script, etc.), so this is the only way to discover them from inside FORGE.
  */
 export async function listExtractionRuns(): Promise<ExtractionRunStatus[]> {
-  const res = await fetch(`${BASE_URL}/extraction-runs`);
+  const res = await apiFetch(`${BASE_URL}/extraction-runs`);
   if (!res.ok) throw new ApiError(await parseErrorDetail(res));
   return res.json();
 }
 
 export async function getExtractionRunRequirements(runId: string): Promise<Requirement[]> {
-  const res = await fetch(`${BASE_URL}/extraction-runs/${runId}/requirements`);
+  const res = await apiFetch(`${BASE_URL}/extraction-runs/${runId}/requirements`);
   if (!res.ok) throw new ApiError(await parseErrorDetail(res));
   return res.json();
 }

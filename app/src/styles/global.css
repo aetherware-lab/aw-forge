@@ -221,6 +221,11 @@ input[type='checkbox'] {
   align-items: center;
   justify-content: center;
   padding: 24px;
+  /* No topbar on this screen — the whole backdrop is what makes the
+   * frameless window movable (see WindowControls, floating variant,
+   * above). .auth-dialog carves itself back out to no-drag below so its
+   * inputs/buttons stay clickable. */
+  -webkit-app-region: drag;
 }
 .auth-dialog {
   width: 100%;
@@ -229,6 +234,7 @@ input[type='checkbox'] {
   min-height: 476px;
   border: 1.5px solid var(--box-line);
   border-radius: var(--radius-md);
+  -webkit-app-region: no-drag;
   /* The frame is transparent at rest — only the top/bottom bars and the
    * inner .auth-form-card (below) paint a surface, so the space around
    * the smaller inner card shows the page's bg-grid texture through it.
@@ -1302,6 +1308,44 @@ textarea:focus,
   color: var(--chrome-fg-muted);
   border-bottom: 1px solid var(--chrome-border);
 }
+/* ----- Frameless window controls (WindowControls.tsx) ------------------
+ * Windows/Linux only — macOS keeps its native inset traffic lights
+ * (titleBarStyle: 'hiddenInset'). The window is fully frame:false there
+ * (main.ts), so these are the only way to minimize/maximize/close.
+ *
+ * Two placements: embedded in AppShell's topbar (inherits --chrome-fg-muted
+ * from .chrome-bar by not setting its own color) and floating, fixed
+ * top-right for Login, which has no topbar to embed into — floating uses
+ * --ink instead since it sits over the plain page background there, not
+ * the chrome bar's background. */
+.window-controls { display: inline-flex; }
+.window-controls--floating {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 40px;
+  z-index: 2000;
+  color: var(--ink);
+  -webkit-app-region: no-drag;
+}
+.window-control {
+  width: 46px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background 100ms ease, color 100ms ease;
+}
+.window-controls:not(.window-controls--floating) .window-control:hover {
+  background: var(--chrome-hover);
+  color: var(--chrome-fg);
+}
+.window-controls--floating .window-control:hover { background: var(--hover); }
+.window-control.close:hover { background: #e81123; color: #fff; }
 .topbar-left {
   display: flex;
   align-items: center;

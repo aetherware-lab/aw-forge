@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { useAuth } from '@/store/auth';
 import { THEMES } from '@/themes';
 import { useTheme } from '@/store/theme';
+
+const STATE_LABELS: Record<BackendStatus['state'], string> = {
+  idle: 'Not started',
+  starting: 'Starting…',
+  running: 'Running',
+  error: 'Error',
+};
 
 /**
  * User settings. Theme picker lives here; future sections (profile,
@@ -13,6 +20,26 @@ const Settings: React.FC = () => {
   const user = useAuth((s) => s.user);
   const themeId = useTheme((s) => s.themeId);
   const activeTheme = THEMES.find((t) => t.id === themeId);
+
+  const [backendConfig, setBackendConfig] = useState<BackendConfig | null>(null);
+  const [backendStatus, setBackendStatus] = useState<BackendStatus | null>(null);
+
+  useEffect(() => {
+    window.forge.backend.getConfig().then(setBackendConfig);
+    window.forge.backend.getStatus().then(setBackendStatus);
+    return window.forge.backend.onStatusChange(setBackendStatus);
+  }, []);
+
+  const toggleAutoStart = async () => {
+    if (!backendConfig) return;
+    setBackendConfig(await window.forge.backend.setConfig({ autoStart: !backendConfig.autoStart }));
+  };
+
+  const browseServerDir = async () => {
+    const dir = await window.forge.backend.pickServerDir();
+    if (!dir) return;
+    setBackendConfig(await window.forge.backend.setConfig({ serverDir: dir }));
+  };
 
   return (
     <>
@@ -57,6 +84,63 @@ const Settings: React.FC = () => {
                 </div>
               </div>
               <ThemeSwitcher compact />
+            </div>
+          </div>
+        </section>
+
+        <section className="settings-card">
+          <div className="settings-card-head">
+            <div className="settings-card-title">Backend</div>
+            <div className="settings-card-sub">
+              Neo4j and the extraction API run outside this app (see server/README.md) — autostart
+              them here instead of running <span className="mono">docker compose up -d</span> and{' '}
+              <span className="mono">uvicorn</span> by hand every time.
+            </div>
+          </div>
+          <div className="settings-card-body">
+            <div className="settings-row">
+              <div>
+                <div className="settings-row-label">Autostart on launch</div>
+                <div className="settings-row-value">Starts Neo4j (Docker) and the FORGE API automatically</div>
+              </div>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={backendConfig?.autoStart ?? false}
+                  onChange={toggleAutoStart}
+                  disabled={!backendConfig}
+                />
+              </label>
+            </div>
+
+            <div className="settings-row">
+              <div>
+                <div className="settings-row-label">Server folder</div>
+                <div className="settings-row-value mono">{backendConfig?.serverDir ?? '—'}</div>
+              </div>
+              <button type="button" className="btn ghost small" onClick={browseServerDir}>
+                Browse…
+              </button>
+            </div>
+
+            <div className="settings-row">
+              <div>
+                <div className="settings-row-label">Status</div>
+                <div className="settings-row-value">
+                  <span className={`pill${backendStatus?.state === 'error' ? ' error' : ''}`}>
+                    {backendStatus ? STATE_LABELS[backendStatus.state] : '—'}
+                  </span>
+                  {backendStatus?.message && <span className="muted"> · {backendStatus.message}</span>}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn ghost small"
+                onClick={() => window.forge.backend.retry().then(setBackendStatus)}
+                disabled={backendStatus?.state === 'starting'}
+              >
+                {backendStatus?.state === 'starting' ? 'Starting…' : 'Start now'}
+              </button>
             </div>
           </div>
         </section>

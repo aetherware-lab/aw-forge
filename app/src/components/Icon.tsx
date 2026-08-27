@@ -199,6 +199,21 @@ export const IconLoader = createIcon(
   <circle cx="12" cy="12" r="9" strokeDasharray="42 14" strokeLinecap="round" />,
 );
 
+/** Frameless-titlebar window controls (WindowControls.tsx) — Windows'
+ * conventional minimize/maximize/restore glyphs. */
+export const IconWindowMinimize = createIcon('IconWindowMinimize', <line x1="5" y1="12" x2="19" y2="12" />);
+export const IconWindowMaximize = createIcon(
+  'IconWindowMaximize',
+  <rect x="5.5" y="5.5" width="13" height="13" rx="1" />,
+);
+export const IconWindowRestore = createIcon(
+  'IconWindowRestore',
+  <>
+    <rect x="7.5" y="7.5" width="11" height="11" rx="1" />
+    <path d="M8 7.5V6a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-1.5" />
+  </>,
+);
+
 /** Radio-style dot used by the export-format picker. Not a real
  * <input type="radio"> since the row itself is the click target. */
 export const IconRadio: React.FC<{ checked?: boolean; size?: number }> = ({

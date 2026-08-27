@@ -20,10 +20,13 @@ import re
 # just run eager, which is plenty fast for single-document MVP use.
 os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
 
-from docling.document_converter import DocumentConverter
-from docling_core.transforms.chunker.hierarchical_chunker import HierarchicalChunker
-
 from app.models import DocumentChunk, SectionCode, SourceFile
+
+# `docling.document_converter` drags in torch — ~30s alone (measured) —
+# which made `uvicorn app.main:app` take 30+s just to start answering
+# /health, since this module is imported eagerly via pipeline.py. Deferred
+# to first actual use so the server binds instantly; only the first parse
+# in a session pays the import cost.
 
 _SECTION_RE = re.compile(r"\bSECTION\s+([A-M])\b", re.IGNORECASE)
 _VALID_SECTIONS = set("ABCDEFGHIJKLM")
@@ -65,6 +68,9 @@ def _merge_raw_chunks(raw_chunks: list[tuple[str, str]]) -> list[tuple[str, str]
 
 
 def parse_source_file(source: SourceFile, run_id: str) -> list[DocumentChunk]:
+    from docling.document_converter import DocumentConverter
+    from docling_core.transforms.chunker.hierarchical_chunker import HierarchicalChunker
+
     converter = DocumentConverter()
     result = converter.convert(source.path)
     document = result.document

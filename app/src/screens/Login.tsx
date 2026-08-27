@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
 import { IconCheck } from '@/components/Icon';
+import WindowControls from '@/components/WindowControls';
 
 const DETAIL_FADE_MS = 160;
 const FILL_MS = 320;
@@ -63,6 +64,7 @@ const Login: React.FC = () => {
 
   return (
     <main className="auth-backdrop bg-grid">
+      <WindowControls floating />
       <form
         className={`auth-dialog${expanding ? ' auth-dialog--expand' : ''}`}
         onSubmit={handleSubmit}
