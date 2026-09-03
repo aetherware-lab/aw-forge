@@ -37,12 +37,19 @@ export interface ExtractionRunStatus {
   status: RunStatus;
   error: string | null;
   createdAt: string;
+  /** Set once status is 'complete' or 'error'; null while still in flight. */
+  completedAt: string | null;
   solicitationNumber: string;
   solicitationTitle: string;
   solicitationAgency: string;
   requirementCount: number;
+  /** Live chunk count for the run — same "count what's actually in Neo4j
+   * right now" approach as requirementCount above, so the Parsing stage can
+   * show real chunks-created-so-far. */
+  chunkCount: number;
   /** Live pipeline progress — see server/app/pipeline.py. `stage` is one of
-   * 'parsing' | 'extracting' | 'writing'; null before the pipeline starts. */
+   * 'parsing' | 'extracting' | 'validating' | 'generating'; null before the
+   * pipeline starts. */
   stage: string | null;
   stageCurrent: number;
   stageTotal: number;

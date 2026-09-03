@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld('forge', {
     setConfig: (patch: Partial<BackendConfig>) => ipcRenderer.invoke('backend:set-config', patch) as Promise<BackendConfig>,
     getStatus: () => ipcRenderer.invoke('backend:get-status') as Promise<BackendStatus>,
     retry: () => ipcRenderer.invoke('backend:retry') as Promise<BackendStatus>,
+    stop: () => ipcRenderer.invoke('backend:stop') as Promise<BackendStatus>,
+    restart: () => ipcRenderer.invoke('backend:restart') as Promise<BackendStatus>,
     pickServerDir: () => ipcRenderer.invoke('backend:pick-server-dir') as Promise<string | null>,
     onStatusChange: (callback: (status: BackendStatus) => void) => {
       const listener = (_event: Electron.IpcRendererEvent, status: BackendStatus) => callback(status);

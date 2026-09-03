@@ -24,6 +24,8 @@ interface Window {
       setConfig: (patch: Partial<BackendConfig>) => Promise<BackendConfig>;
       getStatus: () => Promise<BackendStatus>;
       retry: () => Promise<BackendStatus>;
+      stop: () => Promise<BackendStatus>;
+      restart: () => Promise<BackendStatus>;
       pickServerDir: () => Promise<string | null>;
       onStatusChange: (callback: (status: BackendStatus) => void) => () => void;
     };

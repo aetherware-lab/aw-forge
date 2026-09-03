@@ -106,6 +106,7 @@ const NewSolicitationModal: React.FC<Props> = ({ onClose }) => {
       title="+ New Solicitation"
       subtitle="Register a new opportunity for tracking"
       maxWidth={620}
+      lower
       footer={
         <>
           <button type="button" className="btn ghost" onClick={onClose} disabled={submitting}>

@@ -138,10 +138,12 @@ def _run_response(run: dict) -> dict:
         "status": run["status"],
         "error": run.get("error"),
         "createdAt": run["created_at"],
+        "completedAt": run.get("completed_at"),
         "solicitationNumber": run["solicitation_number"],
         "solicitationTitle": run["solicitation_title"],
         "solicitationAgency": run["solicitation_agency"],
         "requirementCount": run["requirement_count"],
+        "chunkCount": run["chunk_count"],
         # .get() with defaults: runs created before this field existed (or
         # not yet touched by the pipeline) won't have these properties set.
         "stage": run.get("stage"),

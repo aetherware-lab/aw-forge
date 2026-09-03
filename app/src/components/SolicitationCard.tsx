@@ -4,7 +4,6 @@ import type { Solicitation } from '@/types';
 
 interface Props {
   sol: Solicitation;
-  onEdit?: (id: string) => void;
 }
 
 /** Maps a tag key to its display label (falls back to the key). */
@@ -36,21 +35,38 @@ const formatDue = (iso: string) => {
   });
 };
 
-const SolicitationCard: React.FC<Props> = ({ sol, onEdit }) => {
+const SolicitationCard: React.FC<Props> = ({ sol }) => {
   const navigate = useNavigate();
 
   return (
     <article className="sol-card">
-      <div>
-        <button
-          type="button"
-          className="sol-title"
-          onClick={() => navigate(`/solicitations/${sol.id}`)}
-        >
-          {sol.title}
-        </button>
-        <div className="sol-meta">
-          {sol.number} · {sol.agency} · Response due {formatDue(sol.responseDue)}
+      <div className="sol-main">
+        <div className="sol-primary">
+          <button
+            type="button"
+            className="sol-title"
+            onClick={() => navigate(`/solicitations/${sol.id}`)}
+          >
+            {sol.title}
+          </button>
+          <div className="sol-meta">
+            {sol.number} · {sol.agency} · Response due {formatDue(sol.responseDue)}
+          </div>
+          <div className="sol-progress">
+            <div className="sol-progress-row">
+              <span>{sol.stage}</span>
+              <span>{sol.progress}%</span>
+            </div>
+            <div
+              className="progress-shell"
+              role="progressbar"
+              aria-valuenow={sol.progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div className="progress-fill" style={{ width: `${sol.progress}%` }} />
+            </div>
+          </div>
         </div>
         <div className="sol-tags">
           {sol.tags.map((t) => (
@@ -59,30 +75,6 @@ const SolicitationCard: React.FC<Props> = ({ sol, onEdit }) => {
             </span>
           ))}
         </div>
-        <div className="sol-progress">
-          <div className="sol-progress-row">
-            <span>{sol.stage}</span>
-            <span>{sol.progress}%</span>
-          </div>
-          <div
-            className="progress-shell"
-            role="progressbar"
-            aria-valuenow={sol.progress}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          >
-            <div className="progress-fill" style={{ width: `${sol.progress}%` }} />
-          </div>
-        </div>
-      </div>
-      <div className="sol-actions">
-        <button
-          type="button"
-          className="btn ghost small"
-          onClick={() => onEdit?.(sol.id)}
-        >
-          Edit Solicitation
-        </button>
       </div>
     </article>
   );

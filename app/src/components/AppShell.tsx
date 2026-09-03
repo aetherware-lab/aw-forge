@@ -2,6 +2,7 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import UserMenu from './UserMenu';
 import WindowControls from './WindowControls';
+import NotificationCenter from './NotificationCenter';
 import { IconClipboard, IconLayers } from '@/components/Icon';
 
 interface NavItem {
@@ -143,6 +144,7 @@ const AppShell: React.FC = () => {
           </nav>
         </div>
         <div className="topbar-right chrome-right">
+          <NotificationCenter />
           <UserMenu />
           <WindowControls />
         </div>

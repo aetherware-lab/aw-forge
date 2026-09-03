@@ -1,7 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ExtractionRunStatus, listExtractionRuns } from '@/lib/api';
+import { ExtractionRunStatus, RunStatus, listExtractionRuns } from '@/lib/api';
 import { IconRefresh } from '@/components/Icon';
+import { useNotifications } from '@/store/notifications';
+
+// Background poll so a run finishing while this screen (rather than its own
+// CitationsTable page) is open still surfaces a notification. Gentler than
+// CitationsTable's 2s single-run poll since this refetches every run on the
+// server each tick.
+const POLL_INTERVAL_MS = 8000;
 
 const STATUS_LABELS: Record<ExtractionRunStatus['status'], string> = {
   pending: 'Pending',
@@ -29,21 +36,49 @@ const ExtractionRuns: React.FC = () => {
   const [runs, setRuns] = useState<ExtractionRunStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const notify = useNotifications((s) => s.add);
+  // Last-seen status per run id — undefined on first load, so pre-existing
+  // completed/errored runs don't fire a notification just for being here
+  // when the screen mounts. Only a transition detected between two polls
+  // (i.e. after the first) counts.
+  const lastStatus = useRef<Map<string, RunStatus>>(new Map());
 
-  const load = () => {
-    setLoading(true);
-    setError(null);
+  const load = useCallback((opts?: { silent?: boolean }) => {
+    if (!opts?.silent) {
+      setLoading(true);
+      setError(null);
+    }
     listExtractionRuns()
-      .then(setRuns)
+      .then((data) => {
+        data.forEach((run) => {
+          const prev = lastStatus.current.get(run.id);
+          if (prev && prev !== run.status && (run.status === 'complete' || run.status === 'error')) {
+            notify(
+              {
+                kind: run.status === 'complete' ? 'success' : 'error',
+                title: run.status === 'complete' ? 'Extraction run complete' : 'Extraction run failed',
+                body: `${run.name} · ${run.solicitationTitle}`,
+              },
+              `run:${run.id}:${run.status}`,
+            );
+          }
+          lastStatus.current.set(run.id, run.status);
+        });
+        setRuns(data);
+      })
       .catch((err) =>
         setError(err instanceof Error ? err.message : 'Could not reach the FORGE server.'),
       )
-      .finally(() => setLoading(false));
-  };
+      .finally(() => {
+        if (!opts?.silent) setLoading(false);
+      });
+  }, [notify]);
 
   useEffect(() => {
     load();
-  }, []);
+    const timer = setInterval(() => load({ silent: true }), POLL_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [load]);
 
   return (
     <>
@@ -53,7 +88,7 @@ const ExtractionRuns: React.FC = () => {
           <div className="page-sub">Every run on the FORGE server, however it was started</div>
         </div>
         <div>
-          <button type="button" className="btn ghost small" onClick={load}>
+          <button type="button" className="btn ghost small" onClick={() => load()}>
             <IconRefresh size={12} /> Refresh
           </button>
         </div>

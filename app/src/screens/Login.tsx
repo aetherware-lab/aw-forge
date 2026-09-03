@@ -63,7 +63,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <main className="auth-backdrop bg-grid">
+    <main className="auth-backdrop">
       <WindowControls floating />
       <form
         className={`auth-dialog${expanding ? ' auth-dialog--expand' : ''}`}

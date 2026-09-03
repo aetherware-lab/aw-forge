@@ -83,14 +83,21 @@ The Electron app expects it at `http://localhost:8000` (see
 
 ## Pipeline
 
-`app/pipeline.py` — a 3-node LangGraph graph:
+`app/pipeline.py` — a 4-node LangGraph graph. `parse_documents`/`extract`
+write to Neo4j as they go (chunks as they're parsed, citations/requirements
+per chunk, dropping any requirement with no citation) rather than batching
+writes to the end, so run progress (`GET /extraction-runs/{id}`'s
+`stage`/`stageCurrent`/`stageTotal`) reflects real work done, not just
+pipeline-node boundaries:
 
 ```
-parse_documents  (Docling: PDF -> section-aware chunks)
+parse_documents  (Docling: PDF -> section-aware chunks, written per document)
       |
-   extract       (Claude, per chunk: schema-constrained Requirement + Citation)
+   extract       (Claude, per chunk: schema-constrained Requirement + Citation, written per chunk)
       |
-  write_graph    (Neo4j: drops any requirement with no citation, then writes)
+   validate      (placeholder — contradiction screening isn't implemented yet)
+      |
+   generate      (reports the final requirement count; writes already happened in extract)
 ```
 
 Two things worth knowing before relying on this:

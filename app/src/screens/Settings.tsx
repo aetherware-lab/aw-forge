@@ -42,7 +42,7 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <>
+    <div className="settings-page">
       <header className="page-header">
         <div>
           <div className="page-title">Settings</div>
@@ -133,19 +133,37 @@ const Settings: React.FC = () => {
                   {backendStatus?.message && <span className="muted"> · {backendStatus.message}</span>}
                 </div>
               </div>
-              <button
-                type="button"
-                className="btn ghost small"
-                onClick={() => window.forge.backend.retry().then(setBackendStatus)}
-                disabled={backendStatus?.state === 'starting'}
-              >
-                {backendStatus?.state === 'starting' ? 'Starting…' : 'Start now'}
-              </button>
+              <div className="row tight">
+                <button
+                  type="button"
+                  className="btn ghost small"
+                  onClick={() => window.forge.backend.retry().then(setBackendStatus)}
+                  disabled={backendStatus?.state === 'starting'}
+                >
+                  {backendStatus?.state === 'starting' ? 'Starting…' : 'Start'}
+                </button>
+                <button
+                  type="button"
+                  className="btn ghost small"
+                  onClick={() => window.forge.backend.stop().then(setBackendStatus)}
+                  disabled={!backendStatus || backendStatus.state === 'idle' || backendStatus.state === 'starting'}
+                >
+                  Stop
+                </button>
+                <button
+                  type="button"
+                  className="btn ghost small"
+                  onClick={() => window.forge.backend.restart().then(setBackendStatus)}
+                  disabled={!backendStatus || backendStatus.state === 'idle' || backendStatus.state === 'starting'}
+                >
+                  Restart
+                </button>
+              </div>
             </div>
           </div>
         </section>
       </div>
-    </>
+    </div>
   );
 };
 

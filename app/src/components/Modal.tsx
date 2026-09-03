@@ -12,6 +12,8 @@ interface ModalProps {
   children: React.ReactNode;
   /** Sticky footer (action buttons) */
   footer?: React.ReactNode;
+  /** Sit lower on screen instead of the default near-top position */
+  lower?: boolean;
 }
 
 /**
@@ -26,6 +28,7 @@ const Modal: React.FC<ModalProps> = ({
   maxWidth = 460,
   children,
   footer,
+  lower = false,
 }) => {
   useEffect(() => {
     if (!open) return;
@@ -46,7 +49,7 @@ const Modal: React.FC<ModalProps> = ({
 
   return createPortal(
     <div
-      className="modal-backdrop"
+      className={lower ? 'modal-backdrop modal-backdrop-lower' : 'modal-backdrop'}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

@@ -56,22 +56,7 @@ const SolicitationForm: React.FC<Props> = ({ existing }) => {
   };
 
   return (
-    <>
-      <header className="page-header">
-        <div>
-          <div className="page-title">Edit Solicitation</div>
-          <div className="page-sub">{existing.number}</div>
-        </div>
-        <button
-          type="button"
-          className="btn ghost small"
-          onClick={() => navigate(`/solicitations/${existing.id}`)}
-        >
-          Cancel
-        </button>
-      </header>
-
-      <form onSubmit={onSubmit} className="form-narrow">
+    <form id="edit-solicitation-form" onSubmit={onSubmit}>
         <label className="label" htmlFor="title">
           Solicitation Title <span className="required-mark">*</span>
         </label>
@@ -163,19 +148,7 @@ const SolicitationForm: React.FC<Props> = ({ existing }) => {
         <TagInput value={tags} onChange={setTags} />
 
         {error && <div className="form-error">{error}</div>}
-
-        <div className="form-actions">
-          <button type="submit" className="btn">Save Changes</button>
-          <button
-            type="button"
-            className="btn ghost"
-            onClick={() => navigate(`/solicitations/${existing.id}`)}
-          >
-            Cancel
-          </button>
-        </div>
       </form>
-    </>
   );
 };
 

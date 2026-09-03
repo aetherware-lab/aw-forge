@@ -8,6 +8,8 @@ in the graphrag-neo4j prototype's write_to_neo4j.py.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from neo4j import GraphDatabase
 
 from app.config import NEO4J_PASSWORD, NEO4J_URI, NEO4J_USER
@@ -41,6 +43,7 @@ def create_run(run: ExtractionRun) -> None:
                   run.status = $status,
                   run.error = null,
                   run.created_at = $created_at,
+                  run.completed_at = null,
                   run.stage = null,
                   run.stage_current = 0,
                   run.stage_total = 0
@@ -57,12 +60,20 @@ def create_run(run: ExtractionRun) -> None:
 
 
 def set_run_status(run_id: str, status: str, error: str | None = None) -> None:
+    # Only a terminal status gets a completion timestamp — the "how long
+    # did this take" duration shown once complete (see CitationsTable.tsx)
+    # is completed_at - created_at.
+    completed_at = datetime.now(timezone.utc).isoformat() if status in ("complete", "error") else None
     with get_driver().session() as session:
         session.run(
-            "MATCH (run:ExtractionRun {id: $id}) SET run.status = $status, run.error = $error",
+            """
+            MATCH (run:ExtractionRun {id: $id})
+            SET run.status = $status, run.error = $error, run.completed_at = $completed_at
+            """,
             id=run_id,
             status=status,
             error=error,
+            completed_at=completed_at,
         )
 
 
@@ -90,7 +101,23 @@ def _run_row(record) -> dict:
     row["solicitation_title"] = record["sol_title"]
     row["solicitation_agency"] = record["sol_agency"]
     row["requirement_count"] = record["req_count"]
+    row["chunk_count"] = record["chunk_count"]
     return row
+
+
+# Shared by get_run/list_runs — counts chunks and requirements live (not
+# just once complete), so the in-flight loading UI can show real "N chunks
+# created" / "N requirements extracted" counts (see ExtractionRunProgress.tsx).
+# Chunk and requirement counts are aggregated in separate OPTIONAL MATCH +
+# WITH steps rather than one combined query, since two OPTIONAL MATCHes
+# joined directly would cross-multiply into a cartesian product.
+_RUN_COUNTS_CYPHER = """
+    OPTIONAL MATCH (run)-[:CONTAINS_CHUNK]->(ch:DocumentChunk)
+    WITH s, run, count(DISTINCT ch) AS chunk_count
+    OPTIONAL MATCH (run)<-[:BELONGS_TO_RUN]-(r:Requirement)
+    RETURN run, s.solicitation_number AS sol_number, s.title AS sol_title,
+           s.agency AS sol_agency, count(DISTINCT r) AS req_count, chunk_count
+"""
 
 
 def get_run(run_id: str) -> dict | None:
@@ -98,11 +125,9 @@ def get_run(run_id: str) -> dict | None:
     other way to find out what a run actually is beyond its id."""
     with get_driver().session() as session:
         record = session.run(
-            """
-            MATCH (s:Solicitation)-[:HAS_RUN]->(run:ExtractionRun {id: $id})
-            OPTIONAL MATCH (run)<-[:BELONGS_TO_RUN]-(r:Requirement)
-            RETURN run, s.solicitation_number AS sol_number, s.title AS sol_title,
-                   s.agency AS sol_agency, count(r) AS req_count
+            f"""
+            MATCH (s:Solicitation)-[:HAS_RUN]->(run:ExtractionRun {{id: $id}})
+            {_RUN_COUNTS_CYPHER}
             """,
             id=run_id,
         ).single()
@@ -115,11 +140,9 @@ def list_runs() -> list[dict]:
     this is the only way the app can discover them."""
     with get_driver().session() as session:
         result = session.run(
-            """
+            f"""
             MATCH (s:Solicitation)-[:HAS_RUN]->(run:ExtractionRun)
-            OPTIONAL MATCH (run)<-[:BELONGS_TO_RUN]-(r:Requirement)
-            RETURN run, s.solicitation_number AS sol_number, s.title AS sol_title,
-                   s.agency AS sol_agency, count(r) AS req_count
+            {_RUN_COUNTS_CYPHER}
             ORDER BY run.created_at DESC
             """
         )

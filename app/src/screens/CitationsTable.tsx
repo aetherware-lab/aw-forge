@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useSolicitations } from '@/store/solicitations';
+import { useNotifications } from '@/store/notifications';
 import {
   ExtractionRunStatus,
   getExtractionRunRequirements,
@@ -8,11 +9,11 @@ import {
 } from '@/lib/api';
 import CitationDrawer from '@/components/CitationDrawer';
 import ExportModal from '@/components/ExportModal';
+import ExtractionRunProgress from '@/components/ExtractionRunProgress';
 import {
   IconAlertCircle,
   IconAlertTriangle,
   IconInfo,
-  IconLoader,
   IconSearch,
 } from '@/components/Icon';
 import type {
@@ -44,7 +45,8 @@ const FLAG_ICON: Record<FlagSeverity, React.FC<{ size?: number }>> = {
 const STAGE_LABELS: Record<string, string> = {
   parsing: 'Parsing documents',
   extracting: 'Extracting requirements',
-  writing: 'Writing to the knowledge graph',
+  validating: 'Validating requirements',
+  generating: 'Generating citation table',
 };
 
 const formatGenerated = (iso: string): string => {
@@ -54,6 +56,19 @@ const formatGenerated = (iso: string): string => {
     month: 'short', day: '2-digit', year: 'numeric',
     hour: 'numeric', minute: '2-digit',
   });
+};
+
+const formatDuration = (startIso: string, endIso: string): string | null => {
+  const start = new Date(startIso).getTime();
+  const end = new Date(endIso).getTime();
+  if (Number.isNaN(start) || Number.isNaN(end)) return null;
+  const totalSec = Math.max(0, Math.round((end - start) / 1000));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
 };
 
 type Phase = 'loading' | 'pending' | 'running' | 'complete' | 'error';
@@ -80,6 +95,7 @@ const CitationsTable: React.FC = () => {
   const [runInfo, setRunInfo] = useState<ExtractionRunStatus | null>(null);
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const pollTimer = useRef<ReturnType<typeof setTimeout>>();
+  const notify = useNotifications((s) => s.add);
 
   useEffect(() => {
     if (!runId) return;
@@ -94,6 +110,14 @@ const CitationsTable: React.FC = () => {
         if (status.status === 'error') {
           setPhase('error');
           setErrorMessage(status.error ?? 'Extraction failed.');
+          notify(
+            {
+              kind: 'error',
+              title: 'Extraction run failed',
+              body: `${status.name} · ${status.solicitationTitle}`,
+            },
+            `run:${runId}:error`,
+          );
           return;
         }
         if (status.status === 'complete') {
@@ -101,6 +125,14 @@ const CitationsTable: React.FC = () => {
           if (cancelled) return;
           setRequirements(reqs);
           setPhase('complete');
+          notify(
+            {
+              kind: 'success',
+              title: 'Extraction run complete',
+              body: `${status.name} · ${reqs.length} requirements`,
+            },
+            `run:${runId}:complete`,
+          );
           return;
         }
         setPhase(status.status);
@@ -154,6 +186,11 @@ const CitationsTable: React.FC = () => {
     });
   }, [requirements, query, typeFilter, sectionFilter, reviewFilter]);
 
+  const avgConfidence = useMemo(() => {
+    if (requirements.length === 0) return null;
+    return Math.round(requirements.reduce((sum, r) => sum + r.confidence, 0) / requirements.length);
+  }, [requirements]);
+
   if (!runId) return <Navigate to="/solicitations" replace />;
 
   const runName = runInfo?.name ?? runDoc?.name ?? 'Extraction Run';
@@ -203,6 +240,19 @@ const CitationsTable: React.FC = () => {
           <div className={`run-sub${phase === 'error' ? ' error' : ''}`}>
             {statusLine()}
           </div>
+          {phase === 'complete' && runInfo?.completedAt && (
+            <div className="run-stats">
+              <span className="run-stat">
+                Completed in {formatDuration(runInfo.createdAt, runInfo.completedAt) ?? '—'}
+              </span>
+              {avgConfidence !== null && (
+                <span className="run-stat">
+                  <span className={`confidence-pct ${confidenceClass(avgConfidence)}`}>{avgConfidence}%</span>
+                  {' '}avg confidence
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <div>
           <button
@@ -217,20 +267,7 @@ const CitationsTable: React.FC = () => {
       </header>
 
       {phase !== 'complete' && phase !== 'error' && (
-        <div className="empty run-progress">
-          <IconLoader size={22} className="spin" />
-          <div className="run-progress-label">
-            {phase === 'loading' ? 'Checking run status…' : statusLine()}
-          </div>
-          {runInfo?.stage && runInfo.stageTotal > 0 && (
-            <div className="progress-shell run-progress-bar">
-              <div
-                className="progress-fill"
-                style={{ width: `${Math.round((runInfo.stageCurrent / runInfo.stageTotal) * 100)}%` }}
-              />
-            </div>
-          )}
-        </div>
+        <ExtractionRunProgress phase={phase} runInfo={runInfo} />
       )}
 
       {phase === 'error' && (
@@ -240,7 +277,7 @@ const CitationsTable: React.FC = () => {
       )}
 
       {phase === 'complete' && (
-        <>
+        <div className="citation-reveal">
           <div className="row tight toolbar-row">
             <div className="search-field w-md">
               <IconSearch size={14} />
@@ -282,88 +319,94 @@ const CitationsTable: React.FC = () => {
             </select>
           </div>
 
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th style={{ width: 60 }}>ID</th>
-                  <th style={{ width: 100 }}>Section</th>
-                  <th>Requirement</th>
-                  <th style={{ width: 80 }}>Type</th>
-                  <th style={{ width: 140 }}>Confidence</th>
-                  <th style={{ width: 160 }}>Citations</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="table-empty-cell">
-                      {requirements.length === 0
-                        ? 'No requirements were extracted from this run.'
-                        : 'No requirements match those filters.'}
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((r) => (
-                    <tr key={r.id}>
-                      <td className="mono">{r.id}</td>
-                      <td className="mono">{r.section}</td>
-                      <td>
-                        {r.text}
-                        {r.flag && (
-                          <div className={`flag ${r.flag.severity}`}>
-                            {(() => {
-                              const FlagIcon = FLAG_ICON[r.flag.severity];
-                              return <FlagIcon size={12} />;
-                            })()}
-                            <span className="flag-sev">{r.flag.severity}</span>
-                            {r.flag.note}
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        <span className={`pill ${r.type}`}>{TYPE_LABELS[r.type]}</span>
-                      </td>
-                      <td>
-                        <div className="confidence">
-                          <span className="confidence-pct">{r.confidence}%</span>
-                          <div className="conf-bar">
-                            <div
-                              className={`conf-fill ${confidenceClass(r.confidence)}`}
-                              style={{ width: `${r.confidence}%` }}
-                            />
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        {r.citations.map((c, i) => (
-                          <div key={c.label + i}>
-                            {i + 1}.{' '}
-                            <button
-                              type="button"
-                              className="cite-link"
-                              onClick={() => setDrawer({ req: r, cite: c })}
-                            >
-                              {c.label}
-                            </button>
-                          </div>
-                        ))}
-                      </td>
+          <div className={`citation-split${drawer ? ' panel-open' : ''}`}>
+            <div className="citation-table-col">
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th style={{ width: 60 }}>ID</th>
+                      <th style={{ width: 100 }}>Section</th>
+                      <th>Requirement</th>
+                      <th style={{ width: 80 }}>Type</th>
+                      <th style={{ width: 140 }}>Confidence</th>
+                      <th style={{ width: 160 }}>Citations</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
+                  </thead>
+                  <tbody>
+                    {filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="table-empty-cell">
+                          {requirements.length === 0
+                            ? 'No requirements were extracted from this run.'
+                            : 'No requirements match those filters.'}
+                        </td>
+                      </tr>
+                    ) : (
+                      filtered.map((r) => (
+                        <tr key={r.id}>
+                          <td className="mono">{r.id}</td>
+                          <td className="mono">{r.section}</td>
+                          <td>
+                            {r.text}
+                            {r.flag && (
+                              <div className={`flag ${r.flag.severity}`}>
+                                {(() => {
+                                  const FlagIcon = FLAG_ICON[r.flag.severity];
+                                  return <FlagIcon size={12} />;
+                                })()}
+                                <span className="flag-sev">{r.flag.severity}</span>
+                                {r.flag.note}
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <span className={`pill ${r.type}`}>{TYPE_LABELS[r.type]}</span>
+                          </td>
+                          <td>
+                            <div className="confidence">
+                              <span className="confidence-pct">{r.confidence}%</span>
+                              <div className="conf-bar">
+                                <div
+                                  className={`conf-fill ${confidenceClass(r.confidence)}`}
+                                  style={{ width: `${r.confidence}%` }}
+                                />
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            {r.citations.map((c, i) => (
+                              <div key={c.label + i}>
+                                {i + 1}.{' '}
+                                <button
+                                  type="button"
+                                  className="cite-link"
+                                  onClick={() => setDrawer({ req: r, cite: c })}
+                                >
+                                  {c.label}
+                                </button>
+                              </div>
+                            ))}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-      {drawer && (
-        <CitationDrawer
-          requirement={drawer.req}
-          citation={drawer.cite}
-          onClose={() => setDrawer(null)}
-        />
+            {drawer && (
+              <div className="citation-panel-col">
+                <CitationDrawer
+                  requirement={drawer.req}
+                  citation={drawer.cite}
+                  onClose={() => setDrawer(null)}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {showExport && runId && (

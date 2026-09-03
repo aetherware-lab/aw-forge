@@ -199,6 +199,35 @@ export const IconLoader = createIcon(
   <circle cx="12" cy="12" r="9" strokeDasharray="42 14" strokeLinecap="round" />,
 );
 
+/** Queued/waiting stage marker (ExtractionRunProgress.tsx). */
+export const IconClock = createIcon(
+  'IconClock',
+  <>
+    <circle cx="12" cy="12" r="9" />
+    <polyline points="12 7 12 12 16 14" />
+  </>,
+);
+
+/** Validating stage marker (ExtractionRunProgress.tsx). */
+export const IconShieldCheck = createIcon(
+  'IconShieldCheck',
+  <>
+    <path d="M12 3 4.5 6v6c0 5 3.5 7.5 7.5 9 4-1.5 7.5-4 7.5-9V6z" />
+    <polyline points="9 12 11.25 14.25 15.5 10" />
+  </>,
+);
+
+/** Generating stage marker (ExtractionRunProgress.tsx) — assembling the
+ * citation table. */
+export const IconTable = createIcon(
+  'IconTable',
+  <>
+    <rect x="3" y="4" width="18" height="16" rx="1.5" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+    <line x1="9" y1="10" x2="9" y2="20" />
+  </>,
+);
+
 /** Frameless-titlebar window controls (WindowControls.tsx) — Windows'
  * conventional minimize/maximize/restore glyphs. */
 export const IconWindowMinimize = createIcon('IconWindowMinimize', <line x1="5" y1="12" x2="19" y2="12" />);
@@ -211,6 +240,15 @@ export const IconWindowRestore = createIcon(
   <>
     <rect x="7.5" y="7.5" width="11" height="11" rx="1" />
     <path d="M8 7.5V6a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-1.5" />
+  </>,
+);
+
+/** Notification-center trigger button (NotificationCenter.tsx). */
+export const IconBell = createIcon(
+  'IconBell',
+  <>
+    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </>,
 );
 

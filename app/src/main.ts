@@ -77,6 +77,14 @@ ipcMain.handle('backend:retry', () => {
   backend.startBackend();
   return backend.getStatus();
 });
+ipcMain.handle('backend:stop', () => {
+  backend.stopBackend();
+  return backend.getStatus();
+});
+ipcMain.handle('backend:restart', () => {
+  backend.restartBackend();
+  return backend.getStatus();
+});
 ipcMain.handle('backend:pick-server-dir', async (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   const result = win

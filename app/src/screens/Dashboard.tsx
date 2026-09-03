@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import SolicitationCard from '@/components/SolicitationCard';
 import NewSolicitationModal from '@/components/NewSolicitationModal';
 import { useSolicitations } from '@/store/solicitations';
@@ -8,7 +7,6 @@ import { IconPlus, IconSearch } from '@/components/Icon';
 type SortMode = 'due' | 'progress' | 'title';
 
 const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
   // Subscribe to the live list — newly created solicitations show up here.
   const solicitations = useSolicitations((s) => s.solicitations);
 
@@ -80,25 +78,42 @@ const Dashboard: React.FC = () => {
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        <select value={tag} onChange={(e) => setTag(e.target.value)}>
-          {tags.map((t) => (
-            <option key={t} value={t}>
-              {t === 'all' ? 'Tags: All' : `Tag: ${t}`}
-            </option>
-          ))}
-        </select>
-        <select value={agency} onChange={(e) => setAgency(e.target.value)}>
-          {agencies.map((a) => (
-            <option key={a} value={a}>
-              {a === 'all' ? 'Agency: All' : a}
-            </option>
-          ))}
-        </select>
-        <select value={sort} onChange={(e) => setSort(e.target.value as SortMode)}>
-          <option value="due">Sort: Response date</option>
-          <option value="progress">Sort: Progress</option>
-          <option value="title">Sort: Title</option>
-        </select>
+        <div className="toolbar-filters">
+          <select
+            className="filter-select"
+            title="Filter by tag"
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+          >
+            {tags.map((t) => (
+              <option key={t} value={t}>
+                {t === 'all' ? 'All tags' : t}
+              </option>
+            ))}
+          </select>
+          <select
+            className="filter-select"
+            title="Filter by agency"
+            value={agency}
+            onChange={(e) => setAgency(e.target.value)}
+          >
+            {agencies.map((a) => (
+              <option key={a} value={a}>
+                {a === 'all' ? 'All agencies' : a}
+              </option>
+            ))}
+          </select>
+          <select
+            className="filter-select"
+            title="Sort order"
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortMode)}
+          >
+            <option value="due">Due date</option>
+            <option value="progress">Progress</option>
+            <option value="title">Title</option>
+          </select>
+        </div>
       </div>
 
       {filtered.length === 0 ? (
@@ -109,11 +124,7 @@ const Dashboard: React.FC = () => {
         </div>
       ) : (
         filtered.map((sol) => (
-          <SolicitationCard
-            key={sol.id}
-            sol={sol}
-            onEdit={(id) => navigate(`/solicitations/${id}/edit`)}
-          />
+          <SolicitationCard key={sol.id} sol={sol} />
         ))
       )}
 

@@ -141,6 +141,13 @@ function spawnUvicorn(serverDir: string): { ok: boolean; error?: string } {
   child.stderr?.on('data', (d) => {
     stderr += d.toString();
   });
+  // uvicorn's access log writes one line per request to stdout. Node's pipe
+  // for it has a small OS buffer (~64KB) — with no reader, that buffer fills
+  // after enough requests and the child's next write() blocks forever,
+  // freezing the whole process (it hangs mid-write while holding Python's
+  // logging lock, so even unrelated requests stop getting logged/served).
+  // Nothing here needs the output, so just drain and discard it.
+  child.stdout?.on('data', () => {});
   child.on('exit', (code) => {
     uvicornExit = { code, stderr };
     if (uvicornProcess === child) uvicornProcess = null;
@@ -149,13 +156,38 @@ function spawnUvicorn(serverDir: string): { ok: boolean; error?: string } {
   return { ok: true };
 }
 
-export function stopBackend(): void {
-  // Neo4j is left running — it's meant to persist across sessions (see
-  // server/README.md), same as if the user had started it by hand.
+/** Returns true once the FORGE API is confirmed not running — either this
+ * app's own uvicorn child was killed, or nothing was listening to begin
+ * with. Returns false if something is answering on :8000 that this app
+ * didn't spawn (e.g. uvicorn started by hand in a terminal) — Electron has
+ * no handle to that process, so it can't be stopped from here.
+ *
+ * Neo4j is left running either way — it's meant to persist across sessions
+ * (see server/README.md), same as if the user had started it by hand. */
+export async function stopBackend(): Promise<boolean> {
   if (uvicornProcess) {
     uvicornProcess.kill();
     uvicornProcess = null;
+    setStatus({ state: 'idle', message: 'Stopped.' });
+    return true;
   }
+  if (await checkHealth()) {
+    setStatus({
+      state: 'error',
+      message:
+        "The FORGE server is running but wasn't started from this app, so it can't be stopped here — " +
+        'close it from wherever it was started (e.g. its terminal window), then use Start.',
+    });
+    return false;
+  }
+  setStatus({ state: 'idle', message: 'Not running.' });
+  return true;
+}
+
+export async function restartBackend(): Promise<void> {
+  const stopped = await stopBackend();
+  if (!stopped) return;
+  await startBackend();
 }
 
 export async function startBackend(): Promise<void> {
