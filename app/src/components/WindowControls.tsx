@@ -16,11 +16,13 @@ const WindowControls: React.FC<Props> = ({ floating = false }) => {
   const [maximized, setMaximized] = useState(false);
 
   useEffect(() => {
+    if (!window.forge) return;
     window.forge.windowControls.isMaximized().then(setMaximized);
     return window.forge.windowControls.onMaximizedChange(setMaximized);
   }, []);
 
-  if (window.forge.platform === 'darwin') return null;
+  // No native window to control in a browser tab, same as macOS's inset traffic lights.
+  if (!window.forge || window.forge.platform === 'darwin') return null;
 
   const { minimize, toggleMaximize, close } = window.forge.windowControls;
 

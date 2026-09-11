@@ -1,6 +1,6 @@
 import type { Requirement } from '@/types';
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
 
 class ApiError extends Error {}
 
@@ -29,7 +29,7 @@ export interface CreateExtractionRunPayload {
   files: File[];
 }
 
-export type RunStatus = 'pending' | 'running' | 'complete' | 'error';
+export type RunStatus = 'pending' | 'running' | 'paused' | 'complete' | 'error';
 
 export interface ExtractionRunStatus {
   id: string;
@@ -104,6 +104,17 @@ export async function getExtractionRunStatus(runId: string): Promise<ExtractionR
   if (!res.ok) throw new ApiError(await parseErrorDetail(res));
   return res.json();
 }
+
+async function postRunControl(runId: string, action: 'pause' | 'resume' | 'cancel'): Promise<void> {
+  const res = await apiFetch(`${BASE_URL}/extraction-runs/${runId}/${action}`, { method: 'POST' });
+  if (!res.ok) throw new ApiError(await parseErrorDetail(res));
+}
+
+/** Takes effect between units of work (once per document/chunk), not
+ * instantly — see server/app/run_control.py. */
+export const pauseExtractionRun = (runId: string): Promise<void> => postRunControl(runId, 'pause');
+export const resumeExtractionRun = (runId: string): Promise<void> => postRunControl(runId, 'resume');
+export const cancelExtractionRun = (runId: string): Promise<void> => postRunControl(runId, 'cancel');
 
 /**
  * Every run the server knows about, regardless of how it was created — the

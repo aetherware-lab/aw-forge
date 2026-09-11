@@ -25,17 +25,19 @@ const Settings: React.FC = () => {
   const [backendStatus, setBackendStatus] = useState<BackendStatus | null>(null);
 
   useEffect(() => {
+    if (!window.forge) return;
     window.forge.backend.getConfig().then(setBackendConfig);
     window.forge.backend.getStatus().then(setBackendStatus);
     return window.forge.backend.onStatusChange(setBackendStatus);
   }, []);
 
   const toggleAutoStart = async () => {
-    if (!backendConfig) return;
+    if (!backendConfig || !window.forge) return;
     setBackendConfig(await window.forge.backend.setConfig({ autoStart: !backendConfig.autoStart }));
   };
 
   const browseServerDir = async () => {
+    if (!window.forge) return;
     const dir = await window.forge.backend.pickServerDir();
     if (!dir) return;
     setBackendConfig(await window.forge.backend.setConfig({ serverDir: dir }));
@@ -88,80 +90,82 @@ const Settings: React.FC = () => {
           </div>
         </section>
 
-        <section className="settings-card">
-          <div className="settings-card-head">
-            <div className="settings-card-title">Backend</div>
-            <div className="settings-card-sub">
-              Neo4j and the extraction API run outside this app (see server/README.md) — autostart
-              them here instead of running <span className="mono">docker compose up -d</span> and{' '}
-              <span className="mono">uvicorn</span> by hand every time.
-            </div>
-          </div>
-          <div className="settings-card-body">
-            <div className="settings-row">
-              <div>
-                <div className="settings-row-label">Autostart on launch</div>
-                <div className="settings-row-value">Starts Neo4j (Docker) and the FORGE API automatically</div>
+        {window.forge && (
+          <section className="settings-card">
+            <div className="settings-card-head">
+              <div className="settings-card-title">Backend</div>
+              <div className="settings-card-sub">
+                Neo4j and the extraction API run outside this app (see server/README.md) — autostart
+                them here instead of running <span className="mono">docker compose up -d</span> and{' '}
+                <span className="mono">uvicorn</span> by hand every time.
               </div>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={backendConfig?.autoStart ?? false}
-                  onChange={toggleAutoStart}
-                  disabled={!backendConfig}
-                />
-              </label>
             </div>
-
-            <div className="settings-row">
-              <div>
-                <div className="settings-row-label">Server folder</div>
-                <div className="settings-row-value mono">{backendConfig?.serverDir ?? '—'}</div>
+            <div className="settings-card-body">
+              <div className="settings-row">
+                <div>
+                  <div className="settings-row-label">Autostart on launch</div>
+                  <div className="settings-row-value">Starts Neo4j (Docker) and the FORGE API automatically</div>
+                </div>
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={backendConfig?.autoStart ?? false}
+                    onChange={toggleAutoStart}
+                    disabled={!backendConfig}
+                  />
+                </label>
               </div>
-              <button type="button" className="btn ghost small" onClick={browseServerDir}>
-                Browse…
-              </button>
-            </div>
 
-            <div className="settings-row">
-              <div>
-                <div className="settings-row-label">Status</div>
-                <div className="settings-row-value">
-                  <span className={`pill${backendStatus?.state === 'error' ? ' error' : ''}`}>
-                    {backendStatus ? STATE_LABELS[backendStatus.state] : '—'}
-                  </span>
-                  {backendStatus?.message && <span className="muted"> · {backendStatus.message}</span>}
+              <div className="settings-row">
+                <div>
+                  <div className="settings-row-label">Server folder</div>
+                  <div className="settings-row-value mono">{backendConfig?.serverDir ?? '—'}</div>
+                </div>
+                <button type="button" className="btn ghost small" onClick={browseServerDir}>
+                  Browse…
+                </button>
+              </div>
+
+              <div className="settings-row">
+                <div>
+                  <div className="settings-row-label">Status</div>
+                  <div className="settings-row-value">
+                    <span className={`pill${backendStatus?.state === 'error' ? ' error' : ''}`}>
+                      {backendStatus ? STATE_LABELS[backendStatus.state] : '—'}
+                    </span>
+                    {backendStatus?.message && <span className="muted"> · {backendStatus.message}</span>}
+                  </div>
+                </div>
+                <div className="row tight">
+                  <button
+                    type="button"
+                    className="btn ghost small"
+                    onClick={() => window.forge!.backend.retry().then(setBackendStatus)}
+                    disabled={backendStatus?.state === 'starting'}
+                  >
+                    {backendStatus?.state === 'starting' ? 'Starting…' : 'Start'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn ghost small"
+                    onClick={() => window.forge!.backend.stop().then(setBackendStatus)}
+                    disabled={!backendStatus || backendStatus.state === 'idle' || backendStatus.state === 'starting'}
+                  >
+                    Stop
+                  </button>
+                  <button
+                    type="button"
+                    className="btn ghost small"
+                    onClick={() => window.forge!.backend.restart().then(setBackendStatus)}
+                    disabled={!backendStatus || backendStatus.state === 'idle' || backendStatus.state === 'starting'}
+                  >
+                    Restart
+                  </button>
                 </div>
               </div>
-              <div className="row tight">
-                <button
-                  type="button"
-                  className="btn ghost small"
-                  onClick={() => window.forge.backend.retry().then(setBackendStatus)}
-                  disabled={backendStatus?.state === 'starting'}
-                >
-                  {backendStatus?.state === 'starting' ? 'Starting…' : 'Start'}
-                </button>
-                <button
-                  type="button"
-                  className="btn ghost small"
-                  onClick={() => window.forge.backend.stop().then(setBackendStatus)}
-                  disabled={!backendStatus || backendStatus.state === 'idle' || backendStatus.state === 'starting'}
-                >
-                  Stop
-                </button>
-                <button
-                  type="button"
-                  className="btn ghost small"
-                  onClick={() => window.forge.backend.restart().then(setBackendStatus)}
-                  disabled={!backendStatus || backendStatus.state === 'idle' || backendStatus.state === 'starting'}
-                >
-                  Restart
-                </button>
-              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </div>
     </div>
   );

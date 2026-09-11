@@ -10,7 +10,7 @@ interface BackendStatus {
 }
 
 interface Window {
-  forge: {
+  forge?: {
     platform: NodeJS.Platform;
     windowControls: {
       minimize: () => void;
